@@ -3,16 +3,16 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>cz.it4i.fiji</groupId>
-	<artifactId>haas-java-client</artifactId>
+	<artifactId>heappe-java-client</artifactId>
 	<version>1.0.0</version>
-	<name>HaaS library for Java</name>
+	<name>Java client library for HEAppE</name>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
-		<url>https://code.it4i.cz/fiji/haas-java-client.git</url>
-		<connection>scm:git:https://code.it4i.cz/fiji/haas-java-client.git</connection>
+		<url>https://github.com/fiji-hpc/heappe-java-client.git</url>
+		<connection>scm:git:https://github.com/fiji-hpc/heappe-java-client.git</connection>
 	</scm>
 	<build>
 		<plugins>
