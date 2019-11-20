@@ -20,6 +20,8 @@ import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
+import cz.it4i.fiji.hpc_client.data_transfer.JobState;
+import cz.it4i.fiji.hpc_client.data_transfer.UploadingFileImpl;
 
 public class TestHaaSJavaClientWithSPIM {
 

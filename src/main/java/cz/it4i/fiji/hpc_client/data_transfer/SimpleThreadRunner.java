@@ -1,11 +1,11 @@
-package cz.it4i.fiji.haas.data_transfer;
+package cz.it4i.fiji.hpc_client.data_transfer;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class SimpleThreadRunner {
+class SimpleThreadRunner {
 	private final ExecutorService service;
 	private final AtomicBoolean reRun = new AtomicBoolean(false);
 	private CompletableFuture<?> lastRun;

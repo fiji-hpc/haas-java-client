@@ -1,5 +1,5 @@
 
-package cz.it4i.fiji.haas.data_transfer;
+package cz.it4i.fiji.hpc_client.data_transfer;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,17 +23,15 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.fiji.haas_java_client.FileTransferInfo;
-import cz.it4i.fiji.haas_java_client.FileTransferState;
-import cz.it4i.fiji.haas_java_client.UploadingFile;
-import cz.it4i.fiji.haas_java_client.UploadingFileImpl;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.ProgressNotifier;
+import cz.it4i.fiji.hpc_client.UploadingFile;
+import cz.it4i.fiji.hpc_client.UploadingFileImpl;
 
 public class Synchronization implements Closeable {
 
 	private final static Logger log = LoggerFactory.getLogger(
-		cz.it4i.fiji.haas.data_transfer.Synchronization.class);
+		cz.it4i.fiji.hpc_client.data_transfer.Synchronization.class);
 	
 	private static final String FILE_INDEX_TO_UPLOAD_FILENAME = ".toUploadFiles";
 	
@@ -61,6 +59,8 @@ public class Synchronization implements Closeable {
 	private final ExecutorService service;
 
 	private final Predicate<Path> uploadFilter;
+
+	public static final String FAILED_ITEM = "Failed item";
 
 	public Synchronization(Supplier<HPCFileTransfer> fileTransferSupplier, Path workingDirectory, Path inputDirectory,
 			Path outputDirectory, Runnable uploadFinishedNotifier, Runnable downloadFinishedNotifier, Predicate<Path> uploadFilter)

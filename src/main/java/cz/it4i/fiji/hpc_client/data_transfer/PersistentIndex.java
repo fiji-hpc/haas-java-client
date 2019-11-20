@@ -1,5 +1,5 @@
 
-package cz.it4i.fiji.haas.data_transfer;
+package cz.it4i.fiji.hpc_client.data_transfer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,9 +14,9 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PersistentIndex<T> {
+class PersistentIndex<T> {
 	
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas.data_transfer.PersistentIndex.class);
+	public static final Logger log = LoggerFactory.getLogger(cz.it4i.fiji.hpc_client.data_transfer.PersistentIndex.class);
 	
 	private final Path workingFile;
 

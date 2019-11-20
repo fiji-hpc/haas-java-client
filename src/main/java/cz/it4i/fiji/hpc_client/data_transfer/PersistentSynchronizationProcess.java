@@ -1,4 +1,4 @@
-package cz.it4i.fiji.haas.data_transfer;
+package cz.it4i.fiji.hpc_client.data_transfer;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -22,19 +22,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.commons.DoActionEventualy;
-import cz.it4i.fiji.haas_java_client.HaaSClientException;
 import cz.it4i.fiji.haas_java_client.TransferFileProgressForHaaSClient;
 import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.HPCClientException;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.ProgressNotifier;
 
-public abstract class PersistentSynchronizationProcess<T> {
+abstract class PersistentSynchronizationProcess<T> {
 
 	
-	public static final String FAILED_ITEM = "Failed item"; 
-
 	private static final Logger log = LoggerFactory
-			.getLogger(cz.it4i.fiji.haas.data_transfer.PersistentSynchronizationProcess.class);
+			.getLogger(cz.it4i.fiji.hpc_client.data_transfer.PersistentSynchronizationProcess.class);
 
 	private static final TransferFileProgressForHaaSClient DUMMY_FILE_PROGRESS = new TransferFileProgressForHaaSClient(
 			0, HPCClient.DUMMY_PROGRESS_NOTIFIER);
@@ -160,13 +158,16 @@ public abstract class PersistentSynchronizationProcess<T> {
 					fileTransfered(p);
 					actualnotifier.itemDone(item);
 				}
-				catch (InterruptedIOException | HaaSClientException e) {
+				catch (InterruptedIOException | HPCClientException e) {
 					synchronized (this) {
 						toProcessQueue.clear();
 						interrupted = true;
-						if (e instanceof HaaSClientException) {
+						if (e instanceof HPCClientException) {
 							log.warn("process ", e);
-							actualnotifier.addItem(FAILED_ITEM);
+							actualnotifier.addItem(Synchronization.FAILED_ITEM);
+						}
+						else {
+							Thread.currentThread().interrupt();
 						}
 					}
 				}
