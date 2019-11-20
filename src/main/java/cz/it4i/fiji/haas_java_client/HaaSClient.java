@@ -60,8 +60,12 @@ import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
+import cz.it4i.fiji.hpc_client.JobState;
+import cz.it4i.fiji.hpc_client.NotConnectedException;
 import cz.it4i.fiji.hpc_client.ProgressNotifier;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
+import cz.it4i.fiji.hpc_client.TunnelToNode;
+import cz.it4i.fiji.hpc_client.UploadingFile;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 

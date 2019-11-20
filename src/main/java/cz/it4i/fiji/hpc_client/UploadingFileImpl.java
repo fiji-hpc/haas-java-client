@@ -1,4 +1,4 @@
-package cz.it4i.fiji.haas_java_client;
+package cz.it4i.fiji.hpc_client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,9 +8,9 @@ import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UploadingFileImpl implements UploadingFile {
+public final class UploadingFileImpl implements UploadingFile {
 
-	public static final Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.UploadingFileImpl.class);
+	public static final Logger log = LoggerFactory.getLogger(cz.it4i.fiji.hpc_client.UploadingFileImpl.class);
 
 	private final Path path;
 

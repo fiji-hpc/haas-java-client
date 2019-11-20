@@ -4,8 +4,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
-import cz.it4i.fiji.haas_java_client.JobState;
-
 public interface JobInfo {
 	
 	Collection<Long> getTasks();

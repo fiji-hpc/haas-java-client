@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobInfo;
+import cz.it4i.fiji.hpc_client.JobState;
+import cz.it4i.fiji.hpc_client.TunnelToNode;
 
 public class TestCommunicationWithNodes {
 

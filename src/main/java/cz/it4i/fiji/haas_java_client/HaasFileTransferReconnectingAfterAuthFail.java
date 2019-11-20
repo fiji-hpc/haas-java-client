@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.UploadingFile;
 import cz.it4i.fiji.scpclient.AuthFailException;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-public class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
+class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
 
 	private static final int MAX_ATTEMPTS_FOR_RECONNECTION = 5;
 

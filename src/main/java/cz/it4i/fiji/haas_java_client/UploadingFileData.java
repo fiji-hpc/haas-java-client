@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class UploadingFileData implements UploadingFile {
+import cz.it4i.fiji.hpc_client.UploadingFile;
+
+class UploadingFileData implements UploadingFile {
 
 	private final byte[] data;
 	private final String name;

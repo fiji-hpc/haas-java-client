@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
-import cz.it4i.fiji.haas_java_client.TunnelToNode;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
 public interface HPCClient<T> {
