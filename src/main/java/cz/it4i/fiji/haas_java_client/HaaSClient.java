@@ -198,7 +198,7 @@ public class HaaSClient {
 
 	private final String projectId;
 
-	private final Map<Long, P_FileTransferPool> filetransferPoolMap =
+	private final Map<Long, FileTransferPool> filetransferPoolMap =
 		new HashMap<>();
 
 	private final HaaSClientSettings settings;
@@ -353,10 +353,16 @@ public class HaaSClient {
 		final TransferFileProgress progress)
 	{
 		final FileTransferPool pool = filetransferPoolMap.computeIfAbsent(jobId,
-			P_FileTransferPool::new);
+			this::createFileTransferPool);
 		
 		return new HaasFileTransferReconnectingAfterAuthFail(
 			getHaasFileTransferFactory(pool, progress), pool::reconnect);
+	}
+
+	private FileTransferPool createFileTransferPool(final long jobId)
+	{
+		return new CountingFileTransferPool(new DelayingFileTransferPool(
+			new P_FileTransferPool(jobId)));
 	}
 
 	private java.util.function.Supplier<HaaSFileTransfer>
