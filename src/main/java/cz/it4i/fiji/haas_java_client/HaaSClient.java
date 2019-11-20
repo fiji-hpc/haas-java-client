@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +43,6 @@ import cz.it4i.fiji.haas_java_client.proxy.DataTransferWsSoap;
 import cz.it4i.fiji.haas_java_client.proxy.FileTransferMethodExt;
 import cz.it4i.fiji.haas_java_client.proxy.FileTransferWs;
 import cz.it4i.fiji.haas_java_client.proxy.FileTransferWsSoap;
-import cz.it4i.fiji.haas_java_client.proxy.JobFileContentExt;
 import cz.it4i.fiji.haas_java_client.proxy.JobManagementWs;
 import cz.it4i.fiji.haas_java_client.proxy.JobManagementWsSoap;
 import cz.it4i.fiji.haas_java_client.proxy.JobPriorityExt;
@@ -53,15 +51,21 @@ import cz.it4i.fiji.haas_java_client.proxy.JobStateExt;
 import cz.it4i.fiji.haas_java_client.proxy.PasswordCredentialsExt;
 import cz.it4i.fiji.haas_java_client.proxy.SubmittedJobInfoExt;
 import cz.it4i.fiji.haas_java_client.proxy.SubmittedTaskInfoExt;
-import cz.it4i.fiji.haas_java_client.proxy.SynchronizableFilesExt;
 import cz.it4i.fiji.haas_java_client.proxy.TaskFileOffsetExt;
 import cz.it4i.fiji.haas_java_client.proxy.TaskSpecificationExt;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWs;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWsSoap;
+import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.HPCDataTransfer;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.JobFileContent;
+import cz.it4i.fiji.hpc_client.JobInfo;
+import cz.it4i.fiji.hpc_client.ProgressNotifier;
+import cz.it4i.fiji.hpc_client.SynchronizableFile;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-public class HaaSClient {
+public class HaaSClient implements HPCClient<JobSettings> {
 
 	public static final TransferFileProgress DUMMY_TRANSFER_FILE_PROGRESS =
 		bytesTransfered -> {};
@@ -142,41 +146,6 @@ public class HaaSClient {
 		};
 	}
 
-	public static class SynchronizableFiles {
-
-		private final Collection<TaskFileOffsetExt> files = new LinkedList<>();
-
-		public void addFile(final long taskId, final SynchronizableFileType type,
-			final long offset)
-		{
-			final TaskFileOffsetExt off = new TaskFileOffsetExt();
-			off.setFileType(getType(type));
-			off.setSubmittedTaskInfoId(taskId);
-			off.setOffset(offset);
-			files.add(off);
-		}
-
-		private Collection<TaskFileOffsetExt> getFiles() {
-			return files;
-		}
-
-		private SynchronizableFilesExt getType(final SynchronizableFileType type) {
-			switch (type) {
-				case LogFile:
-					return SynchronizableFilesExt.LOG_FILE;
-				case ProgressFile:
-					return SynchronizableFilesExt.PROGRESS_FILE;
-				case StandardErrorFile:
-					return SynchronizableFilesExt.STANDARD_ERROR_FILE;
-				case StandardOutputFile:
-					return SynchronizableFilesExt.STANDARD_OUTPUT_FILE;
-				default:
-					throw new UnsupportedOperationException("Unsupported type: " + type);
-			}
-
-		}
-	}
-
 	private static Logger log = LoggerFactory.getLogger(
 		cz.it4i.fiji.haas_java_client.HaaSClient.class);
 
@@ -216,26 +185,31 @@ public class HaaSClient {
 		this.projectId = settings.getProjectId();
 	}
 
+	@Override
 	public void checkConnection() {
 		getSessionID();
 	}
 
+	@Override
 	public long createJob(final JobSettings jobSettings,
 		final Collection<Entry<String, String>> templateParameters)
 	{
 		return doCreateJob(jobSettings, templateParameters);
 	}
 
-	public HaaSFileTransfer startFileTransfer(final long jobId,
+	@Override
+	public HPCFileTransfer startFileTransfer(final long jobId,
 		final TransferFileProgress notifier)
 	{
 		return createFileTransfer(jobId, notifier);
 	}
 
-	public HaaSFileTransfer startFileTransfer(final long jobId) {
+	@Override
+	public HPCFileTransfer startFileTransfer(final long jobId) {
 		return startFileTransfer(jobId, DUMMY_TRANSFER_FILE_PROGRESS);
 	}
 
+	@Override
 	public TunnelToNode openTunnel(final long jobId, final String nodeIP,
 		final int localPort, final int remotePort)
 	{
@@ -267,10 +241,12 @@ public class HaaSClient {
 		}
 	}
 
+	@Override
 	public void submitJob(final long jobId) {
 		doSubmitJob(jobId);
 	}
 
+	@Override
 	public JobInfo obtainJobInfo(final long jobId) {
 		final SubmittedJobInfoExt info = getJobManagement().getCurrentInfoForJob(
 			jobId, getSessionID());
@@ -318,30 +294,36 @@ public class HaaSClient {
 		};
 	}
 
-	public Collection<JobFileContentExt> downloadPartsOfJobFiles(final Long jobId,
-		final HaaSClient.SynchronizableFiles files)
+	@Override
+	public List<JobFileContent> downloadPartsOfJobFiles(final Long jobId,
+		final List<SynchronizableFile> files)
 	{
 		final ArrayOfTaskFileOffsetExt fileOffsetExt =
 			new ArrayOfTaskFileOffsetExt();
-		fileOffsetExt.getTaskFileOffsetExt().addAll(files.getFiles());
+		fileOffsetExt.getTaskFileOffsetExt().addAll(constructTaskFileOffsetExts(files));
 		return getFileTransfer().downloadPartsOfJobFilesFromCluster(jobId,
-			fileOffsetExt, getSessionID()).getJobFileContentExt();
+			fileOffsetExt, getSessionID()).getJobFileContentExt().stream().map(
+				JobFileContentToExt::new).collect(Collectors.toList());
 	}
 
+	@Override
 	public Collection<String> getChangedFiles(final long jobId) {
 		return getFileTransfer().listChangedFilesForJob(jobId, getSessionID())
 			.getString();
 	}
 
+	@Override
 	public void cancelJob(final Long jobId) {
 		getJobManagement().cancelJob(jobId, getSessionID());
 	}
 
+	@Override
 	public void deleteJob(final long id) {
 		getJobManagement().deleteJob(id, getSessionID());
 	}
 
-	public HaaSDataTransfer startDataTransfer(final long jobId,
+	@Override
+	public HPCDataTransfer startDataTransfer(final long jobId,
 		final int nodeNumber, final int port)
 	{
 		return createDataTransfer(jobId, nodeNumber, port);
@@ -354,7 +336,7 @@ public class HaaSClient {
 		return sessionID;
 	}
 
-	private HaaSFileTransfer createFileTransfer(final long jobId,
+	private HPCFileTransfer createFileTransfer(final long jobId,
 		final TransferFileProgress progress)
 	{
 		final FileTransferPool pool = filetransferPoolMap.computeIfAbsent(jobId,
@@ -370,7 +352,7 @@ public class HaaSClient {
 			new PFileTransferPool(jobId)));
 	}
 
-	private java.util.function.Supplier<HaaSFileTransfer>
+	private java.util.function.Supplier<HPCFileTransfer>
 		getHaasFileTransferFactory(
 		FileTransferPool pool, TransferFileProgress progress)
 	{
@@ -394,7 +376,7 @@ public class HaaSClient {
 		};
 	}
 
-	private HaaSDataTransfer createDataTransfer(final long jobId,
+	private HPCDataTransfer createDataTransfer(final long jobId,
 		final int nodeNumber, final int port)
 	{
 		final String host = getJobManagement().getAllocatedNodesIPs(jobId,
@@ -403,7 +385,7 @@ public class HaaSClient {
 		final DataTransferMethodExt dataTransferMethodExt = ws
 			.getDataTransferMethod(host, port, jobId, getSessionID());
 		final String sessionId = getSessionID();
-		return new HaaSDataTransfer() {
+		return new HPCDataTransfer() {
 
 			@Override
 			public void close() throws IOException {
@@ -714,6 +696,23 @@ public class HaaSClient {
 			}
 			holded = null;
 		}
+	}
+
+	private static TaskFileOffsetExt constructTaskFileOffsetExt(
+		SynchronizableFile file)
+	{
+		TaskFileOffsetExt result = new TaskFileOffsetExt();
+		result.setSubmittedTaskInfoId(file.getTaskId());
+		result.setFileType(JobFileContentToExt.getExt(file.getType()));
+		result.setOffset(file.getOffset());
+		return result;
+	}
+
+	private static Collection<? extends TaskFileOffsetExt> constructTaskFileOffsetExts(
+			List<SynchronizableFile> files)
+	{
+		return files.stream().map(HaaSClient::constructTaskFileOffsetExt).collect(
+			Collectors.toList());
 	}
 
 	private static <T> T getAndFill(final T value, final Consumer<T> filler) {

@@ -8,6 +8,10 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.JobInfo;
+
 public class TestCommunicationWithNodes {
 
 	public static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.TestCommunicationWithNodes.class);
@@ -53,7 +57,7 @@ public class TestCommunicationWithNodes {
 		}
 	}
 
-	public static long startBDS(HaaSClient client) throws InterruptedException {
+	public static long startBDS(HPCClient<?> client) throws InterruptedException {
 		long jobId =  439; /*client.createJob(new
 		  JobSettingsBuilder().jobName("TestOutRedirect").templateId(4l)
 		  .walltimeLimit(3600).clusterNodeType(7l).build(), Collections.emptyList());*/
@@ -62,7 +66,7 @@ public class TestCommunicationWithNodes {
 		JobInfo info = client.obtainJobInfo(jobId);
 		log.info("JobId :" + jobId + ", state - " + info.getState());
 		if (info.getState() != JobState.Running && info.getState() != JobState.Queued) {
-			try (HaaSFileTransfer transfer = client.startFileTransfer(jobId)) {
+			try (HPCFileTransfer transfer = client.startFileTransfer(jobId)) {
 				transfer.upload(new UploadingFileData("run-bds"));
 			} catch (InterruptedIOException e) {
 				log.error(e.getMessage(), e);

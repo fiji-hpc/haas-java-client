@@ -16,10 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.haas_java_client.proxy.FileTransferMethodExt;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-class HaaSFileTransferImp implements HaaSFileTransfer {
+class HaaSFileTransferImp implements HPCFileTransfer {
 
 	@SuppressWarnings("unused")
 	private static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.HaaSFileTransferImp.class);

@@ -1,8 +1,8 @@
-package cz.it4i.fiji.haas_java_client;
+package cz.it4i.fiji.hpc_client;
 
 import java.io.Closeable;
 
-public interface HaaSDataTransfer extends Closeable{
+public interface HPCDataTransfer extends Closeable{
 	void write(byte []buffer);
 	byte[] read();
 	void closeConnection();

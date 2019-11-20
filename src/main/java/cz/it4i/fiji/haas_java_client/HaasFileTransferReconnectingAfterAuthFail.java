@@ -6,19 +6,20 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Supplier;
 
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.scpclient.AuthFailException;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-public class HaasFileTransferReconnectingAfterAuthFail implements HaaSFileTransfer {
+public class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
 
 	private static final int MAX_ATTEMPTS_FOR_RECONNECTION = 5;
 
-	private Supplier<HaaSFileTransfer> haasFileTransferFactory;
-	private HaaSFileTransfer haasFileTransfer;
+	private Supplier<HPCFileTransfer> haasFileTransferFactory;
+	private HPCFileTransfer haasFileTransfer;
 	private Runnable reconnectCommand;
 
 	public HaasFileTransferReconnectingAfterAuthFail(
-		Supplier<HaaSFileTransfer> haasFileTransferFactory,
+		Supplier<HPCFileTransfer> haasFileTransferFactory,
 		Runnable reconnectCommand)
 	{
 		super();

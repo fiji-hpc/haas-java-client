@@ -3,6 +3,8 @@ package cz.it4i.fiji.haas_java_client;
 
 public class AuthenticationException extends HaaSClientException {
 
+	private static final long serialVersionUID = 7883710844778853196L;
+
 	public AuthenticationException() {
 	}
 

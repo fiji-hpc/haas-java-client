@@ -7,6 +7,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+
 public class TestConcurentAccessToHaaSFileTransfer {
 
 	private static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.TestConcurentAccessToHaaSFileTransfer.class);
@@ -15,10 +18,10 @@ public class TestConcurentAccessToHaaSFileTransfer {
 	public static void main(String[] args) throws IOException {
 		HaaSClient client = new HaaSClient(SettingsProvider.getSettings("DD-18-42",
 			TestingConstants.CONFIGURATION_FILE_NAME));
-		HaaSFileTransfer tr1 = client.startFileTransfer(250,
-			HaaSClient.DUMMY_TRANSFER_FILE_PROGRESS);
-		HaaSFileTransfer tr2 = client.startFileTransfer(249,
-			HaaSClient.DUMMY_TRANSFER_FILE_PROGRESS);
+		HPCFileTransfer tr1 = client.startFileTransfer(250,
+			HPCClient.DUMMY_TRANSFER_FILE_PROGRESS);
+		HPCFileTransfer tr2 = client.startFileTransfer(249,
+			HPCClient.DUMMY_TRANSFER_FILE_PROGRESS);
 		log.info("config.yaml - size:" + tr1.obtainSize(Arrays.asList(
 			"config.yaml")));
 		tr1.close();

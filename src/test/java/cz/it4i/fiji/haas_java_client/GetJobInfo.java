@@ -10,6 +10,8 @@ import cz.it4i.fiji.haas_java_client.proxy.PasswordCredentialsExt;
 import cz.it4i.fiji.haas_java_client.proxy.SubmittedJobInfoExt;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWs;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWsSoap;
+import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.JobInfo;
 
 public class GetJobInfo {
 
@@ -18,7 +20,7 @@ public class GetJobInfo {
 	public static void main(String[] args) {
 		HaaSClientSettings settings = SettingsProvider.getSettings("DD-18-42",
 			TestingConstants.CONFIGURATION_FILE_NAME);
-		HaaSClient client = new HaaSClient(settings);
+		HPCClient<?> client = new HaaSClient(settings);
 		JobInfo ji = client.obtainJobInfo(334);
 		System.out.println("created: " + ji.getCreationTime());
 		JobManagementWsSoap ws = new JobManagementWs().getJobManagementWsSoap();

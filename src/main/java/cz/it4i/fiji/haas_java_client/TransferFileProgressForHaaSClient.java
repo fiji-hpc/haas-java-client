@@ -1,5 +1,6 @@
 package cz.it4i.fiji.haas_java_client;
 
+import cz.it4i.fiji.hpc_client.ProgressNotifier;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
 public class TransferFileProgressForHaaSClient implements TransferFileProgress {

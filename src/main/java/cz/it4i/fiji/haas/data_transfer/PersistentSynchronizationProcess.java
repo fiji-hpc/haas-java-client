@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.commons.DoActionEventualy;
-import cz.it4i.fiji.haas_java_client.HaaSClient;
 import cz.it4i.fiji.haas_java_client.HaaSClientException;
-import cz.it4i.fiji.haas_java_client.HaaSFileTransfer;
-import cz.it4i.fiji.haas_java_client.ProgressNotifier;
 import cz.it4i.fiji.haas_java_client.TransferFileProgressForHaaSClient;
+import cz.it4i.fiji.hpc_client.HPCClient;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.ProgressNotifier;
 
 public abstract class PersistentSynchronizationProcess<T> {
 
@@ -37,7 +37,7 @@ public abstract class PersistentSynchronizationProcess<T> {
 			.getLogger(cz.it4i.fiji.haas.data_transfer.PersistentSynchronizationProcess.class);
 
 	private static final TransferFileProgressForHaaSClient DUMMY_FILE_PROGRESS = new TransferFileProgressForHaaSClient(
-			0, HaaSClient.DUMMY_PROGRESS_NOTIFIER);
+			0, HPCClient.DUMMY_PROGRESS_NOTIFIER);
 
 	private final static String INIT_TRANSFER_ITEM = "init transfer";
 
@@ -51,7 +51,7 @@ public abstract class PersistentSynchronizationProcess<T> {
 
 	private final SimpleThreadRunner runner;
 
-	private final Supplier<HaaSFileTransfer> fileTransferSupplier;
+	private final Supplier<HPCFileTransfer> fileTransferSupplier;
 
 	private final Runnable processFinishedNotifier;
 
@@ -63,7 +63,7 @@ public abstract class PersistentSynchronizationProcess<T> {
 	
 	private final Collection<P_HolderOfOpenClosables> openedClosables = new LinkedList<>();
 
-	public PersistentSynchronizationProcess(ExecutorService service, Supplier<HaaSFileTransfer> fileTransferSupplier,
+	public PersistentSynchronizationProcess(ExecutorService service, Supplier<HPCFileTransfer> fileTransferSupplier,
 			Runnable processFinishedNotifier, Path indexFile, Function<String, T> convertor) throws IOException {
 		runner = new SimpleThreadRunner(service);
 		this.fileTransferSupplier = fileTransferSupplier;
@@ -123,9 +123,9 @@ public abstract class PersistentSynchronizationProcess<T> {
 
 	abstract protected Iterable<T> getItems() throws IOException;
 
-	abstract protected void processItem(HaaSFileTransfer tr, T p) throws InterruptedIOException;
+	abstract protected void processItem(HPCFileTransfer tr, T p) throws InterruptedIOException;
 
-	abstract protected long getTotalSize(Iterable<T> items, HaaSFileTransfer tr) throws InterruptedIOException;
+	abstract protected long getTotalSize(Iterable<T> items, HPCFileTransfer tr) throws InterruptedIOException;
 
 	private void doProcess(AtomicBoolean reRun) {
 		runningProcessCounter.incrementAndGet();
@@ -134,7 +134,7 @@ public abstract class PersistentSynchronizationProcess<T> {
 		runningTransferThreads.add(Thread.currentThread());
 		TransferFileProgressForHaaSClient actualnotifier = DUMMY_FILE_PROGRESS;
 		try (P_HolderOfOpenClosables transferHolder = new P_HolderOfOpenClosables(fileTransferSupplier.get())) {
-			HaaSFileTransfer tr = transferHolder.getTransfer();
+			HPCFileTransfer tr = transferHolder.getTransfer();
 			try {
 				tr.setProgress(actualnotifier = getTransferFileProgress(tr));
 			} catch (InterruptedIOException e1) {
@@ -201,7 +201,7 @@ public abstract class PersistentSynchronizationProcess<T> {
 		}
 	}
 
-	private TransferFileProgressForHaaSClient getTransferFileProgress(HaaSFileTransfer tr)
+	private TransferFileProgressForHaaSClient getTransferFileProgress(HPCFileTransfer tr)
 			throws InterruptedIOException {
 		if (notifier == null) {
 			return DUMMY_FILE_PROGRESS;
@@ -234,16 +234,16 @@ public abstract class PersistentSynchronizationProcess<T> {
 	}
 	
 	private class P_HolderOfOpenClosables implements Closeable{
-		final private HaaSFileTransfer transfer;
+		final private HPCFileTransfer transfer;
 
-		public P_HolderOfOpenClosables(HaaSFileTransfer transfer) {
+		public P_HolderOfOpenClosables(HPCFileTransfer transfer) {
 			this.transfer = transfer;
 			synchronized(openedClosables) {
 				openedClosables.add(this);
 			}
 		}
 		
-		public HaaSFileTransfer getTransfer() {
+		public HPCFileTransfer getTransfer() {
 			return transfer;
 		}
 

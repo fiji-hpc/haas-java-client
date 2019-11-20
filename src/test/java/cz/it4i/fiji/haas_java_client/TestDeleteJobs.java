@@ -8,6 +8,8 @@ import javax.xml.ws.WebServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.fiji.hpc_client.JobInfo;
+
 public class TestDeleteJobs {
 	
 	private final static Logger log = LoggerFactory.getLogger(
@@ -23,7 +25,8 @@ public class TestDeleteJobs {
 			long last = args.length > 1 ? Integer.parseInt(args[1]) : first;
 			iter =() -> LongStream.range(first, last + 1).iterator();
 		}
-		HaaSClient client = new HaaSClient(SettingsProvider.getSettings( "OPEN-12-20", TestingConstants.CONFIGURATION_FILE_NAME));
+		HaaSClient client = new HaaSClient(SettingsProvider.getSettings(
+			"OPEN-12-20", TestingConstants.CONFIGURATION_FILE_NAME));
 		for ( long i : iter ) {
 			try {
 				JobInfo ji = client.obtainJobInfo(i);

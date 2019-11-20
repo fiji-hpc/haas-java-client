@@ -1,4 +1,4 @@
-package cz.it4i.fiji.haas_java_client;
+package cz.it4i.fiji.hpc_client;
 
 public interface ProgressNotifier {
 

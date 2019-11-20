@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.haas_java_client.FileTransferInfo;
 import cz.it4i.fiji.haas_java_client.FileTransferState;
-import cz.it4i.fiji.haas_java_client.HaaSFileTransfer;
-import cz.it4i.fiji.haas_java_client.ProgressNotifier;
 import cz.it4i.fiji.haas_java_client.UploadingFile;
 import cz.it4i.fiji.haas_java_client.UploadingFileImpl;
+import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.ProgressNotifier;
 
 public class Synchronization implements Closeable {
 
@@ -62,7 +62,7 @@ public class Synchronization implements Closeable {
 
 	private final Predicate<Path> uploadFilter;
 
-	public Synchronization(Supplier<HaaSFileTransfer> fileTransferSupplier, Path workingDirectory, Path inputDirectory,
+	public Synchronization(Supplier<HPCFileTransfer> fileTransferSupplier, Path workingDirectory, Path inputDirectory,
 			Path outputDirectory, Runnable uploadFinishedNotifier, Runnable downloadFinishedNotifier, Predicate<Path> uploadFilter)
 			throws IOException {
 		this.workingDirectory = workingDirectory;
@@ -145,7 +145,7 @@ public class Synchronization implements Closeable {
 				&& !filesDownloaded.contains(file);
 	}
 
-	private PersistentSynchronizationProcess<Path> createUploadProcess(Supplier<HaaSFileTransfer> fileTransferSupplier,
+	private PersistentSynchronizationProcess<Path> createUploadProcess(Supplier<HPCFileTransfer> fileTransferSupplier,
 			ExecutorService executorService, Runnable uploadFinishedNotifier) throws IOException {
 		return new PersistentSynchronizationProcess<Path>(executorService, fileTransferSupplier, uploadFinishedNotifier,
 				workingDirectory.resolve(FILE_INDEX_TO_UPLOAD_FILENAME), name -> inputDirectory.resolve(name)) {
@@ -160,7 +160,7 @@ public class Synchronization implements Closeable {
 			}
 
 			@Override
-			protected void processItem(final HaaSFileTransfer tr, final Path p)
+			protected void processItem(final HPCFileTransfer tr, final Path p)
 				throws InterruptedIOException
 			{
 				final UploadingFile uf = new UploadingFileImpl(p, inputDirectory);
@@ -174,7 +174,7 @@ public class Synchronization implements Closeable {
 			}
 
 			@Override
-			protected long getTotalSize(Iterable<Path> items, HaaSFileTransfer tr) {
+			protected long getTotalSize(Iterable<Path> items, HPCFileTransfer tr) {
 				return StreamSupport.stream(items.spliterator(), false).map(p -> {
 					try {
 						return Files.size(p);
@@ -187,7 +187,7 @@ public class Synchronization implements Closeable {
 		};
 	}
 
-	private P_PersistentDownloadProcess createDownloadProcess(Supplier<HaaSFileTransfer> fileTransferSupplier,
+	private P_PersistentDownloadProcess createDownloadProcess(Supplier<HPCFileTransfer> fileTransferSupplier,
 			ExecutorService executorService, Runnable uploadFinishedNotifier) throws IOException {
 
 		return new P_PersistentDownloadProcess(executorService, fileTransferSupplier, uploadFinishedNotifier);
@@ -197,7 +197,7 @@ public class Synchronization implements Closeable {
 
 		private Collection<String> items = Collections.emptyList();
 
-		public P_PersistentDownloadProcess(ExecutorService service, Supplier<HaaSFileTransfer> fileTransferSupplier,
+		public P_PersistentDownloadProcess(ExecutorService service, Supplier<HPCFileTransfer> fileTransferSupplier,
 				Runnable processFinishedNotifier) throws IOException {
 			super(service, fileTransferSupplier, processFinishedNotifier,
 					workingDirectory.resolve(FILE_INDEX_TO_DOWNLOAD_FILENAME), name -> name);
@@ -213,7 +213,7 @@ public class Synchronization implements Closeable {
 		}
 
 		@Override
-		protected void processItem(final HaaSFileTransfer tr, final String file)
+		protected void processItem(final HPCFileTransfer tr, final String file)
 			throws InterruptedIOException
 		{
 			tr.download(file, outputDirectory);
@@ -227,7 +227,7 @@ public class Synchronization implements Closeable {
 		}
 
 		@Override
-		protected long getTotalSize(Iterable<String> files, HaaSFileTransfer tr) throws InterruptedIOException {
+		protected long getTotalSize(Iterable<String> files, HPCFileTransfer tr) throws InterruptedIOException {
 			return tr.obtainSize(StreamSupport.stream(files.spliterator(), false).collect(Collectors.toList())).stream()
 					.collect(Collectors.summingLong(val -> val));
 		}
