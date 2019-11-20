@@ -3,10 +3,8 @@ package cz.it4i.fiji.haas_java_client;
 
 import java.io.InterruptedIOException;
 import java.nio.file.Path;
-import java.rmi.RemoteException;
 import java.util.List;
-
-import javax.xml.rpc.ServiceException;
+import java.util.function.Supplier;
 
 import cz.it4i.fiji.scpclient.AuthFailException;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
@@ -15,17 +13,13 @@ public class HaasFileTransferReconnectingAfterAuthFail implements HaaSFileTransf
 
 	private static final int MAX_ATTEMPTS_FOR_RECONNECTION = 5;
 
-	public interface Supplier <T> {
-		T get() throws ServiceException, RemoteException;
-	}
-	
 	private Supplier<HaaSFileTransfer> haasFileTransferFactory;
 	private HaaSFileTransfer haasFileTransfer;
 	private Runnable reconnectCommand;
 
 	public HaasFileTransferReconnectingAfterAuthFail(
 		Supplier<HaaSFileTransfer> haasFileTransferFactory,
-		Runnable reconnectCommand) throws RemoteException, ServiceException
+		Runnable reconnectCommand)
 	{
 		super();
 		this.haasFileTransferFactory = haasFileTransferFactory;
@@ -116,11 +110,6 @@ public class HaasFileTransferReconnectingAfterAuthFail implements HaaSFileTransf
 	private void reconnect() {
 		haasFileTransfer.close();
 		reconnectCommand.run();
-		try {
-			haasFileTransfer = haasFileTransferFactory.get();
-		}
-		catch (RemoteException | ServiceException exc) {
-			throw new HaaSClientException(exc);
-		}
+		haasFileTransfer = haasFileTransferFactory.get();
 	}
 }

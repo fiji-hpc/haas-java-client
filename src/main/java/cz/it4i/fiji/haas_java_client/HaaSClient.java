@@ -32,7 +32,6 @@ import javax.xml.ws.WebServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.fiji.haas_java_client.HaasFileTransferReconnectingAfterAuthFail.Supplier;
 import cz.it4i.fiji.haas_java_client.proxy.ArrayOfCommandTemplateParameterValueExt;
 import cz.it4i.fiji.haas_java_client.proxy.ArrayOfEnvironmentVariableExt;
 import cz.it4i.fiji.haas_java_client.proxy.ArrayOfTaskFileOffsetExt;
@@ -224,13 +223,7 @@ public class HaaSClient {
 	public HaaSFileTransfer startFileTransfer(final long jobId,
 		final TransferFileProgress notifier)
 	{
-		try {
-			return createFileTransfer(jobId, notifier);
-		}
-		catch (RemoteException | ServiceException e)
-		{
-			throw new HaaSClientException(e);
-		}
+		return createFileTransfer(jobId, notifier);
 	}
 
 	public HaaSFileTransfer startFileTransfer(final long jobId) {
@@ -357,18 +350,18 @@ public class HaaSClient {
 	}
 
 	private HaaSFileTransfer createFileTransfer(final long jobId,
-		final TransferFileProgress progress) throws RemoteException,
-		ServiceException
+		final TransferFileProgress progress)
 	{
-		final P_FileTransferPool pool = filetransferPoolMap.computeIfAbsent(jobId,
-			id -> new P_FileTransferPool(id));
+		final FileTransferPool pool = filetransferPoolMap.computeIfAbsent(jobId,
+			P_FileTransferPool::new);
 		
-			return new HaasFileTransferReconnectingAfterAuthFail(getHaasFileTransferFactory(pool, progress),
-				() -> pool.reconnect());
+		return new HaasFileTransferReconnectingAfterAuthFail(
+			getHaasFileTransferFactory(pool, progress), pool::reconnect);
 	}
 
-	private Supplier<HaaSFileTransfer> getHaasFileTransferFactory(
-		P_FileTransferPool pool, TransferFileProgress progress)
+	private java.util.function.Supplier<HaaSFileTransfer>
+		getHaasFileTransferFactory(
+		FileTransferPool pool, TransferFileProgress progress)
 	{
 		return () -> {
 
@@ -379,12 +372,7 @@ public class HaaSClient {
 					@Override
 					public void close() {
 						super.close();
-						try {
-							pool.release();
-						}
-						catch (RemoteException | ServiceException e) {
-							throw new HaaSClientException(e);
-						}
+						pool.release();
 					}
 				};
 			}
@@ -661,10 +649,10 @@ public class HaaSClient {
 		void accept(T val) throws RemoteException, ServiceException;
 	}
 
-	private class P_FileTransferPool {
+	private class P_FileTransferPool implements FileTransferPool {
 
 		private FileTransferMethodExt holded;
-		private int counter;
+
 		private final P_Supplier<FileTransferMethodExt> factory;
 		private final P_Consumer<FileTransferMethodExt> destroyer;
 
@@ -675,7 +663,8 @@ public class HaaSClient {
 				getSessionID());
 		}
 
-		public void reconnect() {
+		@Override
+		public synchronized void reconnect() {
 			try {
 				if (holded != null) {
 					destroyer.accept(holded);
@@ -690,25 +679,30 @@ public class HaaSClient {
 			}
 		}
 
-		public synchronized FileTransferMethodExt obtain() throws RemoteException,
-			ServiceException
-		{
+		@Override
+		public synchronized FileTransferMethodExt obtain() {
 			if (holded == null) {
-				holded = factory.get();
+				try {
+					holded = factory.get();
+				}
+				catch (RemoteException | ServiceException exc) {
+					throw new HaaSClientException(exc);
+				}
 			}
-			counter++;
 			return holded;
 		}
 
-		public synchronized void release() throws RemoteException,
-			ServiceException
+		@Override
+		public synchronized void release() 
 		{
-			if (--counter == 0) {
+			try {
 				destroyer.accept(holded);
-				holded = null;
 			}
+			catch (RemoteException | ServiceException exc) {
+				throw new HaaSClientException(exc);
+			}
+			holded = null;
 		}
-
 	}
 
 	private static <T> T getAndFill(final T value, final Consumer<T> filler) {
