@@ -2,7 +2,7 @@ package cz.it4i.fiji.haas_java_client;
 
 import cz.it4i.fiji.hpc_client.HPCClientException;
 
-public class HaaSClientException extends HPCClientException {
+class HaaSClientException extends HPCClientException {
 
 	private static final long serialVersionUID = 1L;
 
