@@ -23,6 +23,12 @@ class DelayingFileTransferPool implements FileTransferPool {
 	private TimerTask releasingTask;
 
 	private Timer timer = new Timer();
+
+	public DelayingFileTransferPool(FileTransferPool pool) {
+		super();
+		this.pool = pool;
+	}
+
 	@Override
 	public void reconnect() {
 		pool.reconnect();

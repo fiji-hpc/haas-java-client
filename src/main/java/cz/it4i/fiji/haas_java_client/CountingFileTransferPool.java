@@ -8,14 +8,18 @@
 package cz.it4i.fiji.haas_java_client;
 
 import cz.it4i.fiji.haas_java_client.proxy.FileTransferMethodExt;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+
 class CountingFileTransferPool implements FileTransferPool {
 
 	private final FileTransferPool pool;
 
 	private int counter;
+
+
+	public CountingFileTransferPool(FileTransferPool pool) {
+		this.pool = pool;
+	}
 
 	@Override
 	public synchronized void reconnect() {
