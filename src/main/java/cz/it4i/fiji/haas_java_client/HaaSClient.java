@@ -5,9 +5,9 @@ import com.jcraft.jsch.JSchException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.rmi.RemoteException;
@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +52,7 @@ import cz.it4i.fiji.haas_java_client.proxy.JobSpecificationExt;
 import cz.it4i.fiji.haas_java_client.proxy.JobStateExt;
 import cz.it4i.fiji.haas_java_client.proxy.PasswordCredentialsExt;
 import cz.it4i.fiji.haas_java_client.proxy.SubmittedJobInfoExt;
+import cz.it4i.fiji.haas_java_client.proxy.SubmittedTaskInfoExt;
 import cz.it4i.fiji.haas_java_client.proxy.SynchronizableFilesExt;
 import cz.it4i.fiji.haas_java_client.proxy.TaskFileOffsetExt;
 import cz.it4i.fiji.haas_java_client.proxy.TaskSpecificationExt;
@@ -62,34 +64,41 @@ import cz.it4i.fiji.scpclient.TransferFileProgress;
 public class HaaSClient {
 
 	public static final TransferFileProgress DUMMY_TRANSFER_FILE_PROGRESS =
-		new TransferFileProgress()
-		{
+		bytesTransfered -> {};
 
-			@Override
-			public void dataTransfered(final long bytesTransfered) {}
-		};
-
-	public static ProgressNotifier DUMMY_PROGRESS_NOTIFIER =
+	public static final ProgressNotifier DUMMY_PROGRESS_NOTIFIER =
 		new ProgressNotifier()
 		{
 
 			@Override
-			public void setTitle(final String title) {}
+			public void setTitle(final String title) {
+				// NOP
+			}
 
 			@Override
-			public void setItemCount(final int count, final int total) {}
+			public void setItemCount(final int count, final int total) {
+				// NOP
+			}
 
 			@Override
-			public void setCount(final int count, final int total) {}
+			public void setCount(final int count, final int total) {
+				// NOP
+			}
 
 			@Override
-			public void itemDone(final Object item) {}
+			public void itemDone(final Object item) {
+				// NOP
+			}
 
 			@Override
-			public void done() {}
+			public void done() {
+				// NOP
+			}
 
 			@Override
-			public void addItem(final Object item) {}
+			public void addItem(final Object item) {
+				// NOP
+			}
 		};
 
 	public static UploadingFile getUploadingFile(final Path file) {
@@ -101,8 +110,7 @@ public class HaaSClient {
 					return Files.newInputStream(file);
 				}
 				catch (final IOException e) {
-					log.error(e.getMessage(), e);
-					throw new RuntimeException(e);
+					throw new HaaSClientException(e);
 				}
 			}
 
@@ -117,8 +125,7 @@ public class HaaSClient {
 					return Files.size(file);
 				}
 				catch (final IOException e) {
-					log.error(e.getMessage(), e);
-					throw new RuntimeException(e);
+					throw new HaaSClientException(e);
 				}
 			}
 
@@ -128,15 +135,14 @@ public class HaaSClient {
 					return Files.getLastModifiedTime(file).toMillis();
 				}
 				catch (final IOException e) {
-					log.error(e.getMessage(), e);
-					throw new RuntimeException(e);
+					throw new HaaSClientException(e);
 				}
 			}
 
 		};
 	}
 
-	static public class SynchronizableFiles {
+	public static class SynchronizableFiles {
 
 		private final Collection<TaskFileOffsetExt> files = new LinkedList<>();
 
@@ -174,10 +180,10 @@ public class HaaSClient {
 	private static Logger log = LoggerFactory.getLogger(
 		cz.it4i.fiji.haas_java_client.HaaSClient.class);
 
-	final static private Map<JobStateExt, JobState> WS_STATE2STATE;
+	private static final Map<JobStateExt, JobState> WS_STATE2STATE;
 
 	static {
-		final Map<JobStateExt, JobState> map = new HashMap<>();
+		final Map<JobStateExt, JobState> map = new EnumMap<>(JobStateExt.class);
 		map.put(JobStateExt.CANCELED, JobState.Canceled);
 		map.put(JobStateExt.CONFIGURING, JobState.Configuring);
 		map.put(JobStateExt.FAILED, JobState.Failed);
@@ -257,7 +263,6 @@ public class HaaSClient {
 			};
 		}
 		catch (final IOException e) {
-			log.error(e.getMessage(), e);
 			throw new HaaSClientException(e);
 		}
 	}
@@ -271,7 +276,7 @@ public class HaaSClient {
 			jobId, getSessionID());
 
 		final Collection<Long> tasksId = info.getTasks().getSubmittedTaskInfoExt()
-			.stream().map(ti -> ti.getId()).collect(Collectors.toList());
+			.stream().map(SubmittedTaskInfoExt::getId).collect(Collectors.toList());
 		return new JobInfo() {
 
 			private List<String> ips;
@@ -362,7 +367,7 @@ public class HaaSClient {
 	private FileTransferPool createFileTransferPool(final long jobId)
 	{
 		return new CountingFileTransferPool(new DelayingFileTransferPool(
-			new P_FileTransferPool(jobId)));
+			new PFileTransferPool(jobId)));
 	}
 
 	private java.util.function.Supplier<HaaSFileTransfer>
@@ -382,7 +387,7 @@ public class HaaSClient {
 					}
 				};
 			}
-			catch (UnsupportedEncodingException | JSchException e) {
+			catch (JSchException e) {
 				pool.release();
 				throw new HaaSClientException(e);
 			}
@@ -465,10 +470,10 @@ public class HaaSClient {
 	}
 
 	private ScpClient getScpClient(final FileTransferMethodExt fileTransfer)
-		throws UnsupportedEncodingException, JSchException
+		throws JSchException
 	{
 		final byte[] pvtKey = fileTransfer.getCredentials().getPrivateKey()
-			.getBytes("UTF-8");
+			.getBytes(StandardCharsets.UTF_8);
 		return new ScpClient(fileTransfer.getServerHostname(), fileTransfer
 			.getCredentials().getUsername(), pvtKey);
 	}
@@ -557,14 +562,14 @@ public class HaaSClient {
 		}
 	}
 
-	synchronized private DataTransferWsSoap getDataTransfer() {
+	private synchronized DataTransferWsSoap getDataTransfer() {
 		if (dataTransferWs == null) {
 			dataTransferWs = new DataTransferWs().getDataTransferWsSoap12();
 		}
 		return dataTransferWs;
 	}
 
-	synchronized private UserAndLimitationManagementWsSoap
+	private synchronized UserAndLimitationManagementWsSoap
 		getUserAndLimitationManagement()
 	{
 		if (userAndLimitationManagement == null) {
@@ -574,27 +579,27 @@ public class HaaSClient {
 		return userAndLimitationManagement;
 	}
 
-	synchronized private JobManagementWsSoap getJobManagement() {
+	private synchronized JobManagementWsSoap getJobManagement() {
 		if (jobManagement == null) {
 			jobManagement = new JobManagementWs().getJobManagementWsSoap12();
 		}
 		return jobManagement;
 	}
 
-	synchronized private FileTransferWsSoap getFileTransfer() {
+	private synchronized FileTransferWsSoap getFileTransfer() {
 		if (fileTransferWS == null) {
 			fileTransferWS = new FileTransferWs().getFileTransferWsSoap12();
 		}
 		return fileTransferWS;
 	}
 
-	public static class P_ProgressNotifierDecorator4Size extends
-		P_ProgressNotifierDecorator
+	public static class PProgressNotifierDecorator4Size extends
+		PProgressNotifierDecorator
 	{
 
 		private static final int SIZE_RATIO = 20;
 
-		public P_ProgressNotifierDecorator4Size(final ProgressNotifier notifier) {
+		public PProgressNotifierDecorator4Size(final ProgressNotifier notifier) {
 			super(notifier);
 
 		}
@@ -606,11 +611,11 @@ public class HaaSClient {
 		}
 	}
 
-	public static class P_ProgressNotifierDecorator implements ProgressNotifier {
+	public static class PProgressNotifierDecorator implements ProgressNotifier {
 
 		private final ProgressNotifier notifier;
 
-		public P_ProgressNotifierDecorator(final ProgressNotifier notifier) {
+		public PProgressNotifierDecorator(final ProgressNotifier notifier) {
 			this.notifier = notifier;
 		}
 
@@ -645,24 +650,24 @@ public class HaaSClient {
 		}
 	}
 
-	private interface P_Supplier<T> {
+	private interface PSupplier<T> {
 
 		T get() throws RemoteException, ServiceException;
 	}
 
-	private interface P_Consumer<T> {
+	private interface PConsumer<T> {
 
 		void accept(T val) throws RemoteException, ServiceException;
 	}
 
-	private class P_FileTransferPool implements FileTransferPool {
+	private class PFileTransferPool implements FileTransferPool {
 
 		private FileTransferMethodExt holded;
 
-		private final P_Supplier<FileTransferMethodExt> factory;
-		private final P_Consumer<FileTransferMethodExt> destroyer;
+		private final PSupplier<FileTransferMethodExt> factory;
+		private final PConsumer<FileTransferMethodExt> destroyer;
 
-		public P_FileTransferPool(final long jobId) {
+		public PFileTransferPool(final long jobId) {
 			this.factory = () -> getFileTransfer().getFileTransferMethod(jobId,
 				getSessionID());
 			this.destroyer = val -> getFileTransfer().endFileTransfer(jobId, val,
@@ -717,7 +722,8 @@ public class HaaSClient {
 	}
 
 	private static Calendar toGregorian(final XMLGregorianCalendar time) {
-		return Optional.ofNullable(time).map(t -> t.toGregorianCalendar()).orElse(
+		return Optional.ofNullable(time).map(
+			XMLGregorianCalendar::toGregorianCalendar).orElse(
 			null);
 	}
 
