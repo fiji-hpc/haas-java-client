@@ -1,5 +1,10 @@
 package cz.it4i.fiji.haas_java_client;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Map.Entry;
+
 public class JobSettingsBuilder {
 
 	private static final long DEFAULT_TEMPLATE = 1l;
@@ -27,6 +32,8 @@ public class JobSettingsBuilder {
 	private int _numberOfNodes = DEFAULT_NUMBER_OF_NODES;
 	private int _numberOfCoresPerNode = DEFAULT_NUMBER_OF_CORES_PER_NODE;
 	
+	private Collection<Entry<String, String>> _templateParameters = Collections
+		.emptyList();
 
 	public JobSettingsBuilder templateId(long templateId) {
 		this._templateId = templateId;
@@ -57,6 +64,13 @@ public class JobSettingsBuilder {
 		return this;
 	}
 	
+	public JobSettingsBuilder templateParameters(
+		Collection<Entry<String, String>> templateParameters)
+	{
+		this._templateParameters = new LinkedList<>(templateParameters);
+		return this;
+	}
+
 	public JobSettings build() {
 		return new JobSettings() {
 			
@@ -88,6 +102,11 @@ public class JobSettingsBuilder {
 			@Override
 			public int getNumberOfCoresPerNode() {
 				return _numberOfCoresPerNode;
+			}
+
+			@Override
+			public Collection<Entry<String, String>> getTemplateParameters() {
+				return _templateParameters;
 			}
 		};
 	}

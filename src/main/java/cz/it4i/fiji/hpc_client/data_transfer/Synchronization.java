@@ -105,7 +105,9 @@ public class Synchronization implements Closeable {
 		return uploadProcess.isWorking();
 	}
 
-	public synchronized CompletableFuture<?> startDownload(Collection<String> files) throws IOException {
+	public synchronized CompletableFuture<?> startDownload(
+		Collection<String> files) throws IOException
+	{
 		this.downloadProcess.setItems(files);
 		return this.downloadProcess.start();
 	}

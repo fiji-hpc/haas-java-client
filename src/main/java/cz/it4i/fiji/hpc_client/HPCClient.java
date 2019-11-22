@@ -52,8 +52,7 @@ public interface HPCClient<T> {
 
 	void checkConnection();
 
-	long createJob(T jobSettings,
-		Collection<Entry<String, String>> templateParameters);
+	long createJob(T jobSettings);
 
 	HPCFileTransfer startFileTransfer(long jobId, TransferFileProgress notifier);
 

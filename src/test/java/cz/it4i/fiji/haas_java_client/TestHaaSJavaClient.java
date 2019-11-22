@@ -29,10 +29,12 @@ public class TestHaaSJavaClient {
 		Map<String, String> params = new HashMap<>();
 		params.put("inputParam", "someStringParam");
 		Path baseDir = Paths.get("/home/koz01/aaa");
-		HaaSClient client = new HaaSClient(SettingsProvider.getSettings("DD-17-31",
+		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+			.getSettings("DD-17-31",
 			TestingConstants.CONFIGURATION_FILE_NAME));
 		long jobId = client.createJob(new JobSettingsBuilder().jobName("TestOutRedirect").templateId(1l)
-				.walltimeLimit(600).clusterNodeType(7l).build(), params.entrySet());
+			.walltimeLimit(600).clusterNodeType(7l).templateParameters(params
+				.entrySet()).build());
 		client.submitJob(jobId);
 		Path workDir = baseDir.resolve("" + jobId);
 		if (!Files.isDirectory(workDir)) {

@@ -16,7 +16,8 @@ public class TestConcurentAccessToHaaSFileTransfer {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
-		HaaSClient client = new HaaSClient(SettingsProvider.getSettings("DD-18-42",
+		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+			.getSettings("DD-18-42",
 			TestingConstants.CONFIGURATION_FILE_NAME));
 		HPCFileTransfer tr1 = client.startFileTransfer(250,
 			HPCClient.DUMMY_TRANSFER_FILE_PROGRESS);

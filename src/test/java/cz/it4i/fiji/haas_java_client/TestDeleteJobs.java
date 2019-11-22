@@ -25,7 +25,8 @@ public class TestDeleteJobs {
 			long last = args.length > 1 ? Integer.parseInt(args[1]) : first;
 			iter =() -> LongStream.range(first, last + 1).iterator();
 		}
-		HaaSClient client = new HaaSClient(SettingsProvider.getSettings(
+		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+			.getSettings(
 			"OPEN-12-20", TestingConstants.CONFIGURATION_FILE_NAME));
 		for ( long i : iter ) {
 			try {

@@ -19,7 +19,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -69,7 +68,7 @@ import cz.it4i.fiji.hpc_client.UploadingFile;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-public class HaaSClient implements HPCClient<JobSettings> {
+public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
 
 	public static final TransferFileProgress DUMMY_TRANSFER_FILE_PROGRESS =
 		bytesTransfered -> {};
@@ -195,10 +194,9 @@ public class HaaSClient implements HPCClient<JobSettings> {
 	}
 
 	@Override
-	public long createJob(final JobSettings jobSettings,
-		final Collection<Entry<String, String>> templateParameters)
+	public long createJob(final T jobSettings)
 	{
-		return doCreateJob(jobSettings, templateParameters);
+		return doCreateJob(jobSettings);
 	}
 
 	@Override
@@ -443,11 +441,10 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		getJobManagement().submitJob(jobId, getSessionID());
 	}
 
-	private long doCreateJob(final JobSettings jobSettings,
-		final Collection<Entry<String, String>> templateParameters)
+	private long doCreateJob(final JobSettings jobSettings)
 	{
 		final Collection<TaskSpecificationExt> taskSpec = Arrays.asList(
-			createTaskSpecification(jobSettings, templateParameters));
+			createTaskSpecification(jobSettings));
 		final JobSpecificationExt jobSpecification = createJobSpecification(
 			jobSettings, taskSpec);
 		final SubmittedJobInfoExt job = getJobManagement().createJob(
@@ -490,8 +487,7 @@ public class HaaSClient implements HPCClient<JobSettings> {
 	}
 
 	private TaskSpecificationExt createTaskSpecification(
-		final JobSettings jobSettings,
-		final Collection<Entry<String, String>> templateParameters)
+		final JobSettings jobSettings)
 	{
 
 		final TaskSpecificationExt testTask = new TaskSpecificationExt();
@@ -515,9 +511,10 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		testTask.setDependsOn(null);
 		testTask.setTemplateParameterValues(getAndFill(
 			new ArrayOfCommandTemplateParameterValueExt(), t -> t
-				.getCommandTemplateParameterValueExt().addAll(templateParameters
-					.stream().map(pair -> createCommandTemplateParameterValueExt(pair
-						.getKey(), pair.getValue())).collect(Collectors.toList()))));
+				.getCommandTemplateParameterValueExt().addAll(jobSettings
+					.getTemplateParameters().stream().map(
+						pair -> createCommandTemplateParameterValueExt(pair.getKey(), pair
+							.getValue())).collect(Collectors.toList()))));
 		return testTask;
 	}
 

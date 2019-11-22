@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -28,12 +27,13 @@ public class TestHaaSJavaClientWithSPIM {
 	private static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.TestHaaSJavaClientWithSPIM.class);
 
 	public static void main(String[] args) throws IOException {
-		HaaSClient client = new HaaSClient(SettingsProvider.getSettings("DD-17-31",
+		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+			.getSettings("DD-17-31",
 			TestingConstants.CONFIGURATION_FILE_NAME));
 		Path baseDir = Paths.get("/home/koz01/Work/vyzkumnik/fiji/work/aaa");
 
 		long jobId = client.createJob(new JobSettingsBuilder().jobName("TestOutRedirect").templateId(2)
-				.walltimeLimit(9600).clusterNodeType(6).build(), Collections.emptyList());
+			.walltimeLimit(9600).clusterNodeType(6).build());
 
 		try (HPCFileTransfer tr = client.startFileTransfer(jobId, HPCClient.DUMMY_TRANSFER_FILE_PROGRESS)) {
 			StreamSupport.stream(getAllFiles(baseDir.resolve("spim-data")).spliterator(), false)

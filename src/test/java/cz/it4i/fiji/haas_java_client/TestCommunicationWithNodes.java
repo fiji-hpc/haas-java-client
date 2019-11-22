@@ -38,7 +38,7 @@ public class TestCommunicationWithNodes {
 
 		HaaSClientSettings settings = SettingsProvider.getSettings("DD-18-42",
 			TestingConstants.CONFIGURATION_FILE_NAME);
-		HaaSClient client = new HaaSClient(settings);
+		HaaSClient<JobSettings> client = new HaaSClient<>(settings);
 		long id = startBDS(client);
 		String sessionID = client.getSessionID();
 		log.info(id + " - " + client.obtainJobInfo(id).getState() + " - " + sessionID);
