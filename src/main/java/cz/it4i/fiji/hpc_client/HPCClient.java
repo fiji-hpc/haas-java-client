@@ -10,7 +10,6 @@ package cz.it4i.fiji.hpc_client;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
