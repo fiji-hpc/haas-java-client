@@ -20,7 +20,7 @@ public class GetJobInfo {
 	public static void main(String[] args) {
 		HaaSClientSettings settings = SettingsProvider.getSettings("DD-18-42",
 			TestingConstants.CONFIGURATION_FILE_NAME);
-		HPCClient<?> client = new HaaSClient(settings);
+		HPCClient<JobSettings> client = new HaaSClient<>(settings);
 		JobInfo ji = client.obtainJobInfo(334);
 		System.out.println("created: " + ji.getCreationTime());
 		JobManagementWsSoap ws = new JobManagementWs().getJobManagementWsSoap();

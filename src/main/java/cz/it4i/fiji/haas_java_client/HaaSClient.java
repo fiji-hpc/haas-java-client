@@ -1,8 +1,6 @@
 
 package cz.it4i.fiji.haas_java_client;
 
-import static cz.it4i.fiji.hpc_client.Notifiers.emptyTransferFileProgress;
-
 import com.jcraft.jsch.JSchException;
 
 import java.io.IOException;
@@ -171,43 +169,6 @@ public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
 	}
 
 	@Override
-	public HPCFileTransfer startFileTransfer(final long jobId) {
-		return startFileTransfer(jobId, emptyTransferFileProgress());
-	}
-
-	@Override
-	public TunnelToNode openTunnel(final long jobId, final String nodeIP,
-		final int localPort, final int remotePort)
-	{
-		MiddlewareTunnel tunnel;
-		try {
-			tunnel = new MiddlewareTunnel(Executors.newCachedThreadPool(), jobId,
-				nodeIP, getSessionID());
-			tunnel.open(localPort, remotePort);
-			return new TunnelToNode() {
-
-				@Override
-				public void close() throws IOException {
-					tunnel.close();
-				}
-
-				@Override
-				public int getLocalPort() {
-					return tunnel.getLocalPort();
-				}
-
-				@Override
-				public String getLocalHost() {
-					return tunnel.getLocalHost();
-				}
-			};
-		}
-		catch (final IOException e) {
-			throw new HaaSClientException(e);
-		}
-	}
-
-	@Override
 	public void submitJob(final long jobId) {
 		doSubmitJob(jobId);
 	}
@@ -293,6 +254,37 @@ public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
 		final int nodeNumber, final int port)
 	{
 		return createDataTransfer(jobId, nodeNumber, port);
+	}
+
+	public TunnelToNode openTunnel(final long jobId, final String nodeIP,
+		final int localPort, final int remotePort)
+	{
+		MiddlewareTunnel tunnel;
+		try {
+			tunnel = new MiddlewareTunnel(Executors.newCachedThreadPool(), jobId,
+				nodeIP, getSessionID());
+			tunnel.open(localPort, remotePort);
+			return new TunnelToNode() {
+	
+				@Override
+				public void close() throws IOException {
+					tunnel.close();
+				}
+	
+				@Override
+				public int getLocalPort() {
+					return tunnel.getLocalPort();
+				}
+	
+				@Override
+				public String getLocalHost() {
+					return tunnel.getLocalHost();
+				}
+			};
+		}
+		catch (final IOException e) {
+			throw new HaaSClientException(e);
+		}
 	}
 
 	synchronized String getSessionID() {

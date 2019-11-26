@@ -19,25 +19,24 @@ public interface HPCClient<T> {
 
 	long createJob(T jobSettings);
 
-	HPCFileTransfer startFileTransfer(long jobId, TransferFileProgress notifier);
-
-	HPCFileTransfer startFileTransfer(long jobId);
-
-	TunnelToNode openTunnel(long jobId, String nodeIP, int localPort,
-		int remotePort);
-
 	void submitJob(long jobId);
 
 	JobInfo obtainJobInfo(long jobId);
+
+	void cancelJob(Long jobId);
+
+	void deleteJob(long id);
+
+	HPCFileTransfer startFileTransfer(long jobId, TransferFileProgress notifier);
+
+	default HPCFileTransfer startFileTransfer(long jobId) {
+		return startFileTransfer(jobId, Notifiers.emptyTransferFileProgress());
+	}
 
 	List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files);
 
 	Collection<String> getChangedFiles(long jobId);
-
-	void cancelJob(Long jobId);
-
-	void deleteJob(long id);
 
 	HPCDataTransfer startDataTransfer(long jobId, int nodeNumber, int port);
 
