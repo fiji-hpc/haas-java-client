@@ -23,9 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.commons.DoActionEventualy;
 import cz.it4i.fiji.haas_java_client.TransferFileProgressForHaaSClient;
-import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCClientException;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
+import cz.it4i.fiji.hpc_client.Notifiers;
 import cz.it4i.fiji.hpc_client.ProgressNotifier;
 
 abstract class PersistentSynchronizationProcess<T> {
@@ -34,8 +34,8 @@ abstract class PersistentSynchronizationProcess<T> {
 	private static final Logger log = LoggerFactory
 			.getLogger(cz.it4i.fiji.hpc_client.data_transfer.PersistentSynchronizationProcess.class);
 
-	private static final TransferFileProgressForHaaSClient DUMMY_FILE_PROGRESS = new TransferFileProgressForHaaSClient(
-			0, HPCClient.DUMMY_PROGRESS_NOTIFIER);
+	private static final TransferFileProgressForHaaSClient DUMMY_FILE_PROGRESS =
+		new TransferFileProgressForHaaSClient(0, Notifiers.emptyProgressNotifier());
 
 	private final static String INIT_TRANSFER_ITEM = "init transfer";
 

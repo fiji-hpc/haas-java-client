@@ -1,6 +1,8 @@
 
 package cz.it4i.fiji.haas_java_client;
 
+import static cz.it4i.fiji.hpc_client.Notifiers.emptyTransferFileProgress;
+
 import com.jcraft.jsch.JSchException;
 
 import java.io.IOException;
@@ -69,44 +71,6 @@ import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
 public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
-
-	public static final TransferFileProgress DUMMY_TRANSFER_FILE_PROGRESS =
-		bytesTransfered -> {};
-
-	public static final ProgressNotifier DUMMY_PROGRESS_NOTIFIER =
-		new ProgressNotifier()
-		{
-
-			@Override
-			public void setTitle(final String title) {
-				// NOP
-			}
-
-			@Override
-			public void setItemCount(final int count, final int total) {
-				// NOP
-			}
-
-			@Override
-			public void setCount(final int count, final int total) {
-				// NOP
-			}
-
-			@Override
-			public void itemDone(final Object item) {
-				// NOP
-			}
-
-			@Override
-			public void done() {
-				// NOP
-			}
-
-			@Override
-			public void addItem(final Object item) {
-				// NOP
-			}
-		};
 
 	public static UploadingFile getUploadingFile(final Path file) {
 		return new UploadingFile() {
@@ -208,7 +172,7 @@ public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
 
 	@Override
 	public HPCFileTransfer startFileTransfer(final long jobId) {
-		return startFileTransfer(jobId, DUMMY_TRANSFER_FILE_PROGRESS);
+		return startFileTransfer(jobId, emptyTransferFileProgress());
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package cz.it4i.fiji.haas_java_client;
 
 import static cz.it4i.fiji.haas_java_client.SynchronizableFileRoutines.addOffsetFilesForTask;
+import static cz.it4i.fiji.hpc_client.Notifiers.emptyTransferFileProgress;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +15,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
@@ -57,7 +57,8 @@ public class TestHaaSJavaClient {
 
 			if (info.getState() == JobState.Finished) {
 				try (HPCFileTransfer fileTransfer = client.startFileTransfer(jobId,
-						HPCClient.DUMMY_TRANSFER_FILE_PROGRESS)) {
+					emptyTransferFileProgress()))
+				{
 					for(String file: client.getChangedFiles(jobId)) {
 						fileTransfer.download(file, workDir);
 					}

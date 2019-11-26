@@ -2,6 +2,7 @@ package cz.it4i.fiji.haas_java_client;
 
 import static cz.it4i.fiji.haas_java_client.LambdaExceptionHandlerWrapper.wrap;
 import static cz.it4i.fiji.haas_java_client.SynchronizableFileRoutines.addOffsetFilesForTask;
+import static cz.it4i.fiji.hpc_client.Notifiers.emptyTransferFileProgress;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +15,6 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
@@ -35,7 +35,9 @@ public class TestHaaSJavaClientWithSPIM {
 		long jobId = client.createJob(new JobSettingsBuilder().jobName("TestOutRedirect").templateId(2)
 			.walltimeLimit(9600).clusterNodeType(6).build());
 
-		try (HPCFileTransfer tr = client.startFileTransfer(jobId, HPCClient.DUMMY_TRANSFER_FILE_PROGRESS)) {
+		try (HPCFileTransfer tr = client.startFileTransfer(jobId,
+			emptyTransferFileProgress()))
+		{
 			StreamSupport.stream(getAllFiles(baseDir.resolve("spim-data")).spliterator(), false)
 					.map(UploadingFileImpl::new).forEach(f -> wrap(() -> tr.upload(f)));
 		}
@@ -63,7 +65,8 @@ public class TestHaaSJavaClientWithSPIM {
 			client.downloadPartsOfJobFiles(jobId, taskFileOffset).forEach(jfc -> showJFC(jfc));
 			if (info.getState() == JobState.Finished) {
 				try (HPCFileTransfer fileTransfer = client.startFileTransfer(jobId,
-						HPCClient.DUMMY_TRANSFER_FILE_PROGRESS)) {
+					emptyTransferFileProgress()))
+				{
 					client.getChangedFiles(jobId).forEach(file -> wrap(() -> fileTransfer.download(file, workDir)));
 				}
 
