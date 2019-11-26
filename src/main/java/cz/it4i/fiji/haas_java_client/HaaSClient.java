@@ -68,7 +68,7 @@ import cz.it4i.fiji.hpc_client.UploadingFile;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
+public class HaaSClient implements HPCClient<JobSettings> {
 
 	public static UploadingFile getUploadingFile(final Path file) {
 		return new UploadingFile() {
@@ -156,7 +156,7 @@ public class HaaSClient<T extends JobSettings> implements HPCClient<T> {
 	}
 
 	@Override
-	public long createJob(final T jobSettings)
+	public long createJob(final JobSettings jobSettings)
 	{
 		return doCreateJob(jobSettings);
 	}

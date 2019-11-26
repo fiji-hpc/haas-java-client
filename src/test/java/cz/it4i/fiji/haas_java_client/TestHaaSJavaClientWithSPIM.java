@@ -27,7 +27,7 @@ public class TestHaaSJavaClientWithSPIM {
 	private static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.haas_java_client.TestHaaSJavaClientWithSPIM.class);
 
 	public static void main(String[] args) throws IOException {
-		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+		HaaSClient client = new HaaSClient(SettingsProvider
 			.getSettings("DD-17-31",
 			TestingConstants.CONFIGURATION_FILE_NAME));
 		Path baseDir = Paths.get("/home/koz01/Work/vyzkumnik/fiji/work/aaa");

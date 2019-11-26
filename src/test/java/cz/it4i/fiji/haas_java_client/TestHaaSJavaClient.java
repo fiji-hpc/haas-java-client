@@ -29,7 +29,7 @@ public class TestHaaSJavaClient {
 		Map<String, String> params = new HashMap<>();
 		params.put("inputParam", "someStringParam");
 		Path baseDir = Paths.get("/home/koz01/aaa");
-		HaaSClient<JobSettings> client = new HaaSClient<>(SettingsProvider
+		HaaSClient client = new HaaSClient(SettingsProvider
 			.getSettings("DD-17-31",
 			TestingConstants.CONFIGURATION_FILE_NAME));
 		long jobId = client.createJob(new JobSettingsBuilder().jobName("TestOutRedirect").templateId(1l)
