@@ -81,15 +81,13 @@ public class SshHPCClient implements HPCClient<SSHJobSettings> {
 	public HPCFileTransfer startFileTransfer(long jobId,
 		TransferFileProgress notifier)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return new HPCFileTransferAdapter();
 	}
 
 	@Override
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
