@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import cz.it4i.fiji.haas_java_client.HaaSClientSettings;
+import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettings;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
