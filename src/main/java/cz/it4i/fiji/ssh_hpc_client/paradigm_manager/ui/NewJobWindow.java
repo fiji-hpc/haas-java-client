@@ -7,9 +7,9 @@ import java.util.function.UnaryOperator;
 
 import org.scijava.plugin.Plugin;
 
+import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController;
+import cz.it4i.fiji.hpc_workflow.core.WorkflowType;
 import cz.it4i.fiji.hpc_workflow.ui.JavaFXJobSettingsProvider;
-import cz.it4i.fiji.hpc_workflow.ui.NewJobController;
-import cz.it4i.fiji.hpc_workflow.ui.NewJobController.WorkflowType;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.SshClientJobSettings;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
