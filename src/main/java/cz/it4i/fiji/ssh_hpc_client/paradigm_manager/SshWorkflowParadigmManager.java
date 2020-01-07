@@ -10,7 +10,6 @@ package cz.it4i.fiji.ssh_hpc_client.paradigm_manager;
 import org.scijava.plugin.Plugin;
 
 import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettingsImpl;
-import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_workflow.paradigm_manager.WorkflowParadigmManager;
 import cz.it4i.fiji.ssh_hpc_client.SshHPCClient;
 
@@ -22,15 +21,8 @@ public class SshWorkflowParadigmManager extends
 	public SshWorkflowParadigmManager()
 	{
 		super(HaaSClientSettingsImpl.class,
-			castSshClient(SshHPCClient.class),
+			SshHPCClient.class,
 			SshClientJobSettings.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	private static Class<? extends HPCClient<SshClientJobSettings>>
-		castSshClient(Class<SshHPCClient> class1)
-	{
-		return (Class<? extends HPCClient<SshClientJobSettings>>) class1;
 	}
 
 	@Override

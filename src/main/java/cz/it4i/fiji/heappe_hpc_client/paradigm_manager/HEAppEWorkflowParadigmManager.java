@@ -11,7 +11,6 @@ import org.scijava.plugin.Plugin;
 
 import cz.it4i.fiji.heappe_hpc_client.HaaSClient;
 import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettingsImpl;
-import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_workflow.paradigm_manager.WorkflowParadigmManager;
 
 @Plugin(type = WorkflowParadigmManager.class)
@@ -22,16 +21,11 @@ public class HEAppEWorkflowParadigmManager extends
 	public HEAppEWorkflowParadigmManager()
 	{
 		super(HaaSClientSettingsImpl.class,
-			castHaaSClient(HaaSClient.class),
+			HaaSClient.class,
 			HEAppEClientJobSettings.class);
 	}
 
-	@SuppressWarnings("unchecked")
-	private static Class<? extends HPCClient<HEAppEClientJobSettings>>
-		castHaaSClient(Class<HaaSClient> class1)
-	{
-		return (Class<? extends HPCClient<HEAppEClientJobSettings>>) class1;
-	}
+
 
 	@Override
 	public String toString() {
