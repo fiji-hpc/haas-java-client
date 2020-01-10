@@ -8,7 +8,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.prefs.PrefService;
 
 import cz.it4i.fiji.hpc_workflow.ui.LastFormLoader;
-import cz.it4i.parallel.paradigm_managers.HPCSettings;
+import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.parallel.paradigm_managers.ParadigmProfileSettingsEditor;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -18,22 +18,22 @@ import javafx.stage.Window;
 class SshSettingsScreenWindow {
 
 	@Plugin(type = ParadigmProfileSettingsEditor.class, priority = Priority.HIGH)
-	public static class Editor implements ParadigmProfileSettingsEditor<HPCSettings> {
+	public static class Editor implements ParadigmProfileSettingsEditor<SshConnectionSettings> {
 
 		@Parameter
 		private Context context;
 
 		@Override
-		public Class<HPCSettings> getTypeOfSettings() {
-			return HPCSettings.class;
+		public Class<SshConnectionSettings> getTypeOfSettings() {
+			return SshConnectionSettings.class;
 		}
 
 		@Override
-		public HPCSettings edit(HPCSettings settings) {
-			SshSettingsScreenWindow hpcSettingsScreenWindow =
+		public SshConnectionSettings edit(SshConnectionSettings settings) {
+			SshSettingsScreenWindow sshSettingsScreenWindow =
 				new SshSettingsScreenWindow();
-			hpcSettingsScreenWindow.initialize(context.getService(PrefService.class));
-			return hpcSettingsScreenWindow.showDialog(settings);
+			sshSettingsScreenWindow.initialize(context.getService(PrefService.class));
+			return sshSettingsScreenWindow.showDialog(settings);
 		}
 	}
 
@@ -43,16 +43,16 @@ class SshSettingsScreenWindow {
 
 	private PrefService prefService;
 
-	public HPCSettings showDialog(final HPCSettings oldSettings) {
-		HPCSettings settings;
+	public SshConnectionSettings showDialog(final SshConnectionSettings oldSettings) {
+		SshConnectionSettings settings;
 
 		// Get the old settings:
 		settings = oldSettings;
 
 		// if the old settings are null set the last time's
 		// user approved settings of this form.
-		LastFormLoader<HPCSettings> storeLastForm = new LastFormLoader<>(
-			prefService, "hpcSettingsForm", this.getClass());
+		LastFormLoader<SshConnectionSettings> storeLastForm = new LastFormLoader<>(
+			prefService, "sshSettingsForm", this.getClass());
 		if (settings == null) {
 			settings = storeLastForm.loadLastForm();
 		}
@@ -70,9 +70,6 @@ class SshSettingsScreenWindow {
 			settings = this.controller.getSettings();
 			// Store the settings for this form.
 			storeLastForm.storeLastForm(settings);
-			if (oldSettings != null) {
-				settings.setJobID(oldSettings.getJobID());
-			}
 		}
 		else {
 			// The user has not accepted any settings and therefore they should be
@@ -89,8 +86,8 @@ class SshSettingsScreenWindow {
 		return settings;
 	}
 
-	public void setOwner(Window aOwner) {
-		this.owner = aOwner;
+	public void setOwner(Window newOwner) {
+		this.owner = newOwner;
 	}
 
 	private void openWindow() {
@@ -98,7 +95,7 @@ class SshSettingsScreenWindow {
 		final Stage parentStage = new Stage();
 		parentStage.initModality(Modality.APPLICATION_MODAL);
 		parentStage.setResizable(false);
-		parentStage.setTitle("HPC Settings");
+		parentStage.setTitle("Ssh Settings");
 		parentStage.setScene(formScene);
 		parentStage.initOwner(owner);
 

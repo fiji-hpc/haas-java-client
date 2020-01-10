@@ -10,7 +10,6 @@ import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
@@ -55,12 +54,6 @@ public class SshSettingsScreenController extends AnchorPane {
 
 	@FXML
 	private ComboBox<String> schedulerTypeComboBox;
-
-	@FXML
-	private CheckBox shutdownJobAfterCloseCheckBox;
-
-	@FXML
-	private CheckBox redirectStdOutErrCheckBox;
 
 	@FXML
 	private Button okButton;
@@ -144,8 +137,6 @@ public class SshSettingsScreenController extends AnchorPane {
 		String password;
 		File keyFile;
 		String keyFilePassword;
-		boolean shutdownJobAfterClose;
-		boolean redirectStdOutErr;
 		String schedulerType;
 
 		host = hostTextField.getText();
@@ -162,13 +153,10 @@ public class SshSettingsScreenController extends AnchorPane {
 		password = passwordPasswordField.getText();
 		keyFile = new File(keyFileTextField.getText());
 		keyFilePassword = keyFilePasswordPasswordField.getText();
-		shutdownJobAfterClose = shutdownJobAfterCloseCheckBox.isSelected();
-		redirectStdOutErr = redirectStdOutErrCheckBox.isSelected();
 		schedulerType = schedulerTypeComboBox.getSelectionModel().getSelectedItem();
 
 		return new SshConnectionSettings(host, port, authenticationChoice, userName,
-			password, keyFile, keyFilePassword, shutdownJobAfterClose,
-			redirectStdOutErr, schedulerType);
+			password, keyFile, keyFilePassword, schedulerType);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -211,9 +199,6 @@ public class SshSettingsScreenController extends AnchorPane {
 			passwordPasswordField.setText(oldSettings.getPassword());
 			schedulerTypeComboBox.getSelectionModel().select(oldSettings
 				.getSchedulerType());
-			shutdownJobAfterCloseCheckBox.setSelected(oldSettings
-				.isShutdownJobAfterClose());
-			redirectStdOutErrCheckBox.setSelected(oldSettings.isRedirectStdOutErr());
 		}
 	}
 }

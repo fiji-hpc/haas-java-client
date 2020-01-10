@@ -3,12 +3,13 @@ package cz.it4i.fiji.ssh_hpc_client;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
 
-import cz.it4i.fiji.ssh_hpc_client.AuthenticationChoice;
+import cz.it4i.fiji.hpc_workflow.paradigm_manager.SettingsWithWorkingDirectory;
 import lombok.Data;
 
 @Data
-public class SshConnectionSettings implements Serializable {
+public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 
 	private static final long serialVersionUID = 1L;
 
@@ -19,14 +20,11 @@ public class SshConnectionSettings implements Serializable {
 	private String password;
 	private File keyFile;
 	private String keyFilePassword;
-	private boolean shutdownJobAfterClose;
-	private boolean redirectStdOutErr;
 	private String schedulerType;
 
 	public SshConnectionSettings(String host, int port,
 		AuthenticationChoice authenticationChoice, String userName, String password,
-		File keyFile, String keyFilePassword, boolean shutdownJobAfterClose,
-		boolean redirectStdOutErr, String schedulerType)
+		File keyFile, String keyFilePassword, String schedulerType)
 	{
 		this.setHost(host);
 		this.setPort(port);
@@ -35,9 +33,13 @@ public class SshConnectionSettings implements Serializable {
 		this.password = password;
 		this.keyFile = keyFile;
 		this.keyFilePassword = keyFilePassword;
-		this.shutdownJobAfterClose = shutdownJobAfterClose;
-		this.redirectStdOutErr = redirectStdOutErr;
 		this.schedulerType = schedulerType;
+	}
+
+	@Override
+	public Path getWorkingDirectory() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
