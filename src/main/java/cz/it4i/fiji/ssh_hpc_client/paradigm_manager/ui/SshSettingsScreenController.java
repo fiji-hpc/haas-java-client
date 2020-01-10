@@ -3,9 +3,8 @@ package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
 
-import cz.it4i.cluster_job_launcher.HPCSchedulerType;
-import cz.it4i.parallel.paradigm_managers.AuthenticationChoice;
-import cz.it4i.parallel.paradigm_managers.HPCSettings;
+import cz.it4i.fiji.ssh_hpc_client.AuthenticationChoice;
+import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
@@ -71,7 +70,7 @@ public class SshSettingsScreenController extends AnchorPane {
 
 	@Getter
 	@Setter
-	private HPCSettings settings;
+	private SshConnectionSettings settings;
 
 	private static final String PBS_OPTION = "PBS";
 
@@ -80,7 +79,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	private static final Integer SPINER_INITIAL_VALUE = 1;
 
 	public SshSettingsScreenController() {
-		JavaFXRoutines.initRootAndController("hpc-settings-screen.fxml", this);
+		JavaFXRoutines.initRootAndController("SshSettingsScreen.fxml", this);
 	}
 
 	@FXML
@@ -124,7 +123,8 @@ public class SshSettingsScreenController extends AnchorPane {
 	@FXML
 	private void browseAction() {
 		Stage stage = (Stage) browseButton.getScene().getWindow();
-		File selectedFile = SimpleDialog.fileChooser(stage, "Open SSH Public Key file");
+		File selectedFile = SimpleDialog.fileChooser(stage,
+			"Open SSH Public Key file");
 		if (selectedFile != null) {
 			this.keyFileTextField.setText(selectedFile.getAbsolutePath());
 		}
@@ -136,7 +136,7 @@ public class SshSettingsScreenController extends AnchorPane {
 		((Stage) getScene().getWindow()).close();
 	}
 
-	private HPCSettings createSettings() {
+	private SshConnectionSettings createSettings() {
 		String host;
 		int port;
 		AuthenticationChoice authenticationChoice;
@@ -166,11 +166,9 @@ public class SshSettingsScreenController extends AnchorPane {
 		redirectStdOutErr = redirectStdOutErrCheckBox.isSelected();
 		schedulerType = schedulerTypeComboBox.getSelectionModel().getSelectedItem();
 
-		return HPCSettings.builder().host(host).portNumber(port).userName(userName)
-			.authenticationChoice(authenticationChoice).password(password).keyFile(
-				keyFile).keyFilePassword(keyFilePassword).shutdownOnClose(shutdownJobAfterClose).redirectStdInErr(
-				redirectStdOutErr).adapterType(HPCSchedulerType.getByString(
-					schedulerType)).build();
+		return new SshConnectionSettings(host, port, authenticationChoice, userName,
+			password, keyFile, keyFilePassword, shutdownJobAfterClose,
+			redirectStdOutErr, schedulerType);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -186,7 +184,7 @@ public class SshSettingsScreenController extends AnchorPane {
 		}
 	}
 
-	public void setInitialFormValues(HPCSettings oldSettings) {
+	public void setInitialFormValues(SshConnectionSettings oldSettings) {
 		if (oldSettings == null) {
 			hostTextField.setText("localhost");
 			portSpinner.getValueFactory().setValue(22);
@@ -212,10 +210,10 @@ public class SshSettingsScreenController extends AnchorPane {
 			keyFilePasswordPasswordField.setText(oldSettings.getKeyFilePassword());
 			passwordPasswordField.setText(oldSettings.getPassword());
 			schedulerTypeComboBox.getSelectionModel().select(oldSettings
-				.getAdapterType().toString());
+				.getSchedulerType());
 			shutdownJobAfterCloseCheckBox.setSelected(oldSettings
-				.isShutdownOnClose());
-			redirectStdOutErrCheckBox.setSelected(oldSettings.isRedirectStdInErr());
+				.isShutdownJobAfterClose());
+			redirectStdOutErrCheckBox.setSelected(oldSettings.isRedirectStdOutErr());
 		}
 	}
 }
