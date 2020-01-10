@@ -171,7 +171,6 @@ public class SshHPCClient implements HPCClient<SSHJobSettings> {
 
 		void cancel() {
 			state = JobState.Canceled;
-		
 		}
 
 		void delete() {
