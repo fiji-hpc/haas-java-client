@@ -58,18 +58,6 @@ public class SshSettingsScreenController extends AnchorPane {
 	private ComboBox<String> schedulerTypeComboBox;
 
 	@FXML
-	private TextField remoteDirectoryTextField;
-
-	@FXML
-	private TextField commandTextField;
-
-	@FXML
-	private Spinner<Integer> nodesSpinner;
-
-	@FXML
-	private Spinner<Integer> ncpusSpinner;
-
-	@FXML
 	private CheckBox shutdownJobAfterCloseCheckBox;
 
 	@FXML
@@ -111,16 +99,6 @@ public class SshSettingsScreenController extends AnchorPane {
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 65535,
 				SPINER_INITIAL_VALUE);
 		portSpinner.setValueFactory(portValueFactory);
-
-		SpinnerValueFactory<Integer> nodesValueFactory =
-			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
-				SPINER_INITIAL_VALUE);
-		nodesSpinner.setValueFactory(nodesValueFactory);
-
-		SpinnerValueFactory<Integer> ncpusValueFactory =
-			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
-				SPINER_INITIAL_VALUE);
-		ncpusSpinner.setValueFactory(ncpusValueFactory);
 
 		// Disable fields that are not relevant to authentication method selection:
 		authenticationChoiceKeyRadioButton.selectedProperty().addListener((
@@ -166,10 +144,6 @@ public class SshSettingsScreenController extends AnchorPane {
 		String password;
 		File keyFile;
 		String keyFilePassword;
-		String remoteDirectory;
-		String command;
-		int nodes;
-		int ncpus;
 		boolean shutdownJobAfterClose;
 		boolean redirectStdOutErr;
 		String schedulerType;
@@ -188,21 +162,13 @@ public class SshSettingsScreenController extends AnchorPane {
 		password = passwordPasswordField.getText();
 		keyFile = new File(keyFileTextField.getText());
 		keyFilePassword = keyFilePasswordPasswordField.getText();
-		remoteDirectory = remoteDirectoryTextField.getText();
-		command = commandTextField.getText();
-		commitSpinnerValue(nodesSpinner);
-		nodes = nodesSpinner.getValue();
-		commitSpinnerValue(ncpusSpinner);
-		ncpus = ncpusSpinner.getValue();
 		shutdownJobAfterClose = shutdownJobAfterCloseCheckBox.isSelected();
 		redirectStdOutErr = redirectStdOutErrCheckBox.isSelected();
 		schedulerType = schedulerTypeComboBox.getSelectionModel().getSelectedItem();
 
 		return HPCSettings.builder().host(host).portNumber(port).userName(userName)
 			.authenticationChoice(authenticationChoice).password(password).keyFile(
-				keyFile).keyFilePassword(keyFilePassword).remoteDirectory(
-					remoteDirectory).command(command).nodes(nodes).ncpus(ncpus)
-			.shutdownOnClose(shutdownJobAfterClose).redirectStdInErr(
+				keyFile).keyFilePassword(keyFilePassword).shutdownOnClose(shutdownJobAfterClose).redirectStdInErr(
 				redirectStdOutErr).adapterType(HPCSchedulerType.getByString(
 					schedulerType)).build();
 	}
@@ -247,10 +213,6 @@ public class SshSettingsScreenController extends AnchorPane {
 			passwordPasswordField.setText(oldSettings.getPassword());
 			schedulerTypeComboBox.getSelectionModel().select(oldSettings
 				.getAdapterType().toString());
-			remoteDirectoryTextField.setText(oldSettings.getRemoteDirectory());
-			commandTextField.setText(oldSettings.getCommand());
-			nodesSpinner.getValueFactory().setValue(oldSettings.getNodes());
-			ncpusSpinner.getValueFactory().setValue(oldSettings.getNcpus());
 			shutdownJobAfterCloseCheckBox.setSelected(oldSettings
 				.isShutdownOnClose());
 			redirectStdOutErrCheckBox.setSelected(oldSettings.isRedirectStdInErr());

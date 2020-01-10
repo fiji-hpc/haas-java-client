@@ -29,7 +29,7 @@ import cz.it4i.fiji.scpclient.TransferFileProgress;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SshHPCClient implements HPCClient<SSHJobSettings> {
+public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
@@ -45,7 +45,7 @@ public class SshHPCClient implements HPCClient<SSHJobSettings> {
 	}
 
 	@Override
-	public long createJob(SSHJobSettings jobSettings) {
+	public long createJob(SshJobSettings jobSettings) {
 
 		long result = ++nextJobId;
 		JobInfoImpl js = new JobInfoImpl();

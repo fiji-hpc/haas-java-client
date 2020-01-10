@@ -8,6 +8,6 @@
 package cz.it4i.fiji.ssh_hpc_client;
 
 
-public interface SSHJobSettings {
+public interface SshJobSettings {
 
 }
