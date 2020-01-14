@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettings;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
@@ -35,13 +34,13 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private long nextJobId;
 
-	public SshHPCClient(HaaSClientSettings settings) {
+	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with settings " + settings);
 	}
 
 	@Override
 	public void checkConnection() {
-
+		
 	}
 
 	@Override
