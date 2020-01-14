@@ -2,7 +2,6 @@
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
-
 import cz.it4i.fiji.ssh_hpc_client.AuthenticationChoice;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
@@ -61,6 +60,12 @@ public class SshSettingsScreenController extends AnchorPane {
 	@FXML
 	private Button browseButton;
 
+	@FXML
+	private TextField workingDirectoryTextField;
+
+	@FXML
+	private Button workingDirectoryBrowseButton;
+
 	@Getter
 	@Setter
 	private SshConnectionSettings settings;
@@ -114,12 +119,23 @@ public class SshSettingsScreenController extends AnchorPane {
 	}
 
 	@FXML
-	private void browseAction() {
+	private void browseFileAction() {
 		Stage stage = (Stage) browseButton.getScene().getWindow();
 		File selectedFile = SimpleDialog.fileChooser(stage,
 			"Open SSH Public Key file");
 		if (selectedFile != null) {
 			this.keyFileTextField.setText(selectedFile.getAbsolutePath());
+		}
+	}
+
+	@FXML
+	private void browseDirectoryAction() {
+		Stage stage = (Stage) browseButton.getScene().getWindow();
+		File selectedDirectory = SimpleDialog.directoryChooser(stage,
+			"Open Working Directory");
+		if (selectedDirectory != null && selectedDirectory.isDirectory()) {
+			this.workingDirectoryTextField.setText(selectedDirectory
+				.getAbsolutePath());
 		}
 	}
 
@@ -130,33 +146,28 @@ public class SshSettingsScreenController extends AnchorPane {
 	}
 
 	private SshConnectionSettings createSettings() {
-		String host;
-		int port;
-		AuthenticationChoice authenticationChoice;
-		String userName;
-		String password;
-		File keyFile;
-		String keyFilePassword;
-		String schedulerType;
-
-		host = hostTextField.getText();
+		String host = hostTextField.getText();
 		commitSpinnerValue(portSpinner);
-		port = portSpinner.getValue();
-		// authenticationChoice
+		int port = portSpinner.getValue();
+
+		AuthenticationChoice authenticationChoice;
 		if (authenticationChoiceKeyRadioButton.isSelected()) {
 			authenticationChoice = AuthenticationChoice.KEY_FILE;
 		}
 		else {
 			authenticationChoice = AuthenticationChoice.PASSWORD;
 		}
-		userName = userNameTextField.getText();
-		password = passwordPasswordField.getText();
-		keyFile = new File(keyFileTextField.getText());
-		keyFilePassword = keyFilePasswordPasswordField.getText();
-		schedulerType = schedulerTypeComboBox.getSelectionModel().getSelectedItem();
+
+		String userName = userNameTextField.getText();
+		String password = passwordPasswordField.getText();
+		File keyFile = new File(keyFileTextField.getText());
+		String keyFilePassword = keyFilePasswordPasswordField.getText();
+		String schedulerType = schedulerTypeComboBox.getSelectionModel()
+			.getSelectedItem();
+		String workingDirectory = workingDirectoryTextField.getText();
 
 		return new SshConnectionSettings(host, port, authenticationChoice, userName,
-			password, keyFile, keyFilePassword, schedulerType);
+			password, keyFile, keyFilePassword, schedulerType, workingDirectory);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -199,6 +210,8 @@ public class SshSettingsScreenController extends AnchorPane {
 			passwordPasswordField.setText(oldSettings.getPassword());
 			schedulerTypeComboBox.getSelectionModel().select(oldSettings
 				.getSchedulerType());
+			workingDirectoryTextField.setText(oldSettings.getWorkingDirectory()
+				.toAbsolutePath().toString());
 		}
 	}
 }

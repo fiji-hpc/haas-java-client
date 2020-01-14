@@ -140,7 +140,7 @@ class MiddlewareTunnel implements Closeable {
 	}
 
 	@Override
-	synchronized public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		if (ss == null) {
 			return;
 		}
@@ -169,7 +169,7 @@ class MiddlewareTunnel implements Closeable {
 		executorService.shutdown();
 	}
 
-	synchronized private void obtainTransferMethodIfNeeded(final int port) {
+	private synchronized void obtainTransferMethodIfNeeded(final int port) {
 		if (dataTransferMethod == null) {
 			dataTransferMethod = dataTransfer.getDataTransferMethod(ipAddress, port,
 				jobId, sessionCode);

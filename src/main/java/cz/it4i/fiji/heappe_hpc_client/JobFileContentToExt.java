@@ -21,10 +21,10 @@ class JobFileContentToExt implements JobFileContent {
 
 	private final JobFileContentExt jobFileContentToExt;
 
-	private final static Map<SynchronizableFileType, SynchronizableFilesExt> type2ext =
+	private static final Map<SynchronizableFileType, SynchronizableFilesExt> type2ext =
 		new EnumMap<>(SynchronizableFileType.class);
 
-	private final static Map<SynchronizableFilesExt, SynchronizableFileType> ext2type =
+	private static final Map<SynchronizableFilesExt, SynchronizableFileType> ext2type =
 		new EnumMap<>(SynchronizableFilesExt.class);
 
 	static {
