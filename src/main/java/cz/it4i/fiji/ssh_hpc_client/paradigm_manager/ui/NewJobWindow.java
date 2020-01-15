@@ -10,6 +10,8 @@ import org.scijava.plugin.Plugin;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController;
 import cz.it4i.fiji.hpc_workflow.core.WorkflowType;
 import cz.it4i.fiji.hpc_workflow.ui.JavaFXJobSettingsProvider;
+import cz.it4i.fiji.ssh_hpc_client.SshJobSettings;
+import cz.it4i.fiji.ssh_hpc_client.SshJobSettingsBuilder;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.SshClientJobSettings;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -17,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import lombok.AllArgsConstructor;
+import lombok.experimental.Delegate;
 
 @Plugin(type = JavaFXJobSettingsProvider.class)
 public class NewJobWindow implements
@@ -47,11 +50,15 @@ public class NewJobWindow implements
 		stage.showAndWait();
 	}
 
-
 	private static SshClientJobSettings constructSettings(
 		NewJobController newJobController)
 	{
-		return new PJobWitdDirectorySettingsAdapter() {
+		// ToDo: complete this:
+		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
+			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
+			.numberOfNodes(newJobController.getNumberOfNodes()).build();
+
+		return new PJobWitdDirectorySettingsAdapter(sshJobSetttings) {
 
 			private static final long serialVersionUID = 5998838289289128870L;
 
@@ -95,6 +102,7 @@ public class NewJobWindow implements
 	{
 
 		private static final long serialVersionUID = 7219177839749763140L;
-
+		@Delegate(types = SshJobSettings.class)
+		private final SshJobSettings jobSettings;
 	}
 }
