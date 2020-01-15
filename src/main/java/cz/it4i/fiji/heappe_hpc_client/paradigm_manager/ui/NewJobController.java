@@ -73,6 +73,9 @@ public class NewJobController extends BorderPane {
 	@FXML
 	private Button selectOutputButton;
 
+	@FXML
+	private Spinner<Integer> numberOfCoresPerNodeSpinner;
+
 	private DataLocation inputDataLocation;
 
 	private DataLocation outputDataLocation;
@@ -99,11 +102,17 @@ public class NewJobController extends BorderPane {
 		initSelectButton(inputDirectoryTextField, selectInputButton);
 		initSelectButton(outputDirectoryTextField, selectOutputButton);
 
-		// Spinner value factory:
-		SpinnerValueFactory<Integer> valueFactory =
+		// Number of nodes spinner value factory:
+		SpinnerValueFactory<Integer> nodesValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				1);
-		numberOfNodesSpinner.setValueFactory(valueFactory);
+		numberOfNodesSpinner.setValueFactory(nodesValueFactory);
+
+		// Number of cores per node spinner value factory:
+		SpinnerValueFactory<Integer> coresValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
+				24);
+		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
 	}
 
 	public void close() {
@@ -126,6 +135,10 @@ public class NewJobController extends BorderPane {
 
 	public int getNumberOfNodes() {
 		return numberOfNodesSpinner.getValue();
+	}
+	
+	public int getNumberOfCoresPerNode() {
+		return numberOfCoresPerNodeSpinner.getValue();
 	}
 
 	public WorkflowType getWorkflowType() {
@@ -315,10 +328,12 @@ public class NewJobController extends BorderPane {
 		if (spimWorkflowIsSelected) {
 			numberOfNodesSpinner.getValueFactory().setValue(1);
 			numberOfNodesSpinner.setDisable(true);
+			numberOfCoresPerNodeSpinner.setDisable(true);
 			demoInputDataRadioButton.setDisable(false);
 		}
 		else {
 			numberOfNodesSpinner.setDisable(false);
+			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
 			if (demoInputDataRadioButton.isSelected()) {
 				ownInputRadioButton.setSelected(true);

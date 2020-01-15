@@ -60,7 +60,7 @@ public class NewJobWindow implements
 				.getHaasClusterNodeType()).templateId(newJobController.getWorkflowType()
 					.getHaasTemplateID())
 			.walltimeLimit(Configuration.getWalltime()).numberOfCoresPerNode(
-				Constants.CORES_PER_NODE).numberOfNodes(newJobController
+				newJobController.getNumberOfCoresPerNode()).numberOfNodes(newJobController
 					.getNumberOfNodes())
 			.build();
 		return new PJobWitdDirectorySettingsAdapter(jobSetttings) {
