@@ -5,9 +5,12 @@
  * This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this project.
  ******************************************************************************/
+
 package cz.it4i.fiji.ssh_hpc_client;
 
 import static cz.it4i.fiji.hpc_client.JobState.Configuring;
+
+import com.jcraft.jsch.JSchException;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -17,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
+import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
@@ -25,6 +30,7 @@ import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
+import cz.it4i.swing_javafx_ui.SimpleDialog;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,13 +40,44 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private long nextJobId;
 
+	private ClusterJobLauncher client;
+
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with settings " + settings);
+
+		HPCSchedulerType schedulerType;
+		if (settings.getSchedulerType().equals("PBS")) {
+			schedulerType = HPCSchedulerType.PBS;
+		}
+		else {
+			schedulerType = HPCSchedulerType.SLURM;
+		}
+
+		try {
+			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
+				log.info("Key file.");
+				this.client = ClusterJobLauncher.createWithKeyAuthentication(settings.getHost(),
+					settings.getPort(), settings.getUserName(), settings.getKeyFile()
+						.getAbsolutePath(), settings.getKeyFilePassword(), schedulerType,
+					true);
+			}
+			else {
+				log.info("Password.");
+				this.client = ClusterJobLauncher.createWithPasswordAuthentication(settings
+					.getHost(), settings.getPort(), settings.getUserName(), settings
+						.getPassword(), schedulerType, true);
+			}
+
+		}
+		catch (JSchException exc) {
+			SimpleDialog.showException("Exception", "Could not connect using SSH.",
+				exc);
+		}
 	}
 
 	@Override
 	public void checkConnection() {
-		
+
 	}
 
 	@Override
@@ -105,7 +142,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private static final class JobInfoImpl implements JobInfo {
 
-
 		private JobState state;
 
 		private Calendar startTime;
@@ -121,8 +157,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		@Override
 		public Collection<Long> getTasks() {
 			return getState() == JobState.Running ? Collections.singleton(1l)
-				: Collections
-				.emptyList();
+				: Collections.emptyList();
 		}
 
 		@Override
@@ -165,7 +200,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			startTime = Calendar.getInstance();
 			endTime = Calendar.getInstance();
 			endTime.add(Calendar.MILLISECOND, (new Random().nextInt(20) + 30) * 1000);
-		
+
 		}
 
 		void cancel() {
