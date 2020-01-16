@@ -72,6 +72,9 @@ public class SshSettingsScreenController extends AnchorPane {
 	@FXML
 	private TextField commandTextField;
 
+	@FXML
+	private TextField remoteWorkingDirectoryTextField;
+
 	@Getter
 	@Setter
 	private SshConnectionSettings settings;
@@ -170,13 +173,14 @@ public class SshSettingsScreenController extends AnchorPane {
 		String keyFilePassword = keyFilePasswordPasswordField.getText();
 		String schedulerType = schedulerTypeComboBox.getSelectionModel()
 			.getSelectedItem();
-		String remoteDirectory = remoteDirectoryTextField.getText();
+		String remoteFijiDirectory = remoteDirectoryTextField.getText();
 		String command = commandTextField.getText();
 		String workingDirectory = workingDirectoryTextField.getText();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
 
 		return new SshConnectionSettings(host, port, authenticationChoice, userName,
 			password, keyFile, keyFilePassword, schedulerType, workingDirectory,
-			remoteDirectory, command);
+			remoteFijiDirectory, command, remoteWorkingDirectory);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -223,6 +227,8 @@ public class SshSettingsScreenController extends AnchorPane {
 				.toAbsolutePath().toString());
 			remoteDirectoryTextField.setText(oldSettings.getRemoteDirectory());
 			commandTextField.setText(oldSettings.getCommand());
+			remoteWorkingDirectoryTextField.setText(oldSettings
+				.getRemoteWorkingDirectory());
 		}
 	}
 }

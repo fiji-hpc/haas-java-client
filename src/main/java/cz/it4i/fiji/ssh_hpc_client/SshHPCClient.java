@@ -56,22 +56,22 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
 				log.info("Key file.");
-				this.client = ClusterJobLauncher.createWithKeyAuthentication(settings.getHost(),
-					settings.getPort(), settings.getUserName(), settings.getKeyFile()
-						.getAbsolutePath(), settings.getKeyFilePassword(), schedulerType,
-					true);
+				this.client = ClusterJobLauncher.createWithKeyAuthentication(settings
+					.getHost(), settings.getPort(), settings.getUserName(), settings
+						.getKeyFile().getAbsolutePath(), settings.getKeyFilePassword(),
+					schedulerType, true);
 			}
 			else {
 				log.info("Password.");
-				this.client = ClusterJobLauncher.createWithPasswordAuthentication(settings
-					.getHost(), settings.getPort(), settings.getUserName(), settings
-						.getPassword(), schedulerType, true);
+				this.client = ClusterJobLauncher.createWithPasswordAuthentication(
+					settings.getHost(), settings.getPort(), settings.getUserName(),
+					settings.getPassword(), schedulerType, true);
 			}
 
 		}
 		catch (JSchException exc) {
-			SimpleDialog.showException("Exception", "Could not connect using SSH.",
-				exc);
+			SimpleDialog.showException("Exception",
+				"Could not connect to HPC Cluster using SSH.", exc);
 		}
 	}
 
@@ -82,7 +82,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public long createJob(SshJobSettings jobSettings) {
-
 		long result = ++nextJobId;
 		JobInfoImpl js = new JobInfoImpl();
 		states.put(result, js);

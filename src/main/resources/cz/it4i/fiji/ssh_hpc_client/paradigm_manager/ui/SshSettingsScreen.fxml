@@ -38,6 +38,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
 				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
 			</rowConstraints>
 			<children>
@@ -113,14 +114,14 @@
 						<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 					</padding>
 				</Label>
-				<Label text="HPC Scheduler type" GridPane.halignment="RIGHT" GridPane.rowIndex="9">
+				<Label text="HPC scheduler type" GridPane.halignment="RIGHT" GridPane.rowIndex="9">
 					<padding>
 						<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 					</padding>
 				</Label>
 				<ComboBox fx:id="schedulerTypeComboBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.halignment="LEFT" GridPane.rowIndex="9" />
-				<Button fx:id="okButton" mnemonicParsing="false" onAction="#okAction" text="OK" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="14" />
-            <Label text="Working Directory" GridPane.halignment="RIGHT" GridPane.rowIndex="13">
+				<Button fx:id="okButton" mnemonicParsing="false" onAction="#okAction" text="OK" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="15" />
+            <Label text="Working directory" GridPane.halignment="RIGHT" GridPane.rowIndex="13">
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
@@ -144,6 +145,12 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
             </Label>
+            <Label text="Remote working directory" GridPane.halignment="RIGHT" GridPane.rowIndex="14">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </Label>
+            <TextField fx:id="remoteWorkingDirectoryTextField" GridPane.columnIndex="1" GridPane.rowIndex="14" />
 			</children>
 			<padding>
 				<Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
