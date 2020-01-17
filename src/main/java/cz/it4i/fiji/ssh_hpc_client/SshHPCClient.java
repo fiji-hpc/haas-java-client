@@ -29,7 +29,9 @@ import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
+import cz.it4i.fiji.hpc_workflow.paradigm_manager.SettingsWithWorkingDirectory;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
+import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,30 +70,32 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 					settings.getPassword(), schedulerType, true);
 			}
 
+			// Create the remote working directory if it does not exist:
+			this.client.createRemoteDirectory(settings.getRemoteWorkingDirectory());
 		}
 		catch (JSchException exc) {
-			SimpleDialog.showException("Exception",
-				"Could not connect to HPC Cluster using SSH.", exc);
+			JavaFXRoutines.runOnFxThread(() -> SimpleDialog.showException("Exception",
+				"Could not connect to HPC Cluster using SSH.", exc));
 		}
 	}
 
 	@Override
 	public void checkConnection() {
-
+		// This does nothing.
 	}
 
 	@Override
 	public long createJob(SshJobSettings jobSettings) {
-		long result = ++nextJobId;
-		JobInfoImpl js = new JobInfoImpl();
-		states.put(result, js);
-		return result;
+		long jobId = ++nextJobId;
+		JobInfoImpl jobInfoImpl = new JobInfoImpl();
+		states.put(jobId, jobInfoImpl);
+		return jobId;
 	}
 
 	@Override
 	public void submitJob(long jobId) {
-		JobInfoImpl jil = states.get(jobId);
-		jil.start();
+		JobInfoImpl jobInfoImpl = states.get(jobId);
+		jobInfoImpl.start();
 	}
 
 	@Override
@@ -101,14 +105,14 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void cancelJob(Long jobId) {
-		JobInfoImpl ji = states.get(jobId);
-		ji.cancel();
+		JobInfoImpl jobInfoImpl = states.get(jobId);
+		jobInfoImpl.cancel();
 	}
 
 	@Override
 	public void deleteJob(long id) {
-		JobInfoImpl ji = states.get(id);
-		ji.delete();
+		JobInfoImpl jobInfoImpl = states.get(id);
+		jobInfoImpl.delete();
 
 	}
 
