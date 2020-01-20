@@ -43,6 +43,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private ClusterJobLauncher client;
 
+	private String remoteWorkingDirectory;
+
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
 
@@ -67,8 +69,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 					settings.getPassword(), schedulerType, true);
 			}
 
+			remoteWorkingDirectory = settings.getRemoteWorkingDirectory();
+
 			// Create the remote working directory if it does not exist:
-			this.client.createRemoteDirectory(settings.getRemoteWorkingDirectory());
+			this.client.createRemoteDirectory(remoteWorkingDirectory);
 		}
 		catch (JSchException exc) {
 			JavaFXRoutines.runOnFxThread(() -> SimpleDialog.showException("Exception",
@@ -83,9 +87,15 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public long createJob(SshJobSettings jobSettings) {
-		long workflowJobId = ++nextWorkflowJobId;
+		long workflowJobId = this.client.getLastJobIdFromRemoteWorkingDirectory(
+			this.remoteWorkingDirectory) + 1;
 		JobInfoImpl jobInfoImpl = new JobInfoImpl();
 		states.put(workflowJobId, jobInfoImpl);
+		// Create job directory on remote working directory as well:
+		this.client.createRemoteDirectory(this.remoteWorkingDirectory + "/" +
+			workflowJobId);
+		log.info("Create remote job directory: " + this.remoteWorkingDirectory +
+			"/" + workflowJobId);
 		return workflowJobId;
 	}
 
@@ -110,7 +120,9 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public void deleteJob(long id) {
 		JobInfoImpl jobInfoImpl = states.get(id);
 		jobInfoImpl.delete();
-
+		this.client.removeRemoteDirectory(this.remoteWorkingDirectory + "/" + id);
+		log.info("Remove remote job directory: " + this.remoteWorkingDirectory +
+			"/" + id);
 	}
 
 	@Override
