@@ -29,7 +29,6 @@ import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
-import cz.it4i.fiji.hpc_workflow.paradigm_manager.SettingsWithWorkingDirectory;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
@@ -40,12 +39,12 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
-	private long nextJobId;
+	private long nextWorkflowJobId;
 
 	private ClusterJobLauncher client;
 
 	public SshHPCClient(SshConnectionSettings settings) {
-		log.info("Creating ssh client with settings " + settings);
+		log.info("Creating ssh client with given settings.");
 
 		HPCSchedulerType schedulerType;
 		if (settings.getSchedulerType().equals("PBS")) {
@@ -57,14 +56,12 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
-				log.info("Key file.");
 				this.client = ClusterJobLauncher.createWithKeyAuthentication(settings
 					.getHost(), settings.getPort(), settings.getUserName(), settings
 						.getKeyFile().getAbsolutePath(), settings.getKeyFilePassword(),
 					schedulerType, true);
 			}
 			else {
-				log.info("Password.");
 				this.client = ClusterJobLauncher.createWithPasswordAuthentication(
 					settings.getHost(), settings.getPort(), settings.getUserName(),
 					settings.getPassword(), schedulerType, true);
@@ -86,10 +83,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public long createJob(SshJobSettings jobSettings) {
-		long jobId = ++nextJobId;
+		long workflowJobId = ++nextWorkflowJobId;
 		JobInfoImpl jobInfoImpl = new JobInfoImpl();
-		states.put(jobId, jobInfoImpl);
-		return jobId;
+		states.put(workflowJobId, jobInfoImpl);
+		return workflowJobId;
 	}
 
 	@Override
