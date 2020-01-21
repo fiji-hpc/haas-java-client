@@ -9,7 +9,6 @@ import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
@@ -52,9 +51,6 @@ public class SshSettingsScreenController extends AnchorPane {
 	private PasswordField passwordPasswordField;
 
 	@FXML
-	private ComboBox<String> schedulerTypeComboBox;
-
-	@FXML
 	private Button okButton;
 
 	@FXML
@@ -79,10 +75,6 @@ public class SshSettingsScreenController extends AnchorPane {
 	@Setter
 	private SshConnectionSettings settings;
 
-	private static final String PBS_OPTION = "PBS";
-
-	private static final String SLURM_OPTION = "Slurm";
-
 	private static final Integer SPINER_INITIAL_VALUE = 1;
 
 	public SshSettingsScreenController() {
@@ -93,12 +85,6 @@ public class SshSettingsScreenController extends AnchorPane {
 	public void initialize() {
 		// RadioButtons:
 		authenticationChoiceKeyRadioButton.setSelected(true);
-
-		// ComboBoxes:
-		schedulerTypeComboBox.getItems().removeAll(schedulerTypeComboBox
-			.getItems());
-		schedulerTypeComboBox.getItems().addAll(PBS_OPTION, SLURM_OPTION);
-		schedulerTypeComboBox.getSelectionModel().select(PBS_OPTION);
 
 		// Spinners:
 		SpinnerValueFactory<Integer> portValueFactory =
@@ -171,16 +157,14 @@ public class SshSettingsScreenController extends AnchorPane {
 		String password = passwordPasswordField.getText();
 		File keyFile = new File(keyFileTextField.getText());
 		String keyFilePassword = keyFilePasswordPasswordField.getText();
-		String schedulerType = schedulerTypeComboBox.getSelectionModel()
-			.getSelectedItem();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
 		String command = commandTextField.getText();
 		String workingDirectory = workingDirectoryTextField.getText();
 		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
 
 		return new SshConnectionSettings(host, port, authenticationChoice, userName,
-			password, keyFile, keyFilePassword, schedulerType, workingDirectory,
-			remoteFijiDirectory, command, remoteWorkingDirectory);
+			password, keyFile, keyFilePassword, workingDirectory, remoteFijiDirectory,
+			command, remoteWorkingDirectory);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -221,8 +205,6 @@ public class SshSettingsScreenController extends AnchorPane {
 			keyFileTextField.setText(oldSettings.getKeyFile().getAbsolutePath());
 			keyFilePasswordPasswordField.setText(oldSettings.getKeyFilePassword());
 			passwordPasswordField.setText(oldSettings.getPassword());
-			schedulerTypeComboBox.getSelectionModel().select(oldSettings
-				.getSchedulerType());
 			workingDirectoryTextField.setText(oldSettings.getWorkingDirectory()
 				.toAbsolutePath().toString());
 			remoteDirectoryTextField.setText(oldSettings.getRemoteDirectory());

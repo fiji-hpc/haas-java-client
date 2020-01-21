@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 
-	private static final long serialVersionUID = 7L;
+	private static final long serialVersionUID = 8L;
 
 	private String host;
 	private int port;
@@ -20,7 +20,6 @@ public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 	private String password;
 	private File keyFile;
 	private String keyFilePassword;
-	private String schedulerType;
 	private String workingDirectory;
 	private String remoteDirectory;
 	private String command;
@@ -28,9 +27,9 @@ public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 
 	public SshConnectionSettings(String host, int port,
 		AuthenticationChoice authenticationChoice, String userName, String password,
-		File keyFile, String keyFilePassword, String schedulerType,
-		String workingDirectory, String remoteDirectoryTextField,
-		String commandTextField, String remoteWorkingDirectory)
+		File keyFile, String keyFilePassword, String workingDirectory,
+		String remoteDirectoryTextField, String commandTextField,
+		String remoteWorkingDirectory)
 	{
 		this.host = host;
 		this.port = port;
@@ -39,7 +38,6 @@ public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 		this.password = password;
 		this.keyFile = keyFile;
 		this.keyFilePassword = keyFilePassword;
-		this.schedulerType = schedulerType;
 		this.workingDirectory = workingDirectory;
 		this.remoteDirectory = remoteDirectoryTextField;
 		this.command = commandTextField;

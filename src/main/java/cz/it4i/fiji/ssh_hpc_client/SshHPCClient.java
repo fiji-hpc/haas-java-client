@@ -39,8 +39,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
-	private long nextWorkflowJobId;
-
 	private ClusterJobLauncher client;
 
 	private String remoteWorkingDirectory;
@@ -48,13 +46,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
 
-		HPCSchedulerType schedulerType;
-		if (settings.getSchedulerType().equals("PBS")) {
-			schedulerType = HPCSchedulerType.PBS;
-		}
-		else {
-			schedulerType = HPCSchedulerType.SLURM;
-		}
+		// The HPC Scheduler type will be automatically detected:
+		HPCSchedulerType schedulerType = null;
 
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
