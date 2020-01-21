@@ -5,6 +5,7 @@
  * This file is subject to the terms and conditions defined in
  * file 'LICENSE', which is part of this project.
  ******************************************************************************/
+
 package cz.it4i.fiji.ssh_hpc_client;
 
 import java.io.InterruptedIOException;
@@ -14,24 +15,37 @@ import java.util.stream.Collectors;
 
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.UploadingFile;
+import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
-
 
 class HPCFileTransferAdapter implements HPCFileTransfer {
 
+	private String remoteWorkingDirectory;
+	private final ScpClient scpClient;
+	private TransferFileProgress progress;
+
+	public HPCFileTransferAdapter(String newRemoteWorkingDirectory,
+		ScpClient newScpClient, TransferFileProgress newProgress)
+	{
+		this.remoteWorkingDirectory = newRemoteWorkingDirectory;
+		this.scpClient = newScpClient;
+		this.progress = newProgress;
+	}
+
 	@Override
 	public void close() {
+		scpClient.close();
 	}
 
 	@Override
 	public void upload(UploadingFile file) throws InterruptedIOException {
+		
 	}
 
 	@Override
 	public void download(String files, Path workDirectory)
 		throws InterruptedIOException
-	{
-	}
+	{}
 
 	@Override
 	public List<Long> obtainSize(List<String> files)

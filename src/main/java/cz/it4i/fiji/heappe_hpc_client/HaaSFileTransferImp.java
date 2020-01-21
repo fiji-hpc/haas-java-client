@@ -21,19 +21,32 @@ import cz.it4i.fiji.hpc_client.UploadingFile;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 
-class HaaSFileTransferImp implements HPCFileTransfer {
+public class HaaSFileTransferImp implements HPCFileTransfer {
 
 	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp.class);
+	private static Logger log = LoggerFactory.getLogger(
+		cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp.class);
 
-	private final FileTransferMethodExt ft;
 	private final ScpClient scpClient;
 	private TransferFileProgress progress;
-	
-	public HaaSFileTransferImp(FileTransferMethodExt ft, ScpClient scpClient, TransferFileProgress progress) {
-		this.ft = ft;
+	private String remoteWorkingDirectory;
+
+	// Constructor for HEAppE use:
+	public HaaSFileTransferImp(FileTransferMethodExt ft, ScpClient scpClient,
+		TransferFileProgress progress)
+	{
+		this.remoteWorkingDirectory = ft.getSharedBasepath();
 		this.scpClient = scpClient;
 		this.progress = progress;
+	}
+	
+	// Constructor for SSH use:
+	public HaaSFileTransferImp(String newRemoteWorkingDirectory,
+		ScpClient newScpClient, TransferFileProgress newProgress)
+	{
+		this.remoteWorkingDirectory = newRemoteWorkingDirectory;
+		this.scpClient = newScpClient;
+		this.progress = newProgress;
 	}
 
 	@Override
@@ -43,7 +56,7 @@ class HaaSFileTransferImp implements HPCFileTransfer {
 
 	@Override
 	public void upload(final UploadingFile file) throws InterruptedIOException {
-		final String destFile = ft.getSharedBasepath() + "/" + file.getName();
+		final String destFile = this.remoteWorkingDirectory + "/" + file.getName();
 		try (InputStream is = file.getInputStream()) {
 			scpClient.upload(is, destFile, file.getLength(), file.getLastTime(),
 				progress);
@@ -61,7 +74,7 @@ class HaaSFileTransferImp implements HPCFileTransfer {
 		try {
 			fileName = fileName.replaceFirst("/", "");
 			final Path rFile = workDirectory.resolve(fileName);
-			final String fileToDownload = ft.getSharedBasepath() + "/" + fileName;
+			final String fileToDownload = this.remoteWorkingDirectory + "/" + fileName;
 			scpClient.download(fileToDownload, rFile, progress);
 		}
 		catch (JSchException | IOException e) {
@@ -74,16 +87,19 @@ class HaaSFileTransferImp implements HPCFileTransfer {
 	public void setProgress(TransferFileProgress progress) {
 		this.progress = progress;
 	}
-	
+
 	@Override
-	public List<Long> obtainSize(List<String> files) throws InterruptedIOException {
+	public List<Long> obtainSize(List<String> files)
+		throws InterruptedIOException
+	{
 		try {
-			return getSizes(files.stream()
-				.map(filename -> ft.getSharedBasepath() + "/" + filename).collect(
-					Collectors.toList()));
-		} catch (InterruptedIOException e) {
+			return getSizes(files.stream().map(filename -> this.remoteWorkingDirectory +
+				"/" + filename).collect(Collectors.toList()));
+		}
+		catch (InterruptedIOException e) {
 			throw e;
-		} catch (JSchException | IOException e) {
+		}
+		catch (JSchException | IOException e) {
 			throw new HaaSClientException(e);
 		}
 
@@ -97,26 +113,29 @@ class HaaSFileTransferImp implements HPCFileTransfer {
 			for (String fileName : files) {
 				fileName = replaceIfFirstFirst(fileName);
 				try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-					String fileToDownload = ft.getSharedBasepath() + "/" + fileName;
+					String fileToDownload = this.remoteWorkingDirectory + "/" + fileName;
 					scpClient.download(fileToDownload, os, progress);
 					os.flush();
 					result.add(os.toString());
 				}
 			}
-		} catch (JSchException | IOException e) {
+		}
+		catch (JSchException | IOException e) {
 			throw new HaaSClientException(e);
 		}
 		return result;
 	}
-	
+
 	private String replaceIfFirstFirst(String fileName) {
 		if (fileName.length() < 0 && fileName.charAt(0) == '/') {
 			fileName = fileName.substring(1);
 		}
 		return fileName;
 	}
-	
-	private List<Long> getSizes(List<String> asList) throws JSchException, IOException {
+
+	private List<Long> getSizes(List<String> asList) throws JSchException,
+		IOException
+	{
 		List<Long> result = new LinkedList<>();
 		for (String lfile : asList) {
 			result.add(scpClient.size(lfile));

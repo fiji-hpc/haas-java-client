@@ -11,7 +11,6 @@ package cz.it4i.fiji.ssh_hpc_client;
 import static cz.it4i.fiji.hpc_client.JobState.Configuring;
 
 import com.jcraft.jsch.JSchException;
-
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +21,7 @@ import java.util.Random;
 
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
+import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
@@ -29,6 +29,7 @@ import cz.it4i.fiji.hpc_client.JobFileContent;
 import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
+import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
@@ -39,9 +40,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
-	private ClusterJobLauncher client;
+	private ClusterJobLauncher cjlClient;
 
 	private String remoteWorkingDirectory;
+
+	private ScpClient scpClient;
 
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
@@ -51,21 +54,28 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
-				this.client = ClusterJobLauncher.createWithKeyAuthentication(settings
+				this.cjlClient = ClusterJobLauncher.createWithKeyAuthentication(settings
 					.getHost(), settings.getPort(), settings.getUserName(), settings
 						.getKeyFile().getAbsolutePath(), settings.getKeyFilePassword(),
 					schedulerType, true);
+
+				this.scpClient = new ScpClient(settings.getHost(), settings
+					.getUserName(), settings.getKeyFile().getAbsolutePath(), settings
+						.getKeyFilePassword());
 			}
 			else {
-				this.client = ClusterJobLauncher.createWithPasswordAuthentication(
+				this.cjlClient = ClusterJobLauncher.createWithPasswordAuthentication(
 					settings.getHost(), settings.getPort(), settings.getUserName(),
 					settings.getPassword(), schedulerType, true);
+
+				this.scpClient = new ScpClient(settings.getHost(), settings
+					.getUserName(), settings.getPassword());
 			}
 
 			remoteWorkingDirectory = settings.getRemoteWorkingDirectory();
 
 			// Create the remote working directory if it does not exist:
-			this.client.createRemoteDirectory(remoteWorkingDirectory);
+			this.cjlClient.createRemoteDirectory(remoteWorkingDirectory);
 		}
 		catch (JSchException exc) {
 			JavaFXRoutines.runOnFxThread(() -> SimpleDialog.showException("Exception",
@@ -80,12 +90,12 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public long createJob(SshJobSettings jobSettings) {
-		long workflowJobId = this.client.getLastJobIdFromRemoteWorkingDirectory(
+		long workflowJobId = this.cjlClient.getLastJobIdFromRemoteWorkingDirectory(
 			this.remoteWorkingDirectory) + 1;
 		JobInfoImpl jobInfoImpl = new JobInfoImpl();
 		states.put(workflowJobId, jobInfoImpl);
 		// Create job directory on remote working directory as well:
-		this.client.createRemoteDirectory(this.remoteWorkingDirectory + "/" +
+		this.cjlClient.createRemoteDirectory(this.remoteWorkingDirectory + "/" +
 			workflowJobId);
 		log.info("Create remote job directory: " + this.remoteWorkingDirectory +
 			"/" + workflowJobId);
@@ -113,7 +123,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public void deleteJob(long id) {
 		JobInfoImpl jobInfoImpl = states.get(id);
 		jobInfoImpl.delete();
-		this.client.removeRemoteDirectory(this.remoteWorkingDirectory + "/" + id);
+		this.cjlClient.removeRemoteDirectory(this.remoteWorkingDirectory + "/" +
+			id);
 		log.info("Remove remote job directory: " + this.remoteWorkingDirectory +
 			"/" + id);
 	}
@@ -122,7 +133,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public HPCFileTransfer startFileTransfer(long jobId,
 		TransferFileProgress notifier)
 	{
-		return new HPCFileTransferAdapter();
+		return new HaaSFileTransferImp(remoteWorkingDirectory+"/"+jobId, this.scpClient,
+			notifier);
 	}
 
 	@Override
