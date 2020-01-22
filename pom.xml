@@ -112,7 +112,7 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>org.scijava</groupId>
+			<groupId>cz.it4i.fiji</groupId>
 			<artifactId>cluster-job-launcher</artifactId>
 			<version>0.0.3-SNAPSHOT</version>
 		</dependency>
