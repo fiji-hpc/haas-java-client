@@ -38,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SshHPCClient implements HPCClient<SshJobSettings> {
 
+	// Maps job id with the JobInfoImpl:
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
 	private ClusterJobLauncher cjlClient;
@@ -45,6 +46,12 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private String remoteWorkingDirectory;
 
 	private ScpClient scpClient;
+
+	private String command;
+
+	private String remoteFijiDirectory;
+
+	private static final String SCRIPT_FILE = "parallelMacroWrappedScript.ijm";
 
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
@@ -73,6 +80,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			}
 
 			remoteWorkingDirectory = settings.getRemoteWorkingDirectory();
+
+			remoteFijiDirectory = settings.getRemoteDirectory();
+
+			command = settings.getCommand();
 
 			// Create the remote working directory if it does not exist:
 			this.cjlClient.createRemoteDirectory(remoteWorkingDirectory);
@@ -106,6 +117,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public void submitJob(long jobId) {
 		JobInfoImpl jobInfoImpl = states.get(jobId);
 		jobInfoImpl.start();
+		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/" +
+			SCRIPT_FILE;
+
+		String parameters = " --headless --console -macro ";
+
+		// ToDo: use user specified number as given during creation of the job.
+		long numberOfNodes = 2;
+		long numberOfCoresPerNode = 24;
+
+		this.cjlClient.submit(this.remoteFijiDirectory, this.command, parameters +
+			" " + jobRemotePath, numberOfNodes, numberOfCoresPerNode);
 	}
 
 	@Override
@@ -133,8 +155,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public HPCFileTransfer startFileTransfer(long jobId,
 		TransferFileProgress notifier)
 	{
-		return new HaaSFileTransferImp(remoteWorkingDirectory+"/"+jobId, this.scpClient,
-			notifier);
+		return new HaaSFileTransferImp(remoteWorkingDirectory + "/" + jobId,
+			this.scpClient, notifier);
 	}
 
 	@Override
