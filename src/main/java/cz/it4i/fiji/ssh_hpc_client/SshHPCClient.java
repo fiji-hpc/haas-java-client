@@ -11,6 +11,8 @@ package cz.it4i.fiji.ssh_hpc_client;
 import static cz.it4i.fiji.hpc_client.JobState.Configuring;
 
 import com.jcraft.jsch.JSchException;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -126,8 +128,14 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		long numberOfNodes = 2;
 		long numberOfCoresPerNode = 24;
 
-		this.cjlClient.submit(this.remoteFijiDirectory, this.command, parameters +
-			" " + jobRemotePath, numberOfNodes, numberOfCoresPerNode);
+		List<String> modules = new ArrayList<>();
+		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
+		modules.add("list");
+		// modules.add("OpenMPI");
+
+		this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
+			parameters + " " + jobRemotePath, numberOfNodes, numberOfCoresPerNode,
+			modules);
 	}
 
 	@Override
