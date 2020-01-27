@@ -112,9 +112,14 @@ public class HaaSClient implements HPCClient<JobSettings> {
 	}
 
 	@Override
-	public long createJob(final JobSettings jobSettings)
-	{
-		return doCreateJob(jobSettings);
+	public long createJob(final JobSettings jobSettings) {
+		final Collection<TaskSpecificationExt> taskSpec = Arrays.asList(
+			createTaskSpecification(jobSettings));
+		final JobSpecificationExt jobSpecification = createJobSpecification(
+			jobSettings, taskSpec);
+		final SubmittedJobInfoExt job = getJobManagement().createJob(
+			jobSpecification, getSessionID());
+		return job.getId();
 	}
 
 	@Override
@@ -126,7 +131,7 @@ public class HaaSClient implements HPCClient<JobSettings> {
 
 	@Override
 	public void submitJob(final long jobId) {
-		doSubmitJob(jobId);
+		getJobManagement().submitJob(jobId, getSessionID());
 	}
 
 	@Override
@@ -183,7 +188,8 @@ public class HaaSClient implements HPCClient<JobSettings> {
 	{
 		final ArrayOfTaskFileOffsetExt fileOffsetExt =
 			new ArrayOfTaskFileOffsetExt();
-		fileOffsetExt.getTaskFileOffsetExt().addAll(constructTaskFileOffsetExts(files));
+		fileOffsetExt.getTaskFileOffsetExt().addAll(constructTaskFileOffsetExts(
+			files));
 		return getFileTransfer().downloadPartsOfJobFilesFromCluster(jobId,
 			fileOffsetExt, getSessionID()).getJobFileContentExt().stream().map(
 				JobFileContentToExt::new).collect(Collectors.toList());
@@ -221,17 +227,17 @@ public class HaaSClient implements HPCClient<JobSettings> {
 				nodeIP, getSessionID());
 			tunnel.open(localPort, remotePort);
 			return new TunnelToNode() {
-	
+
 				@Override
 				public void close() throws IOException {
 					tunnel.close();
 				}
-	
+
 				@Override
 				public int getLocalPort() {
 					return tunnel.getLocalPort();
 				}
-	
+
 				@Override
 				public String getLocalHost() {
 					return tunnel.getLocalHost();
@@ -255,20 +261,19 @@ public class HaaSClient implements HPCClient<JobSettings> {
 	{
 		final FileTransferPool pool = filetransferPoolMap.computeIfAbsent(jobId,
 			this::createFileTransferPool);
-		
+
 		return new HaasFileTransferReconnectingAfterAuthFail(
 			getHaasFileTransferFactory(pool, progress), pool::reconnect);
 	}
 
-	private FileTransferPool createFileTransferPool(final long jobId)
-	{
+	private FileTransferPool createFileTransferPool(final long jobId) {
 		return new CountingFileTransferPool(new DelayingFileTransferPool(
 			new PFileTransferPool(jobId)));
 	}
 
 	private java.util.function.Supplier<HPCFileTransfer>
-		getHaasFileTransferFactory(
-		FileTransferPool pool, TransferFileProgress progress)
+		getHaasFileTransferFactory(FileTransferPool pool,
+			TransferFileProgress progress)
 	{
 		return () -> {
 
@@ -349,21 +354,6 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		};
 	}
 
-	private void doSubmitJob(final long jobId) {
-		getJobManagement().submitJob(jobId, getSessionID());
-	}
-
-	private long doCreateJob(final JobSettings jobSettings)
-	{
-		final Collection<TaskSpecificationExt> taskSpec = Arrays.asList(
-			createTaskSpecification(jobSettings));
-		final JobSpecificationExt jobSpecification = createJobSpecification(
-			jobSettings, taskSpec);
-		final SubmittedJobInfoExt job = getJobManagement().createJob(
-			jobSpecification, getSessionID());
-		return job.getId();
-	}
-
 	private ScpClient getScpClient(final FileTransferMethodExt fileTransfer)
 		throws JSchException
 	{
@@ -432,9 +422,9 @@ public class HaaSClient implements HPCClient<JobSettings> {
 
 	private String authenticate() {
 		try {
-		return getUserAndLimitationManagement().authenticateUserPassword(
-			createPasswordCredentialsExt(settings.getUserName(), settings
-				.getPassword()));
+			return getUserAndLimitationManagement().authenticateUserPassword(
+				createPasswordCredentialsExt(settings.getUserName(), settings
+					.getPassword()));
 		}
 		catch (WebServiceException e) {
 			if (e.getMessage().contains(
@@ -599,8 +589,7 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		}
 
 		@Override
-		public synchronized void release() 
-		{
+		public synchronized void release() {
 			try {
 				destroyer.accept(holded);
 			}
@@ -621,8 +610,8 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		return result;
 	}
 
-	private static Collection<? extends TaskFileOffsetExt> constructTaskFileOffsetExts(
-			List<SynchronizableFile> files)
+	private static Collection<? extends TaskFileOffsetExt>
+		constructTaskFileOffsetExts(List<SynchronizableFile> files)
 	{
 		return files.stream().map(HaaSClient::constructTaskFileOffsetExt).collect(
 			Collectors.toList());
@@ -635,8 +624,7 @@ public class HaaSClient implements HPCClient<JobSettings> {
 
 	private static Calendar toGregorian(final XMLGregorianCalendar time) {
 		return Optional.ofNullable(time).map(
-			XMLGregorianCalendar::toGregorianCalendar).orElse(
-			null);
+			XMLGregorianCalendar::toGregorianCalendar).orElse(null);
 	}
 
 	private static CommandTemplateParameterValueExt

@@ -131,7 +131,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		List<String> modules = new ArrayList<>();
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
 		modules.add("list");
-		// modules.add("OpenMPI");
 
 		this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
 			parameters + " " + jobRemotePath, numberOfNodes, numberOfCoresPerNode,
