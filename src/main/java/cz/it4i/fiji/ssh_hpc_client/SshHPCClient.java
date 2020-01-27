@@ -119,8 +119,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public void submitJob(long jobId) {
 		JobInfoImpl jobInfoImpl = states.get(jobId);
 		jobInfoImpl.start();
-		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/" +
-			SCRIPT_FILE;
+		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/";
+		String jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
 
 		String parameters = " --headless --console -macro ";
 
@@ -133,8 +133,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		modules.add("list");
 
 		this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
-			parameters + " " + jobRemotePath, numberOfNodes, numberOfCoresPerNode,
-			modules);
+			parameters + " " + jobRemotePathWithScript, numberOfNodes,
+			numberOfCoresPerNode, modules, jobRemotePath);
 	}
 
 	@Override
