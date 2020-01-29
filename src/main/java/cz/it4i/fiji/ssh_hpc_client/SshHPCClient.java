@@ -8,8 +8,6 @@
 
 package cz.it4i.fiji.ssh_hpc_client;
 
-import static cz.it4i.fiji.hpc_client.JobState.Configuring;
-
 import com.jcraft.jsch.JSchException;
 
 import java.util.ArrayList;
@@ -23,6 +21,7 @@ import java.util.Random;
 
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
+import cz.it4i.cluster_job_launcher.JobManager;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
@@ -105,7 +104,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public long createJob(SshJobSettings jobSettings) {
 		long workflowJobId = this.cjlClient.getLastJobIdFromRemoteWorkingDirectory(
 			this.remoteWorkingDirectory) + 1;
-		JobInfoImpl jobInfoImpl = new JobInfoImpl();
+		JobInfoImpl jobInfoImpl = new JobInfoImpl(workflowJobId);
 		states.put(workflowJobId, jobInfoImpl);
 		// Create job directory on remote working directory as well:
 		this.cjlClient.createRemoteDirectory(this.remoteWorkingDirectory + "/" +
@@ -117,8 +116,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void submitJob(long jobId) {
-		JobInfoImpl jobInfoImpl = states.get(jobId);
-		jobInfoImpl.start();
 		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/";
 		String jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
 
@@ -132,14 +129,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
 		modules.add("list");
 
-		this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
-			parameters + " " + jobRemotePathWithScript, numberOfNodes,
+		String realJobId = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
+			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath);
+		this.cjlClient.storeTextInRemoteFile(jobRemotePath, realJobId, "JobId.txt");
+		JobInfoImpl jobInfoImpl = states.get(jobId);
+		jobInfoImpl.start();
 	}
 
 	@Override
 	public JobInfo obtainJobInfo(long jobId) {
-		return states.computeIfAbsent(jobId, x -> new JobInfoImpl());
+		return states.computeIfAbsent(jobId, x -> new JobInfoImpl(jobId));
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		return null;
 	}
 
-	private static final class JobInfoImpl implements JobInfo {
+	private final class JobInfoImpl implements JobInfo {
 
 		private JobState state;
 
@@ -194,10 +194,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		private Calendar endTime;
 
-		private final Calendar creationTime;
+		private long workflowJobId;
 
-		JobInfoImpl() {
-			creationTime = Calendar.getInstance();
+		JobInfoImpl(long newJobId) {
+			this.workflowJobId = newJobId;
 		}
 
 		@Override
@@ -212,7 +212,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				return state;
 			}
 			if (startTime == null) {
-				return Configuring;
+				return JobState.Configuring;
 			}
 			Calendar now = Calendar.getInstance();
 			if (now.before(endTime)) {
@@ -223,17 +223,45 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public Calendar getStartTime() {
-			return startTime;
+			try {
+				JobManager jobManager = getJobManager(remoteWorkingDirectory,
+					workflowJobId);
+				startTime = jobManager.getStartTime();
+				return startTime;
+			}
+			catch (Exception exc) {
+				// ToDo: remove this try catch when the job state is properly reported
+				// and use that instead.
+				return null;
+			}
 		}
 
 		@Override
 		public Calendar getEndTime() {
-			return endTime;
+			try {
+				JobManager jobManager = getJobManager(remoteWorkingDirectory,
+					workflowJobId);
+				return jobManager.getEndTime();
+			}
+			catch (Exception exc) {
+				// ToDo: remove this try catch when the job state is properly reported
+				// and use that instead.
+				return null;
+			}
 		}
 
 		@Override
 		public Calendar getCreationTime() {
-			return creationTime;
+			try {
+				JobManager jobManager = getJobManager(remoteWorkingDirectory,
+					workflowJobId);
+				return jobManager.getCreationTime();
+			}
+			catch (Exception exc) {
+				// ToDo: remove this try catch when the job state is properly reported
+				// and use that instead.
+				return null;
+			}
 		}
 
 		@Override
@@ -243,7 +271,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		}
 
 		void start() {
-			startTime = Calendar.getInstance();
 			endTime = Calendar.getInstance();
 			endTime.add(Calendar.MILLISECOND, (new Random().nextInt(20) + 30) * 1000);
 
@@ -256,6 +283,12 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		void delete() {
 			state = JobState.Disposed;
 		}
+	}
 
+	private JobManager getJobManager(String newRemoteWorkingDirectory,
+		long newWorkflowJobId)
+	{
+		return this.cjlClient.getJobManager(newRemoteWorkingDirectory,
+			newWorkflowJobId);
 	}
 }
