@@ -17,11 +17,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
+import cz.it4i.cluster_job_launcher.ClusterJobLauncher.Job;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.JobManager;
+import cz.it4i.cluster_job_launcher.JobManagerJobState;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
@@ -129,12 +130,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
 		modules.add("list");
 
-		String realJobId = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
+		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath);
-		this.cjlClient.storeTextInRemoteFile(jobRemotePath, realJobId, "JobId.txt");
-		JobInfoImpl jobInfoImpl = states.get(jobId);
-		jobInfoImpl.start();
+		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(), "JobId.txt");
 	}
 
 	@Override
@@ -144,18 +143,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void cancelJob(Long jobId) {
-		JobInfoImpl jobInfoImpl = states.get(jobId);
-		jobInfoImpl.cancel();
+		// ToDo: add jobManager implementation to cancel jobs.
+		JobManager jobManager = getJobManager(this.remoteWorkingDirectory, jobId);
+		jobManager.cancel();		
 	}
 
 	@Override
-	public void deleteJob(long id) {
-		JobInfoImpl jobInfoImpl = states.get(id);
-		jobInfoImpl.delete();
+	public void deleteJob(long jobId) {
 		this.cjlClient.removeRemoteDirectory(this.remoteWorkingDirectory + "/" +
-			id);
+			jobId);
 		log.info("Remove remote job directory: " + this.remoteWorkingDirectory +
-			"/" + id);
+			"/" + jobId);
 	}
 
 	@Override
@@ -188,12 +186,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private final class JobInfoImpl implements JobInfo {
 
-		private JobState state;
-
-		private Calendar startTime;
-
-		private Calendar endTime;
-
 		private long workflowJobId;
 
 		JobInfoImpl(long newJobId) {
@@ -208,17 +200,24 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public JobState getState() {
-			if (state != null) {
-				return state;
-			}
-			if (startTime == null) {
-				return JobState.Configuring;
-			}
-			Calendar now = Calendar.getInstance();
-			if (now.before(endTime)) {
-				return JobState.Running;
-			}
-			return JobState.Finished;
+			JobManager jobManager = getJobManager(remoteWorkingDirectory,
+				workflowJobId);
+			return convertJobState(jobManager.getState());
+//			return JobState.Configuring;
+		}
+
+		private JobState convertJobState(JobManagerJobState jobManagerState) {
+			Map<JobManagerJobState, JobState> jobStates = new HashMap<>();
+			jobStates.put(JobManagerJobState.UNKNOWN, JobState.Unknown);
+			jobStates.put(JobManagerJobState.CONFIGURING, JobState.Configuring);
+			jobStates.put(JobManagerJobState.SUBMITTED, JobState.Submitted);
+			jobStates.put(JobManagerJobState.QUEUED, JobState.Queued);
+			jobStates.put(JobManagerJobState.RUNNING, JobState.Running);
+			jobStates.put(JobManagerJobState.FINISHED, JobState.Finished);
+			jobStates.put(JobManagerJobState.FAILED, JobState.Failed);
+			jobStates.put(JobManagerJobState.CANCELED, JobState.Canceled);
+			jobStates.put(JobManagerJobState.DISPOSED, JobState.Disposed);
+			return jobStates.get(jobManagerState);
 		}
 
 		@Override
@@ -226,8 +225,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			try {
 				JobManager jobManager = getJobManager(remoteWorkingDirectory,
 					workflowJobId);
-				startTime = jobManager.getStartTime();
-				return startTime;
+				return jobManager.getStartTime();
 			}
 			catch (Exception exc) {
 				// ToDo: remove this try catch when the job state is properly reported
@@ -268,20 +266,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		public List<String> getNodesIPs() {
 			return getState() == JobState.Running ? Collections.singletonList(
 				"127.0.0.1") : Collections.emptyList();
-		}
-
-		void start() {
-			endTime = Calendar.getInstance();
-			endTime.add(Calendar.MILLISECOND, (new Random().nextInt(20) + 30) * 1000);
-
-		}
-
-		void cancel() {
-			state = JobState.Canceled;
-		}
-
-		void delete() {
-			state = JobState.Disposed;
 		}
 	}
 
