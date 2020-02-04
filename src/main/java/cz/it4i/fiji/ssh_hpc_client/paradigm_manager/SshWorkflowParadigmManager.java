@@ -7,13 +7,11 @@
  ******************************************************************************/
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager;
 
-import org.scijava.plugin.Plugin;
-
 import cz.it4i.fiji.hpc_workflow.paradigm_manager.WorkflowParadigmManager;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.fiji.ssh_hpc_client.SshHPCClient;
 
-@Plugin(type = WorkflowParadigmManager.class)
+//@Plugin(type = WorkflowParadigmManager.class)
 public class SshWorkflowParadigmManager extends
 	WorkflowParadigmManager<SshConnectionSettings, SshClientJobSettings>
 {
