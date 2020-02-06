@@ -133,7 +133,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath);
-		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(), "JobId.txt");
+		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
+			"JobId.txt");
 	}
 
 	@Override
@@ -143,9 +144,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void cancelJob(Long jobId) {
-		// ToDo: add jobManager implementation to cancel jobs.
 		JobManager jobManager = getJobManager(this.remoteWorkingDirectory, jobId);
-		jobManager.cancel();		
+		jobManager.cancel();
 	}
 
 	@Override
@@ -187,9 +187,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private final class JobInfoImpl implements JobInfo {
 
 		private long workflowJobId;
+		private JobManager jobManager;
 
 		JobInfoImpl(long newJobId) {
 			this.workflowJobId = newJobId;
+			this.jobManager = getJobManager(remoteWorkingDirectory, workflowJobId);
 		}
 
 		@Override
@@ -200,10 +202,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public JobState getState() {
-			JobManager jobManager = getJobManager(remoteWorkingDirectory,
-				workflowJobId);
 			return convertJobState(jobManager.getState());
-//			return JobState.Configuring;
 		}
 
 		private JobState convertJobState(JobManagerJobState jobManagerState) {
@@ -223,8 +222,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		@Override
 		public Calendar getStartTime() {
 			try {
-				JobManager jobManager = getJobManager(remoteWorkingDirectory,
-					workflowJobId);
 				return jobManager.getStartTime();
 			}
 			catch (Exception exc) {
@@ -237,8 +234,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		@Override
 		public Calendar getEndTime() {
 			try {
-				JobManager jobManager = getJobManager(remoteWorkingDirectory,
-					workflowJobId);
 				return jobManager.getEndTime();
 			}
 			catch (Exception exc) {
@@ -251,8 +246,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		@Override
 		public Calendar getCreationTime() {
 			try {
-				JobManager jobManager = getJobManager(remoteWorkingDirectory,
-					workflowJobId);
 				return jobManager.getCreationTime();
 			}
 			catch (Exception exc) {
