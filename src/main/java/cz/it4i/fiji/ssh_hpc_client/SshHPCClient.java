@@ -10,6 +10,7 @@ package cz.it4i.fiji.ssh_hpc_client;
 
 import com.jcraft.jsch.JSchException;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -35,6 +36,7 @@ import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
+import javafx.print.JobSettings;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -108,10 +110,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		JobInfoImpl jobInfoImpl = new JobInfoImpl(workflowJobId);
 		states.put(workflowJobId, jobInfoImpl);
 		// Create job directory on remote working directory as well:
-		this.cjlClient.createRemoteDirectory(this.remoteWorkingDirectory + "/" +
-			workflowJobId);
 		log.info("Create remote job directory: " + this.remoteWorkingDirectory +
 			"/" + workflowJobId);
+		String jobRemotePath = this.remoteWorkingDirectory + "/" + workflowJobId +
+			"/";
+		this.cjlClient.createRemoteDirectory(jobRemotePath);
+		// Create workflow job info, this is were the number of nodes and cores per
+		// node are stored:
+		this.cjlClient.storeTextInRemoteFile(jobRemotePath, jobSettings
+			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode(),
+			"WorkflowJobInfo.txt");
+
 		return workflowJobId;
 	}
 
@@ -122,9 +131,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		String parameters = " --headless --console -macro ";
 
-		// ToDo: use user specified number as given during creation of the job.
-		long numberOfNodes = 2;
-		long numberOfCoresPerNode = 24;
+		// Get the info of the workflow job from the remote cluster:
+		List<String> remoteWorkflowJobInfo = this.cjlClient.readTextFromRemoteFile(
+			jobRemotePath, "WorkflowJobInfo.txt");
+		long numberOfNodes = Long.parseLong(remoteWorkflowJobInfo.get(0));
+		long numberOfCoresPerNode = Long.parseLong(remoteWorkflowJobInfo.get(1));
 
 		List<String> modules = new ArrayList<>();
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
