@@ -10,7 +10,6 @@ package cz.it4i.fiji.ssh_hpc_client;
 
 import com.jcraft.jsch.JSchException;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -119,7 +118,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// node are stored:
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, jobSettings
 			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode(),
-			"WorkflowJobInfo.txt");
+			JobManager.WORKFLOW_JOB_INFO);
 
 		return workflowJobId;
 	}
@@ -133,7 +132,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		// Get the info of the workflow job from the remote cluster:
 		List<String> remoteWorkflowJobInfo = this.cjlClient.readTextFromRemoteFile(
-			jobRemotePath, "WorkflowJobInfo.txt");
+			jobRemotePath, JobManager.WORKFLOW_JOB_INFO);
 		long numberOfNodes = Long.parseLong(remoteWorkflowJobInfo.get(0));
 		long numberOfCoresPerNode = Long.parseLong(remoteWorkflowJobInfo.get(1));
 
@@ -145,7 +144,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath);
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
-			"JobId.txt");
+			JobManager.JOB_ID_FILE);
 	}
 
 	@Override
@@ -184,7 +183,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public Collection<String> getChangedFiles(long jobId) {
-		return Collections.emptyList();
+		return ((JobInfoImpl) obtainJobInfo(jobId)).getChangedFiles();
 	}
 
 	@Override
@@ -270,6 +269,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		public List<String> getNodesIPs() {
 			return getState() == JobState.Running ? Collections.singletonList(
 				"127.0.0.1") : Collections.emptyList();
+		}
+
+		public Collection<String> getChangedFiles() {
+			return jobManager.getChangedFiles();
 		}
 	}
 
