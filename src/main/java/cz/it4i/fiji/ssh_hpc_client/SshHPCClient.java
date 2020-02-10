@@ -231,38 +231,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public Calendar getStartTime() {
-			try {
 				return jobManager.getStartTime();
-			}
-			catch (Exception exc) {
-				// ToDo: remove this try catch when the job state is properly reported
-				// and use that instead.
-				return null;
-			}
 		}
 
 		@Override
 		public Calendar getEndTime() {
-			try {
-				return jobManager.getEndTime();
-			}
-			catch (Exception exc) {
-				// ToDo: remove this try catch when the job state is properly reported
-				// and use that instead.
-				return null;
-			}
+			return jobManager.getEndTime();
 		}
 
 		@Override
 		public Calendar getCreationTime() {
-			try {
-				return jobManager.getCreationTime();
-			}
-			catch (Exception exc) {
-				// ToDo: remove this try catch when the job state is properly reported
-				// and use that instead.
-				return null;
-			}
+			return jobManager.getCreationTime();
 		}
 
 		@Override
