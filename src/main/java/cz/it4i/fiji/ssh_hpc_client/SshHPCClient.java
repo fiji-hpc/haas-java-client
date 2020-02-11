@@ -35,13 +35,12 @@ import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
-import javafx.print.JobSettings;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SshHPCClient implements HPCClient<SshJobSettings> {
 
-	// Maps job id with the JobInfoImpl:
+	// Maps workflow job id with the JobInfoImpl:
 	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
 	private ClusterJobLauncher cjlClient;
@@ -143,6 +142,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath);
+
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
 			JobManager.JOB_ID_FILE);
 	}
@@ -231,7 +231,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public Calendar getStartTime() {
-				return jobManager.getStartTime();
+			return jobManager.getStartTime();
 		}
 
 		@Override
@@ -246,13 +246,17 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public List<String> getNodesIPs() {
-			return getState() == JobState.Running ? Collections.singletonList(
-				"127.0.0.1") : Collections.emptyList();
+			return getState() == JobState.Running ? getNodes(jobManager
+				.getSchedulerJobId()) : Collections.emptyList();
 		}
 
 		public Collection<String> getChangedFiles() {
 			return jobManager.getChangedFiles();
 		}
+	}
+
+	private List<String> getNodes(String jobId) {
+		return this.cjlClient.getSubmittedJob(jobId).getNodes();
 	}
 
 	private JobManager getJobManager(String newRemoteWorkingDirectory,
