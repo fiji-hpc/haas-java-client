@@ -28,9 +28,11 @@ import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobFileContent;
+import cz.it4i.fiji.hpc_client.JobFileContentSsh;
 import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
+import cz.it4i.fiji.hpc_client.SynchronizableFileType;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
@@ -178,7 +180,21 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
-		return null;
+		// ToDo: implement this for the redirection of standard output and error
+		// output to work.
+
+		JobFileContent errorResult = new JobFileContentSsh(
+			"This is a dummy error message.\n", "/", jobId, 0,
+			SynchronizableFileType.StandardErrorFile);
+
+		JobFileContent outputResult = new JobFileContentSsh(
+			"This is a dummy output message.\n", "/", jobId, 0,
+			SynchronizableFileType.StandardOutputFile);
+
+		List<JobFileContent> results = new ArrayList<>();
+		results.add(errorResult);
+		results.add(outputResult);
+		return results;
 	}
 
 	@Override
@@ -206,8 +222,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		@Override
 		public Collection<Long> getTasks() {
-			return getState() == JobState.Running ? Collections.singleton(1l)
-				: Collections.emptyList();
+			return Collections.singleton(this.workflowJobId);
 		}
 
 		@Override
