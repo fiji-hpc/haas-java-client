@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,9 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SshHPCClient implements HPCClient<SshJobSettings> {
-
-	// Maps workflow job id with the JobInfoImpl:
-	private Map<Long, JobInfoImpl> states = new HashMap<>();
 
 	private ClusterJobLauncher cjlClient;
 
@@ -107,8 +104,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public long createJob(SshJobSettings jobSettings) {
 		long workflowJobId = this.cjlClient.getLastJobIdFromRemoteWorkingDirectory(
 			this.remoteWorkingDirectory) + 1;
-		JobInfoImpl jobInfoImpl = new JobInfoImpl(workflowJobId);
-		states.put(workflowJobId, jobInfoImpl);
 		// Create job directory on remote working directory as well:
 		log.info("Create remote job directory: " + this.remoteWorkingDirectory +
 			"/" + workflowJobId);
@@ -151,7 +146,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public JobInfo obtainJobInfo(long jobId) {
-		return states.computeIfAbsent(jobId, x -> new JobInfoImpl(jobId));
+		return new JobInfoImpl(jobId);
 	}
 
 	@Override
@@ -231,7 +226,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		}
 
 		private JobState convertJobState(JobManagerJobState jobManagerState) {
-			Map<JobManagerJobState, JobState> jobStates = new HashMap<>();
+			Map<JobManagerJobState, JobState> jobStates = new EnumMap<>(
+				JobManagerJobState.class);
 			jobStates.put(JobManagerJobState.UNKNOWN, JobState.Unknown);
 			jobStates.put(JobManagerJobState.CONFIGURING, JobState.Configuring);
 			jobStates.put(JobManagerJobState.SUBMITTED, JobState.Submitted);
