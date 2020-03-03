@@ -8,6 +8,7 @@
 
 package cz.it4i.fiji.ssh_hpc_client;
 
+import com.google.common.eventbus.Subscribe;
 import com.jcraft.jsch.JSchException;
 
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
+import org.scijava.plugin.Parameter;
 
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher.Job;
@@ -35,6 +38,11 @@ import cz.it4i.fiji.hpc_client.SynchronizableFile;
 import cz.it4i.fiji.hpc_client.SynchronizableFileType;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
+import cz.it4i.parallel.runners.logging.ui.EventMessage;
+import cz.it4i.parallel.runners.logging.ui.FeedbackMessage;
+import cz.it4i.parallel.runners.logging.ui.RedirectedOutputService;
+import cz.it4i.parallel.runners.logging.ui.RedirectingOutputService;
+import cz.it4i.parallel.runners.logging.ui.RedirectingOutputService.OutputType;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import lombok.extern.slf4j.Slf4j;
@@ -171,6 +179,15 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.scpClient, notifier);
 	}
 
+	@Parameter
+	private RedirectingOutputService redirectingOutputService;
+
+	private RedirectedOutputService redirectedOutput = null;
+
+	private String outputText = "";
+
+	private String errorText = "";
+
 	@Override
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
@@ -178,18 +195,43 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// ToDo: implement this for the redirection of standard output and error
 		// output to work.
 
-		JobFileContent errorResult = new JobFileContentSsh(
-			"This is a dummy error message.\n", "/", jobId, 0,
-			SynchronizableFileType.StandardErrorFile);
+		if (redirectedOutput == null) {
+			// Get the redirecting output service of the job:
+			JobManager jobManager = this.cjlClient.getJobManager(
+				remoteWorkingDirectory, jobId);
+			String schedulerJobId = jobManager.getSchedulerJobId();
+			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
+			redirectedOutput = (RedirectedOutputService) job
+				.getOutputRedirectionService();
+			redirectedOutput.register(this);
+			redirectedOutput.post(new FeedbackMessage(true));
+		}
 
-		JobFileContent outputResult = new JobFileContentSsh(
-			"This is a dummy output message.\n", "/", jobId, 0,
-			SynchronizableFileType.StandardOutputFile);
+		int outputOffset = (int) files.get(0).getOffset();
+		String outputTextNew = this.outputText.substring(outputOffset);
+		JobFileContent outputResult = new JobFileContentSsh(outputTextNew, "/",
+			jobId, outputOffset, SynchronizableFileType.StandardOutputFile);
+
+		int errorOffset = (int) files.get(1).getOffset();
+		String errorTextNew = this.errorText.substring(errorOffset);
+		JobFileContent errorResult = new JobFileContentSsh(errorTextNew, "/", jobId,
+			errorOffset, SynchronizableFileType.StandardErrorFile);
 
 		List<JobFileContent> results = new ArrayList<>();
-		results.add(errorResult);
 		results.add(outputResult);
+		results.add(errorResult);
+
 		return results;
+	}
+
+	@Subscribe
+	public void handleEvent(final EventMessage eventMessage) {
+		if (eventMessage.getMsgcode() == OutputType.OUTPUT) {
+			this.outputText += eventMessage.getMsg();
+		}
+		else {
+			this.errorText += eventMessage.getMsg();
+		}
 	}
 
 	@Override
