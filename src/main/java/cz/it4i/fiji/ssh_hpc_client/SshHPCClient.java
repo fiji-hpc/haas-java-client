@@ -185,53 +185,73 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private RedirectedOutputService redirectedOutput = null;
 
-	private Map<String, String> outputText = new HashMap<>();
-	private Map<String, String> errorText = new HashMap<>();
-	private Map<String, Job> outputRedirectingJobs = new HashMap<>();
-	private Map<Long, String> jobIdToSchedulerJobIdMap = new HashMap<>();
+	private Map<String, String> outputTextBySchedulerJobId = new HashMap<>();
+	private Map<String, String> errorTextBySchedulerJobId = new HashMap<>();
+	private Map<String, Job> jobBySchedulerJobId = new HashMap<>();
+	private Map<Long, String> jobIdToSchedulerJobId = new HashMap<>();
 
 	@Override
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
-		if (!this.jobIdToSchedulerJobIdMap.containsKey(jobId)) {
+		List<JobFileContent> results = new ArrayList<>();
+
+		if (!this.jobIdToSchedulerJobId.containsKey(jobId)) {
 			// Get the redirecting output service of the job:
 			JobManager jobManager = this.cjlClient.getJobManager(
 				remoteWorkingDirectory, jobId);
 			String schedulerJobId = jobManager.getSchedulerJobId();
 			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
-			this.outputRedirectingJobs.put(schedulerJobId, job);
-			this.jobIdToSchedulerJobIdMap.put(jobId, schedulerJobId);
+			this.jobBySchedulerJobId.put(schedulerJobId, job);
+			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
 			// Create the initial empty error and output strings:
-			this.outputText.put(schedulerJobId, "");
-			this.errorText.put(schedulerJobId, "");
+			this.outputTextBySchedulerJobId.put(schedulerJobId, "");
+			this.errorTextBySchedulerJobId.put(schedulerJobId, "");
 		}
 
 		if (redirectedOutput == null) {
-			String schedulerJobId = this.jobIdToSchedulerJobIdMap.get(jobId);
-			redirectedOutput = (RedirectedOutputService) this.outputRedirectingJobs
-				.get(schedulerJobId).getOutputRedirectionService();
+			String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
+			redirectedOutput = (RedirectedOutputService) this.jobBySchedulerJobId.get(
+				schedulerJobId).getOutputRedirectionService();
 			redirectedOutput.register(this);
 			redirectedOutput.post(new FeedbackMessage(true));
 		}
 
-		int outputOffset = (int) files.get(0).getOffset();
-		String schedulerJobId = this.jobIdToSchedulerJobIdMap.get(jobId);
-		String outputTextNew = this.outputText.get(schedulerJobId).substring(
-			outputOffset);
+		// Find the order in which the file types should be placed in the list:
+		int outputFileIndex;
+		int errorFileIndex;
+		if (files.get(0).getType() == SynchronizableFileType.StandardOutputFile) {
+			outputFileIndex = 0;
+			errorFileIndex = 1;
+		}
+		else {
+			outputFileIndex = 1;
+			errorFileIndex = 0;
+		}
+
+		int outputOffset = (int) files.get(outputFileIndex).getOffset();
+		String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
+		String outputTextNew = this.outputTextBySchedulerJobId.get(schedulerJobId)
+			.substring(outputOffset);
 		JobFileContent outputResult = new JobFileContentSsh(outputTextNew, "/",
 			jobId, outputOffset, SynchronizableFileType.StandardOutputFile);
 
-		int errorOffset = (int) files.get(1).getOffset();
-		String errorTextNew = this.errorText.get(schedulerJobId).substring(
-			errorOffset);
+		int errorOffset = (int) files.get(errorFileIndex).getOffset();
+		String errorTextNew = this.errorTextBySchedulerJobId.get(schedulerJobId)
+			.substring(errorOffset);
 		JobFileContent errorResult = new JobFileContentSsh(errorTextNew, "/", jobId,
 			errorOffset, SynchronizableFileType.StandardErrorFile);
 
-		List<JobFileContent> results = new ArrayList<>();
-		results.add(outputResult);
-		results.add(errorResult);
+		// Place the files in the correct order:
+		for (int i = 0; i <= 1; i++) {
+			if (i == outputFileIndex) {
+				results.add(outputResult);
+			}
+			else {
+				results.add(errorResult);
+			}
+		}
 
 		return results;
 	}
@@ -239,14 +259,16 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	@Subscribe
 	public void handleEvent(final EventMessage eventMessage) {
 		if (eventMessage.getMsgcode() == OutputType.OUTPUT) {
-			String oldOutput = this.outputText.get(eventMessage.getJobId());
+			String oldOutput = this.outputTextBySchedulerJobId.get(eventMessage
+				.getJobId());
 			String newOutput = oldOutput + eventMessage.getMsg();
-			this.outputText.put(eventMessage.getJobId(), newOutput);
+			this.outputTextBySchedulerJobId.put(eventMessage.getJobId(), newOutput);
 		}
 		else {
-			String oldError = this.errorText.get(eventMessage.getJobId());
+			String oldError = this.errorTextBySchedulerJobId.get(eventMessage
+				.getJobId());
 			String newError = oldError + eventMessage.getMsg();
-			this.errorText.put(eventMessage.getJobId(), newError);
+			this.errorTextBySchedulerJobId.put(eventMessage.getJobId(), newError);
 		}
 	}
 
