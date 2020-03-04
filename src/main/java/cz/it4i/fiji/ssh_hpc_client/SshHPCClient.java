@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -184,36 +185,47 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private RedirectedOutputService redirectedOutput = null;
 
-	private String outputText = "";
-
-	private String errorText = "";
+	private Map<String, String> outputText = new HashMap<>();
+	private Map<String, String> errorText = new HashMap<>();
+	private Map<String, Job> outputRedirectingJobs = new HashMap<>();
+	private Map<Long, String> jobIdToSchedulerJobIdMap = new HashMap<>();
 
 	@Override
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
-		// ToDo: implement this for the redirection of standard output and error
-		// output to work.
-
-		if (redirectedOutput == null) {
+		if (!this.jobIdToSchedulerJobIdMap.containsKey(jobId)) {
 			// Get the redirecting output service of the job:
 			JobManager jobManager = this.cjlClient.getJobManager(
 				remoteWorkingDirectory, jobId);
 			String schedulerJobId = jobManager.getSchedulerJobId();
 			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
-			redirectedOutput = (RedirectedOutputService) job
-				.getOutputRedirectionService();
+			this.outputRedirectingJobs.put(schedulerJobId, job);
+			this.jobIdToSchedulerJobIdMap.put(jobId, schedulerJobId);
+
+			// Create the initial empty error and output strings:
+			this.outputText.put(schedulerJobId, "");
+			this.errorText.put(schedulerJobId, "");
+		}
+
+		if (redirectedOutput == null) {
+			String schedulerJobId = this.jobIdToSchedulerJobIdMap.get(jobId);
+			redirectedOutput = (RedirectedOutputService) this.outputRedirectingJobs
+				.get(schedulerJobId).getOutputRedirectionService();
 			redirectedOutput.register(this);
 			redirectedOutput.post(new FeedbackMessage(true));
 		}
 
 		int outputOffset = (int) files.get(0).getOffset();
-		String outputTextNew = this.outputText.substring(outputOffset);
+		String schedulerJobId = this.jobIdToSchedulerJobIdMap.get(jobId);
+		String outputTextNew = this.outputText.get(schedulerJobId).substring(
+			outputOffset);
 		JobFileContent outputResult = new JobFileContentSsh(outputTextNew, "/",
 			jobId, outputOffset, SynchronizableFileType.StandardOutputFile);
 
 		int errorOffset = (int) files.get(1).getOffset();
-		String errorTextNew = this.errorText.substring(errorOffset);
+		String errorTextNew = this.errorText.get(schedulerJobId).substring(
+			errorOffset);
 		JobFileContent errorResult = new JobFileContentSsh(errorTextNew, "/", jobId,
 			errorOffset, SynchronizableFileType.StandardErrorFile);
 
@@ -227,10 +239,14 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	@Subscribe
 	public void handleEvent(final EventMessage eventMessage) {
 		if (eventMessage.getMsgcode() == OutputType.OUTPUT) {
-			this.outputText += eventMessage.getMsg();
+			String oldOutput = this.outputText.get(eventMessage.getJobId());
+			String newOutput = oldOutput + eventMessage.getMsg();
+			this.outputText.put(eventMessage.getJobId(), newOutput);
 		}
 		else {
-			this.errorText += eventMessage.getMsg();
+			String oldError = this.errorText.get(eventMessage.getJobId());
+			String newError = oldError + eventMessage.getMsg();
+			this.errorText.put(eventMessage.getJobId(), newError);
 		}
 	}
 
