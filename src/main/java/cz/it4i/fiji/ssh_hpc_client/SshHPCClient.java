@@ -205,9 +205,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.jobBySchedulerJobId.put(schedulerJobId, job);
 			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
-			// Create the initial empty error and output strings:
-			this.outputTextBySchedulerJobId.put(schedulerJobId, "");
-			this.errorTextBySchedulerJobId.put(schedulerJobId, "");
+			// If the same job dashboard is open more than once it should not make the
+			// output and error blank.
+			// Create the initial empty error and output strings if they do not exist:
+			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 		}
 
 		if (redirectedOutput == null) {
