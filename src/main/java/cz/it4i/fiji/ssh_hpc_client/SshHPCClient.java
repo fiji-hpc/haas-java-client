@@ -187,7 +187,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private Map<String, String> outputTextBySchedulerJobId = new HashMap<>();
 	private Map<String, String> errorTextBySchedulerJobId = new HashMap<>();
-	private Map<String, Job> jobBySchedulerJobId = new HashMap<>();
 	private Map<Long, String> jobIdToSchedulerJobId = new HashMap<>();
 
 	@Override
@@ -201,23 +200,22 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			JobManager jobManager = this.cjlClient.getJobManager(
 				remoteWorkingDirectory, jobId);
 			String schedulerJobId = jobManager.getSchedulerJobId();
-			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
-			this.jobBySchedulerJobId.put(schedulerJobId, job);
 			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
+
+			// Register for the messages on the bus:			
+			if (redirectedOutput == null) {
+				Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
+				redirectedOutput = (RedirectedOutputService) job
+					.getOutputRedirectionService();
+				redirectedOutput.register(this);
+				redirectedOutput.post(new FeedbackMessage(true));
+			}
 
 			// If the same job dashboard is open more than once it should not make the
 			// output and error blank.
 			// Create the initial empty error and output strings if they do not exist:
 			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
-		}
-
-		if (redirectedOutput == null) {
-			String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
-			redirectedOutput = (RedirectedOutputService) this.jobBySchedulerJobId.get(
-				schedulerJobId).getOutputRedirectionService();
-			redirectedOutput.register(this);
-			redirectedOutput.post(new FeedbackMessage(true));
 		}
 
 		// Find the order in which the file types should be placed in the list:
