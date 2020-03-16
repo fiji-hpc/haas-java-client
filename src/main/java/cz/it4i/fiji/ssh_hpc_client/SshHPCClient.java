@@ -11,6 +11,7 @@ package cz.it4i.fiji.ssh_hpc_client;
 import com.google.common.eventbus.Subscribe;
 import com.jcraft.jsch.JSchException;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -19,6 +20,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.scijava.plugin.Parameter;
 
@@ -189,10 +192,40 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private Map<String, String> errorTextBySchedulerJobId = new HashMap<>();
 	private Map<Long, String> jobIdToSchedulerJobId = new HashMap<>();
 
+	private Map<Long, Long> timeLastPolledByJobId = new HashMap<>();
+	private static final long TIMEOUT = 10000L;
+	private Map<Long, Timer> timersByJobId = new HashMap<>();
+
+	private void createPeriodicTaskToCheckIfOutputRedirectionMustStop(
+		long jobId)
+	{
+		TimerTask task = new TimerTask() {
+
+			@Override
+			public void run() {
+				System.out.println("Hello from the task: " + jobId);
+				long now = Instant.now().toEpochMilli();
+				if (now - timeLastPolledByJobId.get(jobId) > TIMEOUT) {
+					// Stop the bus.
+					System.out.println("Stop the bus. " + jobId);
+					redirectedOutput.post(new FeedbackMessage(false, jobIdToSchedulerJobId
+						.get(jobId)));
+					timersByJobId.get(jobId).cancel();
+					timersByJobId.remove(jobId);
+				}
+			}
+		};
+		timersByJobId.putIfAbsent(jobId, new Timer("Timer"));
+
+		long period = 1000L;
+		timersByJobId.get(jobId).scheduleAtFixedRate(task, 0, period);
+	}
+
 	@Override
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
+		this.timeLastPolledByJobId.put(jobId, Instant.now().toEpochMilli());
 		List<JobFileContent> results = new ArrayList<>();
 
 		if (!this.jobIdToSchedulerJobId.containsKey(jobId)) {
@@ -202,20 +235,23 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			String schedulerJobId = jobManager.getSchedulerJobId();
 			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
-			// Register for the messages on the bus:			
+			// Register for the messages on the bus:
+			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
 			if (redirectedOutput == null) {
-				Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
 				redirectedOutput = (RedirectedOutputService) job
 					.getOutputRedirectionService();
 				redirectedOutput.register(this);
-				redirectedOutput.post(new FeedbackMessage(true));
 			}
+			redirectedOutput.post(new FeedbackMessage(true, schedulerJobId));
 
 			// If the same job dashboard is open more than once it should not make the
 			// output and error blank.
 			// Create the initial empty error and output strings if they do not exist:
 			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+
+			// Create a task to check if there is timeout:
+			createPeriodicTaskToCheckIfOutputRedirectionMustStop(jobId);
 		}
 
 		// Find the order in which the file types should be placed in the list:
