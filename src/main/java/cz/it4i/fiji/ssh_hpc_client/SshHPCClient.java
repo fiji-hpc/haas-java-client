@@ -192,6 +192,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private Map<String, String> errorTextBySchedulerJobId = new HashMap<>();
 	private Map<Long, String> jobIdToSchedulerJobId = new HashMap<>();
 
+	private Map<Long, Job> jobsByJobId = new HashMap<>();
+
 	private Map<Long, Long> timeLastPolledByJobId = new HashMap<>();
 	private static final long TIMEOUT = 10000L;
 	private Map<Long, Timer> timersByJobId = new HashMap<>();
@@ -212,6 +214,15 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 						.get(jobId)));
 					timersByJobId.get(jobId).cancel();
 					timersByJobId.remove(jobId);
+
+					// Remove standard and error output for this job:
+					String schedulerJobId = jobIdToSchedulerJobId.get(jobId);
+					outputTextBySchedulerJobId.remove(schedulerJobId);
+					errorTextBySchedulerJobId.remove(schedulerJobId);
+					// Remove job from lists:
+					jobIdToSchedulerJobId.remove(jobId);
+					timeLastPolledByJobId.remove(jobId);
+
 				}
 			}
 		};
@@ -236,7 +247,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
 			// Register for the messages on the bus:
-			Job job = this.cjlClient.getSubmittedJob(schedulerJobId);
+			if (!jobsByJobId.containsKey(jobId)) {
+				jobsByJobId.put(jobId, this.cjlClient.getSubmittedJob(schedulerJobId));
+			}
+			Job job = jobsByJobId.get(jobId);
 			if (redirectedOutput == null) {
 				redirectedOutput = (RedirectedOutputService) job
 					.getOutputRedirectionService();
@@ -268,14 +282,21 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		int outputOffset = (int) files.get(outputFileIndex).getOffset();
 		String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
-		String outputTextNew = this.outputTextBySchedulerJobId.get(schedulerJobId)
-			.substring(outputOffset);
+		String outputTextNew = "";
+
+		String totalOutput = this.outputTextBySchedulerJobId.get(schedulerJobId);
+		if (!totalOutput.isEmpty()) {
+			outputTextNew = totalOutput.substring(outputOffset);
+		}
 		JobFileContent outputResult = new JobFileContentSsh(outputTextNew, "/",
 			jobId, outputOffset, SynchronizableFileType.StandardOutputFile);
 
 		int errorOffset = (int) files.get(errorFileIndex).getOffset();
-		String errorTextNew = this.errorTextBySchedulerJobId.get(schedulerJobId)
-			.substring(errorOffset);
+		String errorTextNew = "";
+		String totalError = this.errorTextBySchedulerJobId.get(schedulerJobId);
+		if (!totalError.isEmpty()) {
+			errorTextNew = totalError.substring(errorOffset);
+		}
 		JobFileContent errorResult = new JobFileContentSsh(errorTextNew, "/", jobId,
 			errorOffset, SynchronizableFileType.StandardErrorFile);
 
