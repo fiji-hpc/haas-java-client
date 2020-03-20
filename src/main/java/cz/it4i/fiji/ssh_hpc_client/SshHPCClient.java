@@ -26,9 +26,10 @@ import java.util.TimerTask;
 import org.scijava.plugin.Parameter;
 
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
-import cz.it4i.cluster_job_launcher.ClusterJobLauncher.Job;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
+import cz.it4i.cluster_job_launcher.Job;
 import cz.it4i.cluster_job_launcher.JobManager;
+import cz.it4i.cluster_job_launcher.JobManagerBase;
 import cz.it4i.cluster_job_launcher.JobManagerJobState;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
@@ -69,7 +70,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
 
-		// The HPC Scheduler type will be automatically detected:
+		// The HPC Scheduler type will be automatically detected (if set to null):
 		HPCSchedulerType schedulerType = null;
 
 		try {
@@ -126,7 +127,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// node are stored:
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, jobSettings
 			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode(),
-			JobManager.WORKFLOW_JOB_INFO);
+			JobManagerBase.WORKFLOW_JOB_INFO);
 
 		return workflowJobId;
 	}
@@ -140,7 +141,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		// Get the info of the workflow job from the remote cluster:
 		List<String> remoteWorkflowJobInfo = this.cjlClient.readTextFromRemoteFile(
-			jobRemotePath, JobManager.WORKFLOW_JOB_INFO);
+			jobRemotePath, JobManagerBase.WORKFLOW_JOB_INFO);
 		long numberOfNodes = Long.parseLong(remoteWorkflowJobInfo.get(0));
 		long numberOfCoresPerNode = Long.parseLong(remoteWorkflowJobInfo.get(1));
 
@@ -153,7 +154,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			numberOfCoresPerNode, modules, jobRemotePath);
 
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
-			JobManager.JOB_ID_FILE);
+			JobManagerBase.JOB_ID_FILE);
 	}
 
 	@Override
