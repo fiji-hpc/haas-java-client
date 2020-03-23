@@ -206,11 +206,9 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 			@Override
 			public void run() {
-				System.out.println("Hello from the task: " + jobId);
 				long now = Instant.now().toEpochMilli();
 				if (now - timeLastPolledByJobId.get(jobId) > TIMEOUT) {
 					// Stop the bus.
-					System.out.println("Stop the bus. " + jobId);
 					redirectedOutput.post(new FeedbackMessage(false, jobIdToSchedulerJobId
 						.get(jobId)));
 					timersByJobId.get(jobId).cancel();
