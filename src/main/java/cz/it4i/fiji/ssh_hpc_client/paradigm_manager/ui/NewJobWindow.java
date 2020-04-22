@@ -56,7 +56,8 @@ public class NewJobWindow implements
 		// ToDo: complete this:
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
 			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
-			.numberOfNodes(newJobController.getNumberOfNodes()).build();
+			.numberOfNodes(newJobController.getNumberOfNodes()).queueOrPartition(
+				newJobController.getQueueOrPartition()).build();
 
 		return new PJobWitdDirectorySettingsAdapter(sshJobSetttings) {
 

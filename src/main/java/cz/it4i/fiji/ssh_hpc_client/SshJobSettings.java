@@ -13,4 +13,6 @@ public interface SshJobSettings {
 	int getNumberOfNodes();
 
 	int getNumberOfCoresPerNode();
+	
+	String getQueueOrPartition();
 }

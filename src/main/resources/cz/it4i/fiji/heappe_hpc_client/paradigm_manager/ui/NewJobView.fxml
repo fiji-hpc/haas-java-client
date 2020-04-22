@@ -111,6 +111,19 @@
                               <Spinner fx:id="numberOfCoresPerNodeSpinner" disable="true" />
                            </children>
                         </HBox>
+                        <HBox>
+                           <children>
+                              <Label prefWidth="220.0" text="PBS queue or SLURM partition:">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <padding>
+                                    <Insets right="20.0" />
+                                 </padding>
+                              </Label>
+                              <TextField fx:id="queueOrPartitionTextField" />
+                           </children>
+                        </HBox>
                      </children>
                   </VBox>
 					</content>

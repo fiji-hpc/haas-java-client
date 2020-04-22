@@ -75,6 +75,9 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private Spinner<Integer> numberOfCoresPerNodeSpinner;
+	
+	@FXML 
+	private TextField queueOrPartitionTextField;
 
 	private DataLocation inputDataLocation;
 
@@ -113,6 +116,9 @@ public class NewJobController extends BorderPane {
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				24);
 		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
+		
+		// Set the default value (the express queue):
+		queueOrPartitionTextField.setText("qexp");
 	}
 
 	public void close() {
@@ -139,6 +145,10 @@ public class NewJobController extends BorderPane {
 	
 	public int getNumberOfCoresPerNode() {
 		return numberOfCoresPerNodeSpinner.getValue();
+	}
+	
+	public String getQueueOrPartition() {
+		return queueOrPartitionTextField.getText();
 	}
 
 	public WorkflowType getWorkflowType() {

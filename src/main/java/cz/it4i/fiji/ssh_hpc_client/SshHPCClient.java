@@ -126,7 +126,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// Create workflow job info, this is were the number of nodes and cores per
 		// node are stored:
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, jobSettings
-			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode(),
+			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode() +
+			"\n" + jobSettings.getQueueOrPartition(),
 			JobManagerBase.WORKFLOW_JOB_INFO);
 
 		return workflowJobId;
@@ -144,6 +145,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			jobRemotePath, JobManagerBase.WORKFLOW_JOB_INFO);
 		long numberOfNodes = Long.parseLong(remoteWorkflowJobInfo.get(0));
 		long numberOfCoresPerNode = Long.parseLong(remoteWorkflowJobInfo.get(1));
+		String slurmPartitionOrPbsQueueType = remoteWorkflowJobInfo.get(2);
 
 		List<String> modules = new ArrayList<>();
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
@@ -151,7 +153,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
-			numberOfCoresPerNode, modules, jobRemotePath);
+			numberOfCoresPerNode, modules, jobRemotePath,
+			slurmPartitionOrPbsQueueType);
 
 		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
 			JobManagerBase.JOB_ID_FILE);
