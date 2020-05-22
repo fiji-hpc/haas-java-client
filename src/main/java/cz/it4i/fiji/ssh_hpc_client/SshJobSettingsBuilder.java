@@ -1,6 +1,8 @@
 
 package cz.it4i.fiji.ssh_hpc_client;
 
+import cz.it4i.cluster_job_launcher.SshJobSettings;
+
 public class SshJobSettingsBuilder {
 
 	private static final int DEFAULT_NUMBER_OF_NODES = 1;

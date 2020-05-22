@@ -9,8 +9,8 @@ package cz.it4i.fiji.ssh_hpc_client.paradigm_manager;
 
 import java.io.Serializable;
 
+import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.hpc_workflow.core.JobWithWorkflowTypeSettings;
-import cz.it4i.fiji.ssh_hpc_client.SshJobSettings;
 
 public interface SshClientJobSettings extends SshJobSettings,
 	JobWithWorkflowTypeSettings, Serializable

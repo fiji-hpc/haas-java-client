@@ -29,8 +29,9 @@ import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.Job;
 import cz.it4i.cluster_job_launcher.JobManager;
-import cz.it4i.cluster_job_launcher.JobManagerBase;
 import cz.it4i.cluster_job_launcher.JobManagerJobState;
+import cz.it4i.cluster_job_launcher.JobRemoteInfo;
+import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
@@ -125,10 +126,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		this.cjlClient.createRemoteDirectory(jobRemotePath);
 		// Create workflow job info, this is were the number of nodes and cores per
 		// node are stored:
-		this.cjlClient.storeTextInRemoteFile(jobRemotePath, jobSettings
-			.getNumberOfNodes() + "\n" + jobSettings.getNumberOfCoresPerNode() +
-			"\n" + jobSettings.getQueueOrPartition(),
-			JobManagerBase.WORKFLOW_JOB_INFO);
+		this.cjlClient.setJobRemoteInfo(jobRemotePath, jobSettings);
 
 		return workflowJobId;
 	}
@@ -141,23 +139,18 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		String parameters = " --headless --console -macro ";
 
 		// Get the info of the workflow job from the remote cluster:
-		List<String> remoteWorkflowJobInfo = this.cjlClient.readTextFromRemoteFile(
-			jobRemotePath, JobManagerBase.WORKFLOW_JOB_INFO);
-		long numberOfNodes = Long.parseLong(remoteWorkflowJobInfo.get(0));
-		long numberOfCoresPerNode = Long.parseLong(remoteWorkflowJobInfo.get(1));
-		String slurmPartitionOrPbsQueueType = remoteWorkflowJobInfo.get(2);
+		JobRemoteInfo jobRemoteInfo = cjlClient.getJobRemoteInfo(jobRemotePath);
 
 		List<String> modules = new ArrayList<>();
 		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
 		modules.add("list");
 
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
-			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
-			numberOfCoresPerNode, modules, jobRemotePath,
-			slurmPartitionOrPbsQueueType);
+			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo
+				.getNumberOfNodes(), jobRemoteInfo.getNumberOfCoresPerNode(), modules,
+			jobRemotePath, jobRemoteInfo.getSlurmPartitionOrPbsQueueType());
 
-		this.cjlClient.storeTextInRemoteFile(jobRemotePath, job.getID(),
-			JobManagerBase.JOB_ID_FILE);
+		this.cjlClient.setJobIdInfo(jobRemotePath, job.getID());
 	}
 
 	@Override
@@ -246,11 +239,28 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			JobManager jobManager = this.cjlClient.getJobManager(
 				remoteWorkingDirectory, jobId);
 			String schedulerJobId = jobManager.getSchedulerJobId();
+
+			// If there is no scheduler id the job has never been started before and
+			// there is no output to redirect yet.
+			if (schedulerJobId.equals("none")) {
+				System.out.println(
+					"The job has never run before and it has no output.");
+				// Return the empty list.
+				return results;
+			}
+
 			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
+			// If the same job dashboard is open more than once it should not make the
+			// output and error blank.
+			// Create the initial empty output and error strings if they do not exist:
+			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+			
 			// Register for the messages on the bus:
 			if (!jobsByJobId.containsKey(jobId)) {
 				jobsByJobId.put(jobId, this.cjlClient.getSubmittedJob(schedulerJobId));
+				jobsByJobId.get(jobId).startPublishing();
 			}
 			Job job = jobsByJobId.get(jobId);
 			if (redirectedOutput == null) {
@@ -259,12 +269,6 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				redirectedOutput.register(this);
 			}
 			redirectedOutput.post(new FeedbackMessage(true, schedulerJobId));
-
-			// If the same job dashboard is open more than once it should not make the
-			// output and error blank.
-			// Create the initial empty error and output strings if they do not exist:
-			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
-			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 
 			// Create a task to check if there is timeout:
 			createPeriodicTaskToCheckIfOutputRedirectionMustStop(jobId);
