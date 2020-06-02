@@ -256,9 +256,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			// Create the initial empty output and error strings if they do not exist:
 			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
-			
+
 			// Register for the messages on the bus:
 			if (!jobsByJobId.containsKey(jobId)) {
+				cjlClient.startOutputRedirectionServiceIfNotStarted();
 				jobsByJobId.put(jobId, this.cjlClient.getSubmittedJob(schedulerJobId));
 				jobsByJobId.get(jobId).startPublishing();
 			}
