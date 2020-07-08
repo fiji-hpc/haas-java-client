@@ -75,7 +75,10 @@ public class SshSettingsScreenController extends AnchorPane {
 	@Setter
 	private SshConnectionSettings settings;
 
-	private static final Integer SPINER_INITIAL_VALUE = 1;
+	private static final Integer PORT_DEFAULT_VALUE = 1;
+
+	private static final int PORT_LOWER_BOUND = 1;
+	private static final int PORT_UPPER_BOUND = 65535;
 
 	public SshSettingsScreenController() {
 		JavaFXRoutines.initRootAndController("SshSettingsScreen.fxml", this);
@@ -87,9 +90,34 @@ public class SshSettingsScreenController extends AnchorPane {
 		authenticationChoiceKeyRadioButton.setSelected(true);
 
 		// Spinners:
+		portSpinner.getEditor().textProperty().addListener((
+			ObservableValue<? extends String> observable, String oldValue,
+			String newValue) -> {
+				// Value should be numeric only:
+				if (!newValue.matches("\\d*"))
+				{
+				portSpinner.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
+			}
+				// Value should be within the boundaries.
+				try
+				{
+				int temp = Integer.parseInt(newValue);
+				if (temp < PORT_LOWER_BOUND) {
+					portSpinner.getEditor().setText("" + PORT_LOWER_BOUND);
+				}
+				else if (temp > PORT_UPPER_BOUND) {
+					portSpinner.getEditor().setText("" + PORT_UPPER_BOUND);
+				}
+			}
+			catch (Exception e) {
+				// Value should be an integer.
+				portSpinner.getEditor().setText(oldValue);
+			}
+			});
+
 		SpinnerValueFactory<Integer> portValueFactory =
-			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 65535,
-				SPINER_INITIAL_VALUE);
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(PORT_LOWER_BOUND,
+				PORT_UPPER_BOUND, PORT_DEFAULT_VALUE);
 		portSpinner.setValueFactory(portValueFactory);
 
 		// Disable fields that are not relevant to authentication method selection:
@@ -183,7 +211,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	public void setInitialFormValues(SshConnectionSettings oldSettings) {
 		if (oldSettings == null) {
 			hostTextField.setText("localhost");
-			portSpinner.getValueFactory().setValue(22);
+			portSpinner.getValueFactory().setValue(PORT_DEFAULT_VALUE);
 		}
 		else {
 			hostTextField.setText(oldSettings.getHost());
