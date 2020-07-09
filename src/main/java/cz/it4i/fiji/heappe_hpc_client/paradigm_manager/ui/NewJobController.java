@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
 import cz.it4i.fiji.hpc_workflow.core.WorkflowType;
+import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.fxml.FXML;
@@ -75,8 +76,8 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private Spinner<Integer> numberOfCoresPerNodeSpinner;
-	
-	@FXML 
+
+	@FXML
 	private TextField queueOrPartitionTextField;
 
 	private DataLocation inputDataLocation;
@@ -106,17 +107,21 @@ public class NewJobController extends BorderPane {
 		initSelectButton(outputDirectoryTextField, selectOutputButton);
 
 		// Number of nodes spinner value factory:
+		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfNodesSpinner, 1,
+			Integer.MAX_VALUE);
 		SpinnerValueFactory<Integer> nodesValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				1);
 		numberOfNodesSpinner.setValueFactory(nodesValueFactory);
 
 		// Number of cores per node spinner value factory:
+		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfCoresPerNodeSpinner,
+			1, Integer.MAX_VALUE);
 		SpinnerValueFactory<Integer> coresValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				24);
 		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
-		
+
 		// Set the default value (the express queue):
 		queueOrPartitionTextField.setText("qexp");
 	}
@@ -142,11 +147,11 @@ public class NewJobController extends BorderPane {
 	public int getNumberOfNodes() {
 		return numberOfNodesSpinner.getValue();
 	}
-	
+
 	public int getNumberOfCoresPerNode() {
 		return numberOfCoresPerNodeSpinner.getValue();
 	}
-	
+
 	public String getQueueOrPartition() {
 		return queueOrPartitionTextField.getText();
 	}

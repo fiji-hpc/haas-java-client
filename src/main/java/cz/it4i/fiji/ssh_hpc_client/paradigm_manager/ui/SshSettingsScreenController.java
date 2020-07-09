@@ -90,31 +90,8 @@ public class SshSettingsScreenController extends AnchorPane {
 		authenticationChoiceKeyRadioButton.setSelected(true);
 
 		// Spinners:
-		portSpinner.getEditor().textProperty().addListener((
-			ObservableValue<? extends String> observable, String oldValue,
-			String newValue) -> {
-				// Value should be numeric only:
-				if (!newValue.matches("\\d*"))
-				{
-				portSpinner.getEditor().setText(newValue.replaceAll("[^\\d]", ""));
-			}
-				// Value should be within the boundaries.
-				try
-				{
-				int temp = Integer.parseInt(newValue);
-				if (temp < PORT_LOWER_BOUND) {
-					portSpinner.getEditor().setText("" + PORT_LOWER_BOUND);
-				}
-				else if (temp > PORT_UPPER_BOUND) {
-					portSpinner.getEditor().setText("" + PORT_UPPER_BOUND);
-				}
-			}
-			catch (Exception e) {
-				// Value should be an integer.
-				portSpinner.getEditor().setText(oldValue);
-			}
-			});
-
+		SimpleControls.spinnerIgnoreNoneNumericInput(portSpinner, PORT_LOWER_BOUND,
+			PORT_UPPER_BOUND);
 		SpinnerValueFactory<Integer> portValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(PORT_LOWER_BOUND,
 				PORT_UPPER_BOUND, PORT_DEFAULT_VALUE);
