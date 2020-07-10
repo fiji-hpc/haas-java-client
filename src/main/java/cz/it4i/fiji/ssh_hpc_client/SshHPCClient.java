@@ -143,8 +143,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		JobRemoteInfo jobRemoteInfo = cjlClient.getJobRemoteInfo(jobRemotePath);
 
 		List<String> modules = new ArrayList<>();
-		modules.add("OpenMPI/4.0.0-GCC-6.3.0-2.27");
-		modules.add("openmpi/4.0.0");
+		modules.add("openmpi/4");
 
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo
