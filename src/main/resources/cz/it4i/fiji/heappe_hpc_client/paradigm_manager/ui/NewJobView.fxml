@@ -54,7 +54,7 @@
 												<Tooltip text="Demonstration data located on the Salomon IT4I cluster will be used and there will be created config.yaml in the job working directory." />
 											</tooltip>
 										</RadioButton>
-										<RadioButton maxHeight="1.7976931348623157E308" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
+										<RadioButton fx:id="jobSubdirectoryRadioButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
 											<graphic>
 												<Label maxHeight="1.7976931348623157E308" text="Job subdirectory" />
 											</graphic>

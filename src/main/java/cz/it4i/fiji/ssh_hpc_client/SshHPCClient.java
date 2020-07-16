@@ -242,7 +242,14 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 			// If there is no scheduler id the job has never been started before and
 			// there is no output to redirect yet.
-			if (schedulerJobId.equals("none")) {
+			// or
+			// Make sure that the job is running or has finished so that there is
+			// output to redirect.
+			JobManagerJobState jobState = jobManager.getState();
+			if (schedulerJobId.equals("none") ||
+				(jobState != JobManagerJobState.RUNNING &&
+					jobState != JobManagerJobState.FINISHED))
+			{
 				log.debug("The job has never run before and it has no output.");
 				// Return the empty list.
 				return results;

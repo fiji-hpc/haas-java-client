@@ -57,6 +57,9 @@ public class NewJobController extends BorderPane {
 	private RadioButton ownOutputRadioButton;
 
 	@FXML
+	private RadioButton jobSubdirectoryRadioButton;
+
+	@FXML
 	private RadioButton workflowSpimRadioButton;
 
 	@FXML
@@ -101,10 +104,11 @@ public class NewJobController extends BorderPane {
 			n) -> selected(n, ownInputRadioButton));
 		outputDataLocationToggleGroup.selectedToggleProperty().addListener((v, o,
 			n) -> selected(n, ownOutputRadioButton));
+
 		workflowSpimRadioButton.selectedProperty().addListener((v, o,
 			n) -> selectedSpimWorkflow(n));
 		initSelectButton(inputDirectoryTextField, selectInputButton);
-		initSelectButton(outputDirectoryTextField, selectOutputButton);
+		initSelectDirectoryButton(outputDirectoryTextField, selectOutputButton);
 
 		// Number of nodes spinner value factory:
 		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfNodesSpinner, 1,
@@ -115,8 +119,8 @@ public class NewJobController extends BorderPane {
 		numberOfNodesSpinner.setValueFactory(nodesValueFactory);
 
 		// Number of cores per node spinner value factory:
-		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfCoresPerNodeSpinner,
-			1, Integer.MAX_VALUE);
+		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfCoresPerNodeSpinner, 1,
+			Integer.MAX_VALUE);
 		SpinnerValueFactory<Integer> coresValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				24);
@@ -179,6 +183,13 @@ public class NewJobController extends BorderPane {
 			else {
 				setTextFieldForFile(textField, parent);
 			}
+		});
+	}
+
+	private void initSelectDirectoryButton(TextField textField, Button button) {
+		button.setOnAction(x -> {
+			Window parent = ownerWindow.getScene().getWindow();
+			setTextFieldForDirectory(textField, parent);
 		});
 	}
 
@@ -345,9 +356,11 @@ public class NewJobController extends BorderPane {
 			numberOfNodesSpinner.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(true);
 			demoInputDataRadioButton.setDisable(false);
+			jobSubdirectoryRadioButton.setDisable(false);
 		}
 		else {
 			numberOfNodesSpinner.setDisable(false);
+			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
 			if (demoInputDataRadioButton.isSelected()) {
