@@ -195,6 +195,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private static final long TIMEOUT = 10000L;
 	private Map<Long, Timer> timersByJobId = new HashMap<>();
 
+	private Object lock = new Object();
+
 	private void createPeriodicTaskToCheckIfOutputRedirectionMustStop(
 		long jobId)
 	{
@@ -202,22 +204,25 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 			@Override
 			public void run() {
-				long now = Instant.now().toEpochMilli();
-				if (now - timeLastPolledByJobId.get(jobId) > TIMEOUT) {
-					// Stop the bus.
-					redirectedOutput.post(new FeedbackMessage(false, jobIdToSchedulerJobId
-						.get(jobId)));
-					timersByJobId.get(jobId).cancel();
-					timersByJobId.remove(jobId);
+				synchronized (lock) {
+					long now = Instant.now().toEpochMilli();
+					if (now - timeLastPolledByJobId.get(jobId) > TIMEOUT) {
+						log.debug("Job {} redirected output has timed-out.", jobId);
+						// Stop the bus.
+						redirectedOutput.post(new FeedbackMessage(false,
+							jobIdToSchedulerJobId.get(jobId)));
+						timersByJobId.get(jobId).cancel();
+						timersByJobId.remove(jobId);
 
-					// Remove standard and error output for this job:
-					String schedulerJobId = jobIdToSchedulerJobId.get(jobId);
-					outputTextBySchedulerJobId.remove(schedulerJobId);
-					errorTextBySchedulerJobId.remove(schedulerJobId);
-					// Remove job from lists:
-					jobIdToSchedulerJobId.remove(jobId);
-					timeLastPolledByJobId.remove(jobId);
+						// Remove standard and error output for this job:
+						String schedulerJobId = jobIdToSchedulerJobId.get(jobId);
+						outputTextBySchedulerJobId.remove(schedulerJobId);
+						errorTextBySchedulerJobId.remove(schedulerJobId);
+						// Remove job from lists:
+						jobIdToSchedulerJobId.remove(jobId);
+						timeLastPolledByJobId.remove(jobId);
 
+					}
 				}
 			}
 		};
@@ -231,99 +236,99 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public List<JobFileContent> downloadPartsOfJobFiles(Long jobId,
 		List<SynchronizableFile> files)
 	{
-		this.timeLastPolledByJobId.put(jobId, Instant.now().toEpochMilli());
-		List<JobFileContent> results = new ArrayList<>();
+		synchronized (lock) {
+			this.timeLastPolledByJobId.put(jobId, Instant.now().toEpochMilli());
+			List<JobFileContent> results = new ArrayList<>();
 
-		if (!this.jobIdToSchedulerJobId.containsKey(jobId)) {
-			// Get the redirecting output service of the job:
-			JobManager jobManager = this.cjlClient.getJobManager(
-				remoteWorkingDirectory, jobId);
-			String schedulerJobId = jobManager.getSchedulerJobId();
+			if (!this.jobIdToSchedulerJobId.containsKey(jobId)) {
+				// Get the redirecting output service of the job:
+				JobManager jobManager = this.cjlClient.getJobManager(
+					remoteWorkingDirectory, jobId);
+				String schedulerJobId = jobManager.getSchedulerJobId();
 
-			// If there is no scheduler id the job has never been started before and
-			// there is no output to redirect yet.
-			// or
-			// Make sure that the job is running or has finished so that there is
-			// output to redirect.
-			JobManagerJobState jobState = jobManager.getState();
-			if (schedulerJobId.equals("none") ||
-				(jobState != JobManagerJobState.RUNNING &&
-					jobState != JobManagerJobState.FINISHED))
-			{
-				log.debug("The job has never run before and it has no output.");
-				// Return the empty list.
-				return results;
+				// If there is no scheduler id the job has never been started before and
+				// there is no output to redirect yet.
+				if (schedulerJobId.equals("none"))
+				{
+					log.debug("The job has never run before and it has no output.");
+					// Return the empty list.
+					return results;
+				}
+
+				this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
+
+				// If the same job dashboard is open more than once it should not make
+				// the
+				// output and error blank.
+				// Create the initial empty output and error strings if they do not
+				// exist:
+				this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+				this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
+
+				// Register for the messages on the bus:
+				if (!jobsByJobId.containsKey(jobId)) {
+					cjlClient.startOutputRedirectionServiceIfNotStarted();
+					jobsByJobId.put(jobId, this.cjlClient.getSubmittedJob(
+						schedulerJobId));
+					jobsByJobId.get(jobId).startPublishing();
+				}
+				Job job = jobsByJobId.get(jobId);
+				if (redirectedOutput == null) {
+					redirectedOutput = (RedirectedOutputService) job
+						.getOutputRedirectionService();
+					redirectedOutput.register(this);
+				}
+				redirectedOutput.post(new FeedbackMessage(true, schedulerJobId));
+
+				// Create a task to check if there is timeout:
+				createPeriodicTaskToCheckIfOutputRedirectionMustStop(jobId);
 			}
 
-			this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
-
-			// If the same job dashboard is open more than once it should not make the
-			// output and error blank.
-			// Create the initial empty output and error strings if they do not exist:
-			this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
-			this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
-
-			// Register for the messages on the bus:
-			if (!jobsByJobId.containsKey(jobId)) {
-				cjlClient.startOutputRedirectionServiceIfNotStarted();
-				jobsByJobId.put(jobId, this.cjlClient.getSubmittedJob(schedulerJobId));
-				jobsByJobId.get(jobId).startPublishing();
+			// Find the order in which the file types should be placed in the list:
+			int outputFileIndex = 1;
+			int errorFileIndex = 0;
+			if (files.get(0).getType() == SynchronizableFileType.StandardOutputFile) {
+				outputFileIndex = 0;
+				errorFileIndex = 1;
 			}
-			Job job = jobsByJobId.get(jobId);
-			if (redirectedOutput == null) {
-				redirectedOutput = (RedirectedOutputService) job
-					.getOutputRedirectionService();
-				redirectedOutput.register(this);
+
+			// Find the new text:
+			String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
+
+			JobFileContent outputResult = getNewTextAsSynchronizableFile(files,
+				outputFileIndex, schedulerJobId, jobId, outputTextBySchedulerJobId,
+				SynchronizableFileType.StandardOutputFile);
+
+			JobFileContent errorResult = getNewTextAsSynchronizableFile(files,
+				errorFileIndex, schedulerJobId, jobId, errorTextBySchedulerJobId,
+				SynchronizableFileType.StandardErrorFile);
+
+			// Place the files in the correct order:
+			for (int i = 0; i <= 1; i++) {
+				if (i == outputFileIndex) {
+					results.add(outputResult);
+				}
+				else {
+					results.add(errorResult);
+				}
 			}
-			redirectedOutput.post(new FeedbackMessage(true, schedulerJobId));
 
-			// Create a task to check if there is timeout:
-			createPeriodicTaskToCheckIfOutputRedirectionMustStop(jobId);
+			return results;
 		}
+	}
 
-		// Find the order in which the file types should be placed in the list:
-		int outputFileIndex;
-		int errorFileIndex;
-		if (files.get(0).getType() == SynchronizableFileType.StandardOutputFile) {
-			outputFileIndex = 0;
-			errorFileIndex = 1;
+	private JobFileContentSsh getNewTextAsSynchronizableFile(
+		List<SynchronizableFile> files, int fileIndex, String schedulerJobId,
+		Long jobId, Map<String, String> textBySchedulerJobId,
+		SynchronizableFileType fileType)
+	{
+		int offset = (int) files.get(fileIndex).getOffset();
+		String newText = "";
+		String existingText = textBySchedulerJobId.get(schedulerJobId);
+		if (existingText.length() > offset && !existingText.isEmpty()) {
+			newText = existingText.substring(offset);
 		}
-		else {
-			outputFileIndex = 1;
-			errorFileIndex = 0;
-		}
-
-		int outputOffset = (int) files.get(outputFileIndex).getOffset();
-		String schedulerJobId = this.jobIdToSchedulerJobId.get(jobId);
-		String outputTextNew = "";
-
-		String totalOutput = this.outputTextBySchedulerJobId.get(schedulerJobId);
-		if (!totalOutput.isEmpty()) {
-			outputTextNew = totalOutput.substring(outputOffset);
-		}
-		JobFileContent outputResult = new JobFileContentSsh(outputTextNew, "/",
-			jobId, outputOffset, SynchronizableFileType.StandardOutputFile);
-
-		int errorOffset = (int) files.get(errorFileIndex).getOffset();
-		String errorTextNew = "";
-		String totalError = this.errorTextBySchedulerJobId.get(schedulerJobId);
-		if (!totalError.isEmpty()) {
-			errorTextNew = totalError.substring(errorOffset);
-		}
-		JobFileContent errorResult = new JobFileContentSsh(errorTextNew, "/", jobId,
-			errorOffset, SynchronizableFileType.StandardErrorFile);
-
-		// Place the files in the correct order:
-		for (int i = 0; i <= 1; i++) {
-			if (i == outputFileIndex) {
-				results.add(outputResult);
-			}
-			else {
-				results.add(errorResult);
-			}
-		}
-
-		return results;
+		return new JobFileContentSsh(newText, "/", jobId, offset, fileType);
 	}
 
 	@Subscribe
