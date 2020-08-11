@@ -12,7 +12,7 @@ import cz.it4i.fiji.heappe_hpc_client.JobSettingsBuilder;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.HEAppEClientJobSettings;
 import cz.it4i.fiji.hpc_workflow.core.Configuration;
 import cz.it4i.fiji.hpc_workflow.core.Constants;
-import cz.it4i.fiji.hpc_workflow.core.WorkflowType;
+import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.hpc_workflow.ui.JavaFXJobSettingsProvider;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -57,7 +57,7 @@ public class NewJobWindow implements
 	{
 		JobSettings jobSetttings = new JobSettingsBuilder().jobName(
 			Constants.HAAS_JOB_NAME).clusterNodeType(Configuration
-				.getHaasClusterNodeType()).templateId(newJobController.getWorkflowType()
+				.getHaasClusterNodeType()).templateId(newJobController.getJobType()
 					.getHaasTemplateID())
 			.walltimeLimit(Configuration.getWalltime()).numberOfCoresPerNode(
 				newJobController.getNumberOfCoresPerNode()).numberOfNodes(newJobController
@@ -83,8 +83,8 @@ public class NewJobWindow implements
 			}
 
 			@Override
-			public WorkflowType getWorkflowType() {
-				return newJobController.getWorkflowType();
+			public JobType getJobType() {
+				return newJobController.getJobType();
 			}
 		};
 

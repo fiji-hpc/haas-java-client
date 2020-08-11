@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
-import cz.it4i.fiji.hpc_workflow.core.WorkflowType;
+import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
@@ -45,7 +45,7 @@ public class NewJobController extends BorderPane {
 	private ToggleGroup outputDataLocationToggleGroup;
 
 	@FXML
-	private ToggleGroup workflowSelectorToggleGroup;
+	private ToggleGroup jobTypeSelectorToggleGroup;
 
 	@FXML
 	private RadioButton ownInputRadioButton;
@@ -61,6 +61,12 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private RadioButton workflowSpimRadioButton;
+
+	@FXML
+	private RadioButton macroRadioButton;
+
+	@FXML
+	private RadioButton scriptRadioButton;
 
 	@FXML
 	private TextField inputDirectoryTextField;
@@ -87,7 +93,7 @@ public class NewJobController extends BorderPane {
 
 	private DataLocation outputDataLocation;
 
-	private WorkflowType workflowType;
+	private JobType jobType;
 
 	private Stage ownerWindow;
 
@@ -105,8 +111,14 @@ public class NewJobController extends BorderPane {
 		outputDataLocationToggleGroup.selectedToggleProperty().addListener((v, o,
 			n) -> selected(n, ownOutputRadioButton));
 
+		// Check which job type is selected:
 		workflowSpimRadioButton.selectedProperty().addListener((v, o,
 			n) -> selectedSpimWorkflow(n));
+		macroRadioButton.selectedProperty().addListener((v, o, n) -> selectedMacro(
+			n));
+		scriptRadioButton.selectedProperty().addListener((v, o,
+			n) -> selectedScript(n));
+
 		initSelectButton(inputDirectoryTextField, selectInputButton);
 		initSelectDirectoryButton(outputDirectoryTextField, selectOutputButton);
 
@@ -160,8 +172,8 @@ public class NewJobController extends BorderPane {
 		return queueOrPartitionTextField.getText();
 	}
 
-	public WorkflowType getWorkflowType() {
-		return workflowType;
+	public JobType getJobType() {
+		return jobType;
 	}
 
 	public void setCreatePressedNotifier(Runnable createPressedNotifier) {
@@ -180,8 +192,11 @@ public class NewJobController extends BorderPane {
 			if (workflowSpimRadioButton.isSelected()) {
 				setTextFieldForDirectory(textField, parent);
 			}
-			else {
-				setTextFieldForFile(textField, parent);
+			else if (macroRadioButton.isSelected()) {
+				setTextFieldForMacro(textField, parent);
+			}
+			else if (scriptRadioButton.isSelected()) {
+				setTextFieldForScript(textField, parent);
 			}
 		});
 	}
@@ -210,7 +225,21 @@ public class NewJobController extends BorderPane {
 		}
 	}
 
-	private void setTextFieldForFile(TextField folderString, Window parent) {
+	private void setTextFieldForMacro(TextField folderString, Window parent) {
+		String fileTypeDescription = "Fiji Macro script file (*.ijm)";
+		String fileType = "*.ijm";
+		setTextFieldForFile(folderString, parent, fileTypeDescription, fileType);
+	}
+
+	private void setTextFieldForScript(TextField folderString, Window parent) {
+		String fileTypeDescription = "Python script file (*.py)";
+		String fileType = "*.py";
+		setTextFieldForFile(folderString, parent, fileTypeDescription, fileType);
+	}
+
+	private void setTextFieldForFile(TextField folderString, Window parent,
+		String fileTypeDescription, String fileType)
+	{
 		// Get the path from the text field an set it as initial path for the
 		// file chooser if it exists:
 		FileChooser fch = new FileChooser();
@@ -218,10 +247,9 @@ public class NewJobController extends BorderPane {
 		// Set initial directory:
 		fch.setInitialDirectory(getPathWithoutFile(folderString.getText()));
 
-		// Restrict file choice to Fiji Macro scripts only:
+		// Restrict file choice to required type only:
 		FileChooser.ExtensionFilter extensionFilter =
-			new FileChooser.ExtensionFilter("Fiji Macro script file (*.ijm)",
-				"*.ijm");
+			new FileChooser.ExtensionFilter(fileTypeDescription, fileType);
 		fch.getExtensionFilters().add(extensionFilter);
 
 		// Set the selected directory as the new content of the text field:
@@ -314,8 +342,8 @@ public class NewJobController extends BorderPane {
 	}
 
 	private boolean pathPointsToFile(String directory) {
-		// In case of a Macro workflow, check if selected directory points to a file
-		// as it should be:
+		// In case of a macro or script job type, check if selected directory points
+		// to a file as it should be:
 		boolean scriptFileHasBeenSelected = new File(directory).isFile();
 		if (!workflowSpimRadioButton.isSelected() && !scriptFileHasBeenSelected) {
 			SimpleDialog.showWarning("Invalid input provided",
@@ -328,13 +356,13 @@ public class NewJobController extends BorderPane {
 	private void obtainValues() {
 		inputDataLocation = obtainDataLocation(inputDataLocationToggleGroup);
 		outputDataLocation = obtainDataLocation(outputDataLocationToggleGroup);
-		workflowType = obtainWorkflowType(workflowSelectorToggleGroup);
+		jobType = obtainJobType(jobTypeSelectorToggleGroup);
 	}
 
-	private WorkflowType obtainWorkflowType(ToggleGroup group) {
+	private JobType obtainJobType(ToggleGroup group) {
 		int backawardOrderOfSelected = group.getToggles().size() - group
 			.getToggles().indexOf(group.getSelectedToggle());
-		return WorkflowType.values()[WorkflowType.values().length -
+		return JobType.values()[JobType.values().length -
 			backawardOrderOfSelected];
 	}
 
@@ -358,7 +386,22 @@ public class NewJobController extends BorderPane {
 			demoInputDataRadioButton.setDisable(false);
 			jobSubdirectoryRadioButton.setDisable(false);
 		}
-		else {
+	}
+
+	private void selectedMacro(Boolean macroIsSelected) {
+		if (macroIsSelected) {
+			numberOfNodesSpinner.setDisable(false);
+			jobSubdirectoryRadioButton.setDisable(true);
+			numberOfCoresPerNodeSpinner.setDisable(false);
+			demoInputDataRadioButton.setDisable(true);
+			if (demoInputDataRadioButton.isSelected()) {
+				ownInputRadioButton.setSelected(true);
+			}
+		}
+	}
+
+	private void selectedScript(Boolean scriptIsSelected) {
+		if (scriptIsSelected) {
 			numberOfNodesSpinner.setDisable(false);
 			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
