@@ -135,15 +135,29 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	@Override
 	public void submitJob(long jobId) {
 		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/";
-		String jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
-
-		String parameters = " --headless --console -macro ";
 
 		// Get the info of the workflow job from the remote cluster:
 		JobRemoteInfo jobRemoteInfo = cjlClient.getJobRemoteInfo(jobRemotePath);
 
 		List<String> modules = new ArrayList<>();
 		modules.add("openmpi/4");
+
+		String parameters;
+		String jobRemotePathWithScript;
+		String userScriptName = jobRemoteInfo.getUserScriptName();
+		if (userScriptName.contains(".ijm")) {
+			parameters = " --headless --console -macro ";
+			jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
+		}
+		else if (userScriptName.contains("py")) {
+			parameters = " --headless --console --run ";
+			jobRemotePathWithScript = jobRemotePath + userScriptName;
+		}
+		else {
+			SimpleDialog.showWarning("Unsupported",
+				"SSH is not compatible with this type of job. Please use the middoleware.");
+			return;
+		}
 
 		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
 			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo

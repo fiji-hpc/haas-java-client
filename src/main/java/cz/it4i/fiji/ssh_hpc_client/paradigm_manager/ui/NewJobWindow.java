@@ -56,16 +56,18 @@ public class NewJobWindow implements
 		// ToDo: complete this:
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
 			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
-			.numberOfNodes(newJobController.getNumberOfNodes()).queueOrPartition(
-				newJobController.getQueueOrPartition()).build();
+			.numberOfNodes(newJobController.getNumberOfNodes())
+			.queueOrPartition(newJobController.getQueueOrPartition())
+			.userScriptName(newJobController.getUserScriptName())
+			.build();
 
-		return new PJobWitdDirectorySettingsAdapter(sshJobSetttings) {
+		return new JobWithDirectorySettingsAdapter(sshJobSetttings) {
 
 			private static final long serialVersionUID = 5998838289289128870L;
 
 			@Override
 			public String getUserScriptName() {
-				return newJobController.getUserScriptName();
+				return this.jobSettings.getUserScriptName();
 			}
 
 			@Override
@@ -98,12 +100,13 @@ public class NewJobWindow implements
 	}
 
 	@AllArgsConstructor
-	private abstract static class PJobWitdDirectorySettingsAdapter implements
+	private abstract static class JobWithDirectorySettingsAdapter implements
 		SshClientJobSettings
 	{
 
 		private static final long serialVersionUID = 7219177839749763140L;
+		
 		@Delegate(types = SshJobSettings.class)
-		private final SshJobSettings jobSettings;
+		protected final SshJobSettings jobSettings;
 	}
 }

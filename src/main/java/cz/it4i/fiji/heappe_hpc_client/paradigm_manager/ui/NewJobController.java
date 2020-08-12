@@ -99,8 +99,6 @@ public class NewJobController extends BorderPane {
 
 	private Runnable createPressedNotifier;
 
-	private String userScriptName;
-
 	public NewJobController() {
 		JavaFXRoutines.initRootAndController("NewJobView.fxml", this);
 		getStylesheets().add(getClass().getResource("NewJobView.css")
@@ -295,25 +293,26 @@ public class NewJobController extends BorderPane {
 		if (file.isDirectory()) {
 			return path;
 		}
-		String scriptName = path.getFileName().toString();
-		setUserScriptName(scriptName);
+
 		return path.getParent();
 	}
 
-	private void setUserScriptName(String newFilename) {
-		if (!workflowSpimRadioButton.isSelected()) {
-			this.userScriptName = newFilename;
-		}
+	public String getUserScriptName() {
+		String selectedDirectory = inputDirectoryTextField.getText();
+		Path path = Paths.get(selectedDirectory).toAbsolutePath();
+		return path.getFileName().toString();
 	}
 
 	private void createPressed() {
-		obtainValues();
-		if (checkDirectoryLocationIfNeeded()) {
-			// Close stage
-			Stage stage = (Stage) createButton.getScene().getWindow();
-			stage.close();
-			this.createPressedNotifier.run();
-		}
+		JavaFXRoutines.runOnFxThreadAndWait(() -> {
+			obtainValues();
+			if (checkDirectoryLocationIfNeeded()) {
+				// Close stage
+				Stage stage = (Stage) createButton.getScene().getWindow();
+				stage.close();
+				this.createPressedNotifier.run();
+			}
+		});
 	}
 
 	private boolean checkDirectoryLocationIfNeeded() {
@@ -362,8 +361,7 @@ public class NewJobController extends BorderPane {
 	private JobType obtainJobType(ToggleGroup group) {
 		int backawardOrderOfSelected = group.getToggles().size() - group
 			.getToggles().indexOf(group.getSelectedToggle());
-		return JobType.values()[JobType.values().length -
-			backawardOrderOfSelected];
+		return JobType.values()[JobType.values().length - backawardOrderOfSelected];
 	}
 
 	private DataLocation obtainDataLocation(ToggleGroup group) {
@@ -410,10 +408,6 @@ public class NewJobController extends BorderPane {
 				ownInputRadioButton.setSelected(true);
 			}
 		}
-	}
-
-	public String getUserScriptName() {
-		return this.userScriptName;
 	}
 
 }

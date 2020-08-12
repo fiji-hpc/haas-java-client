@@ -12,6 +12,7 @@ public class SshJobSettingsBuilder {
 	private int numberOfCoresPerNode = DEFAULT_NUMBER_OF_CORES_PER_NODE;
 
 	private String queueOrPartition;
+	private String userScriptName;
 
 	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
 		this.numberOfNodes = newNumberOfNodes;
@@ -27,6 +28,11 @@ public class SshJobSettingsBuilder {
 
 	public SshJobSettingsBuilder queueOrPartition(String newQueueOrPartition) {
 		this.queueOrPartition = newQueueOrPartition;
+		return this;
+	}
+
+	public SshJobSettingsBuilder userScriptName(String newUserScriptName) {
+		this.userScriptName = newUserScriptName;
 		return this;
 	}
 
@@ -46,6 +52,11 @@ public class SshJobSettingsBuilder {
 			@Override
 			public String getQueueOrPartition() {
 				return queueOrPartition;
+			}
+
+			@Override
+			public String getUserScriptName() {
+				return userScriptName;
 			}
 		};
 	}

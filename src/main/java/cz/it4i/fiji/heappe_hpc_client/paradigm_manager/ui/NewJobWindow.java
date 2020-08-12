@@ -51,19 +51,16 @@ public class NewJobWindow implements
 		stage.showAndWait();
 	}
 
-
 	private static HEAppEClientJobSettings constructSettings(
 		NewJobController newJobController)
 	{
 		JobSettings jobSetttings = new JobSettingsBuilder().jobName(
 			Constants.HAAS_JOB_NAME).clusterNodeType(Configuration
 				.getHaasClusterNodeType()).templateId(newJobController.getJobType()
-					.getHaasTemplateID())
-			.walltimeLimit(Configuration.getWalltime()).numberOfCoresPerNode(
-				newJobController.getNumberOfCoresPerNode()).numberOfNodes(newJobController
-					.getNumberOfNodes())
-			.build();
-		return new PJobWitdDirectorySettingsAdapter(jobSetttings) {
+					.getHaasTemplateID()).walltimeLimit(Configuration.getWalltime())
+			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
+			.numberOfNodes(newJobController.getNumberOfNodes()).build();
+		return new JobWithDirectorySettingsAdapter(jobSetttings) {
 
 			private static final long serialVersionUID = 5998838289289128870L;
 
@@ -97,7 +94,7 @@ public class NewJobWindow implements
 	}
 
 	@AllArgsConstructor
-	private abstract static class PJobWitdDirectorySettingsAdapter implements
+	private abstract static class JobWithDirectorySettingsAdapter implements
 		HEAppEClientJobSettings
 	{
 

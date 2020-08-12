@@ -22,4 +22,6 @@ public interface JobSettings {
 	default Collection<Entry<String, String>> getTemplateParameters() {
 		return Collections.emptyList();
 	}
+
+	String getUserScriptName();
 }
