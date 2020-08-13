@@ -30,7 +30,7 @@ import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.Job;
 import cz.it4i.cluster_job_launcher.JobManager;
 import cz.it4i.cluster_job_launcher.JobManagerJobState;
-import cz.it4i.cluster_job_launcher.JobRemoteInfo;
+import cz.it4i.cluster_job_launcher.RemoteJobInfo;
 import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
 import cz.it4i.fiji.hpc_client.HPCClient;
@@ -127,7 +127,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		this.cjlClient.createRemoteDirectory(jobRemotePath);
 		// Create workflow job info, this is were the number of nodes and cores per
 		// node are stored:
-		this.cjlClient.setJobRemoteInfo(jobRemotePath, jobSettings);
+		this.cjlClient.setRemoteJobInfo(jobRemotePath, jobSettings);
 
 		return workflowJobId;
 	}
@@ -137,7 +137,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/";
 
 		// Get the info of the workflow job from the remote cluster:
-		JobRemoteInfo jobRemoteInfo = cjlClient.getJobRemoteInfo(jobRemotePath);
+		RemoteJobInfo jobRemoteInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
 
 		List<String> modules = new ArrayList<>();
 		modules.add("openmpi/4");
