@@ -150,7 +150,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
 		}
 		else if (userScriptName.contains("py")) {
-			parameters = " --headless --console --run ";
+			parameters = " --ij2 --headless --console --run ";
 			jobRemotePathWithScript = jobRemotePath + userScriptName;
 		}
 		else {
