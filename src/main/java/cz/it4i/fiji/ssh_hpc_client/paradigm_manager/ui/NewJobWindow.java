@@ -8,6 +8,7 @@ import java.util.function.UnaryOperator;
 import org.scijava.plugin.Plugin;
 
 import cz.it4i.cluster_job_launcher.SshJobSettings;
+import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.ConnectionType;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.hpc_workflow.ui.JavaFXJobSettingsProvider;
@@ -35,7 +36,8 @@ public class NewJobWindow implements
 	public void provideJobSettings(Window parent,
 		Consumer<SshClientJobSettings> consumer)
 	{
-		final NewJobController controller = new NewJobController();
+		final NewJobController controller = new NewJobController(
+			ConnectionType.SSH);
 		controller.setCreatePressedNotifier(() -> consumer.accept(constructSettings(
 			controller)));
 		final Scene formScene = new Scene(controller);
@@ -56,10 +58,9 @@ public class NewJobWindow implements
 		// ToDo: complete this:
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
 			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
-			.numberOfNodes(newJobController.getNumberOfNodes())
-			.queueOrPartition(newJobController.getQueueOrPartition())
-			.userScriptName(newJobController.getUserScriptName())
-			.build();
+			.numberOfNodes(newJobController.getNumberOfNodes()).queueOrPartition(
+				newJobController.getQueueOrPartition()).userScriptName(newJobController
+					.getUserScriptName()).build();
 
 		return new JobWithDirectorySettingsAdapter(sshJobSetttings) {
 
@@ -105,7 +106,7 @@ public class NewJobWindow implements
 	{
 
 		private static final long serialVersionUID = 7219177839749763140L;
-		
+
 		@Delegate(types = SshJobSettings.class)
 		protected final SshJobSettings jobSettings;
 	}

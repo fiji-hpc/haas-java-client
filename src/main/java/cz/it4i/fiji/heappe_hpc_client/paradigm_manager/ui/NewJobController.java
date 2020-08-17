@@ -16,6 +16,7 @@ import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -23,6 +24,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -87,7 +89,13 @@ public class NewJobController extends BorderPane {
 	private Spinner<Integer> numberOfCoresPerNodeSpinner;
 
 	@FXML
+	private Label queueOrPartitionLabel;
+
+	@FXML
 	private TextField queueOrPartitionTextField;
+
+	@FXML
+	private HBox queueOrPartitionHBox;
 
 	private DataLocation inputDataLocation;
 
@@ -99,7 +107,7 @@ public class NewJobController extends BorderPane {
 
 	private Runnable createPressedNotifier;
 
-	public NewJobController() {
+	public NewJobController(ConnectionType connectionType) {
 		JavaFXRoutines.initRootAndController("NewJobView.fxml", this);
 		getStylesheets().add(getClass().getResource("NewJobView.css")
 			.toExternalForm());
@@ -138,6 +146,17 @@ public class NewJobController extends BorderPane {
 
 		// Set the default value (the express queue):
 		queueOrPartitionTextField.setText("qexp");
+		
+		if (connectionType == ConnectionType.MIDDLEWARE) {
+			scriptRadioButton.disableProperty().set(true);
+			queueOrPartitionHBox.setVisible(false);
+			queueOrPartitionLabel.setVisible(false);
+			queueOrPartitionTextField.setVisible(false);
+		}
+		else if (connectionType == ConnectionType.SSH) {
+			macroRadioButton.selectedProperty().set(true);
+			workflowSpimRadioButton.disableProperty().set(true);
+		}
 	}
 
 	public void close() {

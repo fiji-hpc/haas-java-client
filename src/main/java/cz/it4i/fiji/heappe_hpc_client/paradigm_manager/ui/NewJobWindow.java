@@ -36,7 +36,8 @@ public class NewJobWindow implements
 	public void provideJobSettings(Window parent,
 		Consumer<HEAppEClientJobSettings> consumer)
 	{
-		final NewJobController controller = new NewJobController();
+		final NewJobController controller = new NewJobController(
+			ConnectionType.MIDDLEWARE);
 		controller.setCreatePressedNotifier(() -> consumer.accept(constructSettings(
 			controller)));
 		final Scene formScene = new Scene(controller);
