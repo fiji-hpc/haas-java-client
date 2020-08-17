@@ -13,7 +13,9 @@ import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -97,6 +99,9 @@ public class NewJobController extends BorderPane {
 	@FXML
 	private HBox queueOrPartitionHBox;
 
+	@FXML
+	private HBox inputSelectionHBox;
+
 	private DataLocation inputDataLocation;
 
 	private DataLocation outputDataLocation;
@@ -146,7 +151,7 @@ public class NewJobController extends BorderPane {
 
 		// Set the default value (the express queue):
 		queueOrPartitionTextField.setText("qexp");
-		
+
 		if (connectionType == ConnectionType.MIDDLEWARE) {
 			scriptRadioButton.disableProperty().set(true);
 			queueOrPartitionHBox.setVisible(false);
@@ -154,8 +159,9 @@ public class NewJobController extends BorderPane {
 			queueOrPartitionTextField.setVisible(false);
 		}
 		else if (connectionType == ConnectionType.SSH) {
-			macroRadioButton.selectedProperty().set(true);
+			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
+			inputSelectionHBox.setDisable(false);
 		}
 	}
 
@@ -391,8 +397,12 @@ public class NewJobController extends BorderPane {
 	}
 
 	private void selected(Toggle n, Parent disableIfNotSelected) {
-		disableIfNotSelected.getChildrenUnmodifiable().forEach(node -> node
-			.setDisable(n != disableIfNotSelected));
+		ObservableList<Node> children = disableIfNotSelected
+			.getChildrenUnmodifiable();
+		boolean disabled = (n != disableIfNotSelected);
+		for (Node child : children) {
+			child.setDisable(disabled);
+		}
 	}
 
 	private void selectedSpimWorkflow(Boolean spimWorkflowIsSelected) {
@@ -411,8 +421,10 @@ public class NewJobController extends BorderPane {
 			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
-			if (demoInputDataRadioButton.isSelected()) {
-				ownInputRadioButton.setSelected(true);
+			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton
+				.isSelected())
+			{
+				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
 		}
 	}
@@ -423,8 +435,10 @@ public class NewJobController extends BorderPane {
 			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
-			if (demoInputDataRadioButton.isSelected()) {
-				ownInputRadioButton.setSelected(true);
+			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton
+				.isSelected())
+			{
+				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
 		}
 	}

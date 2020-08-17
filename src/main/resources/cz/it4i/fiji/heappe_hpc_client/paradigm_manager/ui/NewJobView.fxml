@@ -72,7 +72,7 @@
 										</RadioButton>
 										<RadioButton fx:id="ownInputRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
 											<graphic>
-												<HBox disable="true">
+												<HBox fx:id="inputSelectionHBox" disable="true">
 													<children>
 														<TextField fx:id="inputDirectoryTextField" prefWidth="350.0" />
 														<Button fx:id="selectInputButton" mnemonicParsing="false" text="Select" />
