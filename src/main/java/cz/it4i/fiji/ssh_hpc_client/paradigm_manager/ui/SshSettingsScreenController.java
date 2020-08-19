@@ -2,9 +2,11 @@
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
-import cz.it4i.fiji.ssh_hpc_client.AuthenticationChoice;
+
+import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
+import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;

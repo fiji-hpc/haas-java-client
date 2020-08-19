@@ -25,6 +25,7 @@ import java.util.TimerTask;
 
 import org.scijava.plugin.Parameter;
 
+import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.Job;

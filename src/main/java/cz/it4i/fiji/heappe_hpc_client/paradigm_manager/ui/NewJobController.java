@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
-import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
+import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
