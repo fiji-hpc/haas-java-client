@@ -5,16 +5,19 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import org.scijava.plugin.Plugin;
 
 import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.ConnectionType;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
+import cz.it4i.fiji.hpc_workflow.ui.IconHelperMethods;
 import cz.it4i.fiji.hpc_workflow.ui.JavaFXJobSettingsProvider;
 import cz.it4i.fiji.ssh_hpc_client.SshJobSettingsBuilder;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.SshClientJobSettings;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -47,6 +50,9 @@ public class NewJobWindow implements
 		stage.setResizable(false);
 		stage.setTitle("Create job");
 		stage.setScene(formScene);
+		Image myImage = IconHelperMethods.convertIkonToImage(
+			MaterialDesign.MDI_CREATION);
+		stage.getIcons().add(myImage);
 		finalizeOnStageClose(controller, stage);
 		controller.init(stage);
 		stage.showAndWait();

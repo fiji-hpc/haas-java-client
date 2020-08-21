@@ -1,16 +1,19 @@
 
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
+import org.kordamp.ikonli.materialdesign.MaterialDesign;
 import org.scijava.Context;
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.prefs.PrefService;
 
+import cz.it4i.fiji.hpc_workflow.ui.IconHelperMethods;
 import cz.it4i.fiji.hpc_workflow.ui.LastFormLoader;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.parallel.paradigm_managers.ParadigmProfileSettingsEditor;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -18,7 +21,9 @@ import javafx.stage.Window;
 class SshSettingsScreenWindow {
 
 	@Plugin(type = ParadigmProfileSettingsEditor.class, priority = Priority.HIGH)
-	public static class Editor implements ParadigmProfileSettingsEditor<SshConnectionSettings> {
+	public static class Editor implements
+		ParadigmProfileSettingsEditor<SshConnectionSettings>
+	{
 
 		@Parameter
 		private Context context;
@@ -43,7 +48,9 @@ class SshSettingsScreenWindow {
 
 	private PrefService prefService;
 
-	public SshConnectionSettings showDialog(final SshConnectionSettings oldSettings) {
+	public SshConnectionSettings showDialog(
+		final SshConnectionSettings oldSettings)
+	{
 		SshConnectionSettings settings;
 
 		// Get the old settings:
@@ -98,7 +105,9 @@ class SshSettingsScreenWindow {
 		parentStage.setTitle("Ssh Settings");
 		parentStage.setScene(formScene);
 		parentStage.initOwner(owner);
-
+		Image myImage = IconHelperMethods.convertIkonToImage(
+			MaterialDesign.MDI_ACCESS_POINT.MDI_SETTINGS);
+		parentStage.getIcons().add(myImage);
 		parentStage.showAndWait();
 	}
 
