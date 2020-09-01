@@ -50,11 +50,6 @@ public class HaaSFileTransferImp implements HPCFileTransfer {
 	}
 
 	@Override
-	public void close() {
-		scpClient.close();
-	}
-
-	@Override
 	public void upload(final UploadingFile file) throws InterruptedIOException {
 		final String destFile = this.remoteWorkingDirectory + "/" + file.getName();
 		try (InputStream is = file.getInputStream()) {

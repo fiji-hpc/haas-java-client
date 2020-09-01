@@ -30,11 +30,6 @@ class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
 	}
 
 	@Override
-	public void close() {
-		this.haasFileTransfer.close();
-	}
-
-	@Override
 	public void upload(UploadingFile file) throws InterruptedIOException {
 		doWithRepeatedReconnect(() -> {
 			haasFileTransfer.upload(file);
@@ -96,12 +91,12 @@ class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
 				return runnable.call();
 			}
 			catch (HaaSClientException e) {
-				if (e.getCause() instanceof AuthFailException) {
-					if (attempts <= MAX_ATTEMPTS_FOR_RECONNECTION) {
-						attempts++;
-						reconnect();
-						continue;
-					}
+				if (e.getCause() instanceof AuthFailException &&
+					attempts <= MAX_ATTEMPTS_FOR_RECONNECTION)
+				{
+					attempts++;
+					reconnect();
+					continue;
 				}
 				throw e;
 			}
@@ -110,7 +105,6 @@ class HaasFileTransferReconnectingAfterAuthFail implements HPCFileTransfer {
 	}
 
 	private void reconnect() {
-		haasFileTransfer.close();
 		reconnectCommand.run();
 		haasFileTransfer = haasFileTransferFactory.get();
 	}

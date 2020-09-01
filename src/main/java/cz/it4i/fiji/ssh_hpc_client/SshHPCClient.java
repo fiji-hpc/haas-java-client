@@ -263,8 +263,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 				// If there is no scheduler id the job has never been started before and
 				// there is no output to redirect yet.
-				if (schedulerJobId.equals("none"))
-				{
+				if (schedulerJobId.equals("none")) {
 					log.debug("The job has never run before and it has no output.");
 					// Return the empty list.
 					return results;
@@ -445,5 +444,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	{
 		return this.cjlClient.getJobManager(newRemoteWorkingDirectory,
 			newWorkflowJobId);
+	}
+
+	@Override
+	public void close() {
+		this.scpClient.close();
+		this.cjlClient.close();
 	}
 }

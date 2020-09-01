@@ -27,10 +27,8 @@ public class TestConcurentAccessToHaaSFileTransfer {
 			emptyTransferFileProgress());
 		log.info("config.yaml - size:" + tr1.obtainSize(Arrays.asList(
 			"config.yaml")));
-		tr1.close();
 		log.info("config.yaml - size:" + tr2.obtainSize(Arrays.asList(
 			"config.yaml")));
-		tr2.close();
 	}
 
 }

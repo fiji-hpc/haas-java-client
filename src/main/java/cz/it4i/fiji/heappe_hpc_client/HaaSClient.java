@@ -279,14 +279,7 @@ public class HaaSClient implements HPCClient<JobSettings> {
 
 			final FileTransferMethodExt ft = pool.obtain();
 			try {
-				return new HaaSFileTransferImp(ft, getScpClient(ft), progress) {
-
-					@Override
-					public void close() {
-						super.close();
-						pool.release();
-					}
-				};
+				return new HaaSFileTransferImp(ft, getScpClient(ft), progress);
 			}
 			catch (JSchException e) {
 				pool.release();
@@ -644,6 +637,12 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		result.setUsername(userName);
 		result.setPassword(password);
 		return result;
+	}
+
+	@Override
+	public void close() {
+		// ToDo: Make ScpClient a property and close it here.
+		// Only one ScpClient should exit as the number of connections are limited.
 	}
 
 }
