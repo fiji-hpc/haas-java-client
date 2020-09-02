@@ -259,6 +259,15 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				// Get the redirecting output service of the job:
 				JobManager jobManager = this.cjlClient.getJobManager(
 					remoteWorkingDirectory, jobId);
+				
+				// Only start if the job is running or has run:
+				JobManagerJobState jobState = jobManager.getState();
+				if( jobState == JobManagerJobState.CONFIGURING ||
+						jobState == JobManagerJobState.QUEUED) 
+				{
+					return results;
+				}
+				
 				String schedulerJobId = jobManager.getSchedulerJobId();
 
 				// If there is no scheduler id the job has never been started before and
@@ -272,10 +281,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				this.jobIdToSchedulerJobId.put(jobId, schedulerJobId);
 
 				// If the same job dashboard is open more than once it should not make
-				// the
-				// output and error blank.
-				// Create the initial empty output and error strings if they do not
-				// exist:
+				// the output and error blank. Create the initial empty output and error
+				// strings if they do not exist:
 				this.outputTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 				this.errorTextBySchedulerJobId.putIfAbsent(schedulerJobId, "");
 
