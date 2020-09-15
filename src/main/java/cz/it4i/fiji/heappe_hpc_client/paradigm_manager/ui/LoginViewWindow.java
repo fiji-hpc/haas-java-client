@@ -8,11 +8,12 @@ import org.scijava.plugin.Plugin;
 import org.scijava.prefs.PrefService;
 
 import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettingsImpl;
-import cz.it4i.fiji.hpc_workflow.ui.LastFormLoader;
 import cz.it4i.parallel.paradigm_managers.ParadigmProfileSettingsEditor;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import cz.it4i.parallel.internal.ui.LastFormLoader;
 
 public class LoginViewWindow {
 
@@ -46,8 +47,8 @@ public class LoginViewWindow {
 
 	public void openWindow(HaaSClientSettingsImpl params) {
 		// Get the previously entered login settings if any:
-		LastFormLoader<HaaSClientSettingsImpl> storeLastForm =
-			new LastFormLoader<>(prefService, "loginSettingsForm", this.getClass());
+		LastFormLoader<HaaSClientSettingsImpl> storeLastForm = new LastFormLoader<>(
+			prefService, "loginSettingsForm", this.getClass());
 		HaaSClientSettingsImpl oldLoginSettings = params != null ? params
 			: storeLastForm.loadLastForm();
 

@@ -9,8 +9,8 @@ import org.scijava.plugin.Plugin;
 import org.scijava.prefs.PrefService;
 
 import cz.it4i.fiji.hpc_workflow.ui.IconHelperMethods;
-import cz.it4i.fiji.hpc_workflow.ui.LastFormLoader;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
+import cz.it4i.parallel.internal.ui.LastFormLoader;
 import cz.it4i.parallel.paradigm_managers.ParadigmProfileSettingsEditor;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -106,7 +106,7 @@ class SshSettingsScreenWindow {
 		parentStage.setScene(formScene);
 		parentStage.initOwner(owner);
 		Image myImage = IconHelperMethods.convertIkonToImage(
-			MaterialDesign.MDI_ACCESS_POINT.MDI_SETTINGS);
+			MaterialDesign.MDI_SETTINGS);
 		parentStage.getIcons().add(myImage);
 		parentStage.showAndWait();
 	}
