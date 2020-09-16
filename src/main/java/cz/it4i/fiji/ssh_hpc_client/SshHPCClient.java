@@ -34,6 +34,7 @@ import cz.it4i.cluster_job_launcher.JobManagerJobState;
 import cz.it4i.cluster_job_launcher.RemoteJobInfo;
 import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.heappe_hpc_client.HaaSFileTransferImp;
+import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCDataTransfer;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
@@ -104,6 +105,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 			// Create the remote working directory if it does not exist:
 			this.cjlClient.createRemoteDirectory(remoteWorkingDirectory);
+
+			// ToDo: find a way to provide the scheduler to NewJobController without a
+			// static variable:
+			NewJobController.hpcSchedulerType = this.cjlClient.getSchedulerType();
 		}
 		catch (JSchException exc) {
 			JavaFXRoutines.runOnFxThread(() -> SimpleDialog.showException("Exception",
@@ -259,15 +264,15 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				// Get the redirecting output service of the job:
 				JobManager jobManager = this.cjlClient.getJobManager(
 					remoteWorkingDirectory, jobId);
-				
+
 				// Only start if the job is running or has run:
 				JobManagerJobState jobState = jobManager.getState();
-				if( jobState == JobManagerJobState.CONFIGURING ||
-						jobState == JobManagerJobState.QUEUED) 
+				if (jobState == JobManagerJobState.CONFIGURING ||
+					jobState == JobManagerJobState.QUEUED)
 				{
 					return results;
 				}
-				
+
 				String schedulerJobId = jobManager.getSchedulerJobId();
 
 				// If there is no scheduler id the job has never been started before and

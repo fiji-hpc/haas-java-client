@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
@@ -35,6 +36,8 @@ import javafx.stage.Window;
 public class NewJobController extends BorderPane {
 
 	private static final Runnable EMPTY_NOTIFIER = () -> {};
+	
+	public static HPCSchedulerType hpcSchedulerType;
 
 	@SuppressWarnings("unused")
 	private static Logger log = LoggerFactory.getLogger(NewJobController.class);
@@ -149,8 +152,19 @@ public class NewJobController extends BorderPane {
 				24);
 		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
 
-		// Set the default value (the express queue):
-		queueOrPartitionTextField.setText("qexp");
+		// Set the default scheduler value:
+		// PBS Professional, the express queue - qexp, 
+		// SLURM Workload Manager: the batch partition - batch:
+		String defaultQueueOrPartition = "qexp";
+		if(hpcSchedulerType == null) {
+			defaultQueueOrPartition = "Not applicable";
+		}
+		else if(hpcSchedulerType == HPCSchedulerType.SLURM) {
+			defaultQueueOrPartition = "batch";
+		} else if (hpcSchedulerType == HPCSchedulerType.PBS) {
+			defaultQueueOrPartition = "qexp";
+		}
+		queueOrPartitionTextField.setText(defaultQueueOrPartition);
 
 		if (connectionType == ConnectionType.MIDDLEWARE) {
 			scriptRadioButton.disableProperty().set(true);
