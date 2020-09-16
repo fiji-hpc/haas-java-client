@@ -44,6 +44,7 @@ import cz.it4i.fiji.hpc_client.JobInfo;
 import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
 import cz.it4i.fiji.hpc_client.SynchronizableFileType;
+import cz.it4i.fiji.hpc_workflow.core.Constants;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.parallel.runners.logging.ui.EventMessage;
@@ -128,8 +129,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// Create job directory on remote working directory as well:
 		log.info("Create remote job directory: " + this.remoteWorkingDirectory +
 			"/" + workflowJobId);
-		String jobRemotePath = this.remoteWorkingDirectory + "/" + workflowJobId +
-			"/";
+		String jobRemotePath = this.remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + workflowJobId + Constants.FORWARD_SLASH;
 		this.cjlClient.createRemoteDirectory(jobRemotePath);
 		// Create workflow job info, this is were the number of nodes and cores per
 		// node are stored:
@@ -140,7 +141,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void submitJob(long jobId) {
-		String jobRemotePath = this.remoteWorkingDirectory + "/" + jobId + "/";
+		String jobRemotePath = this.remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
 
 		// Get the info of the workflow job from the remote cluster:
 		RemoteJobInfo jobRemoteInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
@@ -186,18 +188,18 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	@Override
 	public void deleteJob(long jobId) {
-		this.cjlClient.removeRemoteDirectory(this.remoteWorkingDirectory + "/" +
-			jobId);
+		this.cjlClient.removeRemoteDirectory(this.remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + jobId);
 		log.info("Remove remote job directory: " + this.remoteWorkingDirectory +
-			"/" + jobId);
+			Constants.FORWARD_SLASH + jobId);
 	}
 
 	@Override
 	public HPCFileTransfer startFileTransfer(long jobId,
 		TransferFileProgress notifier)
 	{
-		return new HaaSFileTransferImp(remoteWorkingDirectory + "/" + jobId,
-			this.scpClient, notifier);
+		return new HaaSFileTransferImp(remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + jobId, this.scpClient, notifier);
 	}
 
 	@Parameter

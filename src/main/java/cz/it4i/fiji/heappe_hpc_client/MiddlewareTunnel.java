@@ -116,7 +116,7 @@ class MiddlewareTunnel implements Closeable {
 					lastConnection.finishIfNeeded();
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("MiddlewareTunnel - interrupted - socket is closed: " + ss
+					log.debug("MiddlewareTunnel - interrupted - socket is closed: {} ", ss
 						.isClosed());
 				}
 
@@ -213,10 +213,9 @@ class MiddlewareTunnel implements Closeable {
 						connection.dataSentNotify();
 					}
 					if (log.isDebugEnabled()) {
-						log.debug("send " + len + " bytes to middleware");
-						log.debug("send data: " + new String(buffer, 0, Math.min(len,
+						log.debug("send {} bytes to middleware", len);
+						log.debug("send data: {} ", new String(buffer, 0, Math.min(len,
 							100)));
-
 					}
 				}
 				if (log.isDebugEnabled()) {
@@ -305,10 +304,11 @@ class MiddlewareTunnel implements Closeable {
 			log.debug("sendEOF to middleware");
 		}
 		try {
-			dataTransfer.writeDataToJobNode(null, jobId, ipAddress, sessionCode, true);
-		} 
+			dataTransfer.writeDataToJobNode(null, jobId, ipAddress, sessionCode,
+				true);
+		}
 		catch (WebServiceException e) {
-			//ignore this
+			// ignore this
 		}
 	}
 
@@ -355,9 +355,9 @@ class MiddlewareTunnel implements Closeable {
 					}
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("received " + received.length + " bytes from middleware");
+					log.debug("received {} bytes from middleware", received.length);
 					if (received.length > 0) {
-						log.debug("received data " + new String(received));
+						log.debug("received data {} ", new String(received));
 					}
 				}
 			}
