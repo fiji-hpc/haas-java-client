@@ -67,7 +67,6 @@ public class HaaSFileTransferImp implements HPCFileTransfer {
 		throws InterruptedIOException
 	{
 		try {
-			fileName = fileName.replaceFirst("/", "");
 			final Path rFile = workDirectory.resolve(fileName);
 			final String fileToDownload = this.remoteWorkingDirectory + "/" + fileName;
 			scpClient.download(fileToDownload, rFile, progress);
