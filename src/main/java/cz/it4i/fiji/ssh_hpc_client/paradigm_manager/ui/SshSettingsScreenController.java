@@ -77,7 +77,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	@Setter
 	private SshConnectionSettings settings;
 
-	private static final Integer PORT_DEFAULT_VALUE = 1;
+	private static final Integer PORT_DEFAULT_VALUE = 22;
 
 	private static final int PORT_LOWER_BOUND = 1;
 	private static final int PORT_UPPER_BOUND = 65535;
