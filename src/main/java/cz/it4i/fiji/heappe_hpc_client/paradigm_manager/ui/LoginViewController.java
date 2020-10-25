@@ -94,7 +94,7 @@ public class LoginViewController extends AnchorPane {
 			return false;
 		}
 
-		return WorkflowParadigmManager.checkWorkingDirectory(Paths.get(
+		return WorkflowParadigmManager.workingDirectoryExists(Paths.get(
 			this.workingDirectoryTextField.getText()));
 
 	}

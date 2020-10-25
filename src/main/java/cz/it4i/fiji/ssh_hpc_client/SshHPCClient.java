@@ -229,29 +229,29 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				synchronized (lock) {
 					long now = Instant.now().toEpochMilli();
 					if (now - timeLastPolledByJobId.get(jobId) > TIMEOUT) {
-						log.debug("Job {} redirected output has timed-out.", jobId);
+						String schedulerJobId = jobIdToSchedulerJobId.get(jobId);
 						// Stop the bus.
-						redirectedOutput.post(new FeedbackMessage(false,
-							jobIdToSchedulerJobId.get(jobId)));
+						redirectedOutput.post(new FeedbackMessage(false, schedulerJobId));
 						timersByJobId.get(jobId).cancel();
 						timersByJobId.remove(jobId);
 
 						// Remove standard and error output for this job:
-						String schedulerJobId = jobIdToSchedulerJobId.get(jobId);
 						outputTextBySchedulerJobId.remove(schedulerJobId);
 						errorTextBySchedulerJobId.remove(schedulerJobId);
 						// Remove job from lists:
 						jobIdToSchedulerJobId.remove(jobId);
 						timeLastPolledByJobId.remove(jobId);
-
+						
+						log.debug("Job {} redirected output has timed-out.", jobId);
 					}
 				}
 			}
 		};
-		timersByJobId.putIfAbsent(jobId, new Timer("Timer"));
+		Timer myTimer = new Timer("Timer");
+		timersByJobId.putIfAbsent(jobId, myTimer);
 
 		long period = 1000L;
-		timersByJobId.get(jobId).scheduleAtFixedRate(task, 0, period);
+		myTimer.scheduleAtFixedRate(task, 0, period);
 	}
 
 	@Override
