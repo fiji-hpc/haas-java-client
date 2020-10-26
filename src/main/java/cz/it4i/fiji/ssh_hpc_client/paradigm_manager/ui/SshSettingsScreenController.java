@@ -191,6 +191,10 @@ public class SshSettingsScreenController extends AnchorPane {
 		if (oldSettings == null) {
 			hostTextField.setText("localhost");
 			portSpinner.getValueFactory().setValue(PORT_DEFAULT_VALUE);
+			// Set key file authentication as default selection:
+			authenticationChoiceKeyRadioButton.setSelected(true);
+			authenticationChoicePasswordRadioButton.setSelected(false);
+			disableIrrelevantFileds(true);
 		}
 		else {
 			hostTextField.setText(oldSettings.getHost());
