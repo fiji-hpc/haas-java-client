@@ -51,7 +51,8 @@ public class HaaSFileTransferImp implements HPCFileTransfer {
 
 	@Override
 	public void upload(final UploadingFile file) throws InterruptedIOException {
-		final String destFile = this.remoteWorkingDirectory + "/" + file.getName();
+		String destFile = this.remoteWorkingDirectory + "/" + file.getName();
+		destFile = destFile.replace("\\", "/");
 		try (InputStream is = file.getInputStream()) {
 			scpClient.upload(is, destFile, file.getLength(), file.getLastTime(),
 				progress);
