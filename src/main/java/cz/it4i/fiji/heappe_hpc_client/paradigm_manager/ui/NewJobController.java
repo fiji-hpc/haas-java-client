@@ -104,6 +104,15 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private HBox inputSelectionHBox;
+	
+	@FXML
+	private Spinner<Integer> walltimeHourSpinner;
+	
+	@FXML
+	private Spinner<Integer> walltimeMinuteSpinner;
+	
+	@FXML
+	private Spinner<Integer> walltimeSecondSpinner;
 
 	private DataLocation inputDataLocation;
 
@@ -151,6 +160,30 @@ public class NewJobController extends BorderPane {
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
 				24);
 		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
+		
+		// Walltime hour spinner value factory:
+		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeHourSpinner, 0,
+			Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> walltimeHourValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(0, Integer.MAX_VALUE,
+				1);
+		walltimeHourSpinner.setValueFactory(walltimeHourValueFactory);
+		
+		// Walltime minutes spinner value factory:
+		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeMinuteSpinner, 0,
+			59);
+		SpinnerValueFactory<Integer> walltimeMinuteValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59,
+				0);
+		walltimeMinuteSpinner.setValueFactory(walltimeMinuteValueFactory);
+		
+		// Walltime seconds spinner value factory:
+		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeSecondSpinner, 0,
+			59);
+		SpinnerValueFactory<Integer> walltimeSecondValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59,
+				0);
+		walltimeSecondSpinner.setValueFactory(walltimeSecondValueFactory);
 
 		// Set the default scheduler value:
 		// PBS Professional, the express queue - qexp, 

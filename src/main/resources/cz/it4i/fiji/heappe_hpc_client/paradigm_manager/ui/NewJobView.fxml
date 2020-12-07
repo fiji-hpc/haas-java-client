@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" type="BorderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController">
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" type="BorderPane" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.NewJobController">
 	<center>
 		<VBox BorderPane.alignment="CENTER">
 			<children>
@@ -121,7 +121,7 @@
 								</HBox>
 								<HBox fx:id="queueOrPartitionHBox">
 									<children>
-										<Label fx:id="queueOrPartitionLabel" prefWidth="220.0" text="PBS queue or SLURM partition:">
+										<Label fx:id="queueOrPartitionLabel" prefWidth="220.0" text="PBS queue or SLURM partition">
 											<opaqueInsets>
 												<Insets />
 											</opaqueInsets>
@@ -132,6 +132,21 @@
 										<TextField fx:id="queueOrPartitionTextField" />
 									</children>
 								</HBox>
+                        <HBox fx:id="walltimeLabel" layoutX="20.0" layoutY="70.0">
+                           <children>
+                              <Label prefWidth="220.0" text="Max amount of time needed">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <padding>
+                                    <Insets right="20.0" />
+                                 </padding>
+                              </Label>
+                              <Spinner fx:id="walltimeHourSpinner" prefHeight="25.0" prefWidth="50.0" />
+                              <Spinner fx:id="walltimeMinuteSpinner" prefHeight="25.0" prefWidth="50.0" />
+                              <Spinner fx:id="walltimeSecondSpinner" prefHeight="25.0" prefWidth="50.0" />
+                           </children>
+                        </HBox>
 							</children>
 						</VBox>
 					</content>
