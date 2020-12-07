@@ -167,10 +167,10 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			return;
 		}
 
-		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
-			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo
-				.getNumberOfNodes(), jobRemoteInfo.getNumberOfCoresPerNode(), modules,
-			jobRemotePath, jobRemoteInfo.getSlurmPartitionOrPbsQueueType());
+		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
+				parameters + " " + jobRemotePathWithScript, jobRemoteInfo.getNumberOfNodes(),
+				jobRemoteInfo.getNumberOfCoresPerNode(), modules, jobRemotePath,
+				jobRemoteInfo.getSlurmPartitionOrPbsQueueType(), jobRemoteInfo.getWalltime());
 
 		this.cjlClient.setJobIdInfo(jobRemotePath, job.getID());
 	}

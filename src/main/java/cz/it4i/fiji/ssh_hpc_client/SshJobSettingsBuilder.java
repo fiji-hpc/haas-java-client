@@ -13,6 +13,7 @@ public class SshJobSettingsBuilder {
 
 	private String queueOrPartition;
 	private String userScriptName;
+	private String walltime;
 
 	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
 		this.numberOfNodes = newNumberOfNodes;
@@ -28,6 +29,11 @@ public class SshJobSettingsBuilder {
 
 	public SshJobSettingsBuilder queueOrPartition(String newQueueOrPartition) {
 		this.queueOrPartition = newQueueOrPartition;
+		return this;
+	}
+	
+	public SshJobSettingsBuilder walltime(String newWalltime) {
+		this.walltime = newWalltime;
 		return this;
 	}
 
@@ -52,6 +58,11 @@ public class SshJobSettingsBuilder {
 			@Override
 			public String getQueueOrPartition() {
 				return queueOrPartition;
+			}
+			
+			@Override
+			public String getWalltime() {
+				return walltime;
 			}
 
 			@Override

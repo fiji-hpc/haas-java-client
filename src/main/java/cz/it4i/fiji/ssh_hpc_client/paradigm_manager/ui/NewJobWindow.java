@@ -63,10 +63,10 @@ public class NewJobWindow implements
 	{
 		// ToDo: complete this:
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
-			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
-			.numberOfNodes(newJobController.getNumberOfNodes()).queueOrPartition(
-				newJobController.getQueueOrPartition()).userScriptName(newJobController
-					.getUserScriptName()).build();
+				.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
+				.numberOfNodes(newJobController.getNumberOfNodes())
+				.queueOrPartition(newJobController.getQueueOrPartition()).walltime(newJobController.getWalltime())
+				.userScriptName(newJobController.getUserScriptName()).build();
 
 		return new JobWithDirectorySettingsAdapter(sshJobSetttings) {
 
