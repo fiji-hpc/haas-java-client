@@ -112,9 +112,6 @@ public class NewJobController extends BorderPane {
 	@FXML
 	private Spinner<Integer> walltimeMinuteSpinner;
 
-	@FXML
-	private Spinner<Integer> walltimeSecondSpinner;
-
 	private DataLocation inputDataLocation;
 
 	private DataLocation outputDataLocation;
@@ -165,12 +162,6 @@ public class NewJobController extends BorderPane {
 		SpinnerValueFactory<Integer> walltimeMinuteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
 				59, 0);
 		walltimeMinuteSpinner.setValueFactory(walltimeMinuteValueFactory);
-
-		// Walltime seconds spinner value factory:
-		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeSecondSpinner, 0, 59);
-		SpinnerValueFactory<Integer> walltimeSecondValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
-				59, 0);
-		walltimeSecondSpinner.setValueFactory(walltimeSecondValueFactory);
 
 		// Set the default scheduler value:
 		// PBS Professional, the express queue - qexp,
@@ -232,8 +223,7 @@ public class NewJobController extends BorderPane {
 	}
 
 	public String getWalltime() {
-		return walltimeHourSpinner.getValue() + ":" + walltimeMinuteSpinner.getValue() + ":"
-				+ walltimeSecondSpinner.getValue();
+		return walltimeHourSpinner.getValue() + ":" + walltimeMinuteSpinner.getValue() + ":0";
 	}
 
 	public void setCreatePressedNotifier(Runnable createPressedNotifier) {
@@ -374,8 +364,7 @@ public class NewJobController extends BorderPane {
 	}
 
 	private boolean walltimeIsGreaterThanZero() {
-		boolean greaterThanZero = (walltimeHourSpinner.getValue() > 0 || walltimeMinuteSpinner.getValue() > 0
-				|| walltimeSecondSpinner.getValue() > 0);
+		boolean greaterThanZero = (walltimeHourSpinner.getValue() > 0 || walltimeMinuteSpinner.getValue() > 0);
 		if (!greaterThanZero) {
 			SimpleDialog.showWarning("Incorrect amount of time specified.",
 					"Enter an amount of time greater than zero for the amount of time needed.");

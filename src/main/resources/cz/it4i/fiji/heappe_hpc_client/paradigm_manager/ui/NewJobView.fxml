@@ -45,7 +45,7 @@
 						</AnchorPane>
 					</content>
 				</TitledPane>
-				<TitledPane animated="false" collapsible="false" text="Input data location">
+				<TitledPane animated="false" collapsible="false" text="Input Data Location">
 					<content>
 						<AnchorPane>
 							<children>
@@ -142,16 +142,17 @@
                                     <Insets right="20.0" />
                                  </padding>
                               </Label>
-                              <Spinner fx:id="walltimeHourSpinner" prefHeight="25.0" prefWidth="50.0" />
-                              <Spinner fx:id="walltimeMinuteSpinner" prefHeight="25.0" prefWidth="50.0" />
-                              <Spinner fx:id="walltimeSecondSpinner" prefHeight="25.0" prefWidth="50.0" />
+                              <Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+                              <Label text="Hours" />
+                              <Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+                              <Label text="Minutes" />
                            </children>
                         </HBox>
 							</children>
 						</VBox>
 					</content>
 				</TitledPane>
-				<TitledPane animated="false" collapsible="false" text="Output data location">
+				<TitledPane animated="false" collapsible="false" text="Output Data Location">
 					<content>
 						<AnchorPane minHeight="0.0" minWidth="0.0">
 							<children>
@@ -188,19 +189,28 @@
 							</children>
 						</AnchorPane>
 					</content>
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
 				</TitledPane>
 			</children>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
 		</VBox>
 	</center>
 	<bottom>
 		<BorderPane BorderPane.alignment="CENTER">
 			<right>
-				<Button fx:id="createButton" mnemonicParsing="false" prefHeight="22.0" prefWidth="71.0" text="Create" BorderPane.alignment="CENTER">
+				<Button fx:id="createButton" mnemonicParsing="false" text="Create" BorderPane.alignment="CENTER">
 					<BorderPane.margin>
-						<Insets right="3.0" />
+						<Insets />
 					</BorderPane.margin>
 				</Button>
 			</right>
 		</BorderPane>
 	</bottom>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
 </fx:root>
