@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToggleGroup?>
@@ -20,51 +22,37 @@
 			<children>
 				<TitledPane animated="false" collapsible="false" text="Job Type">
 					<content>
-						<AnchorPane>
-							<children>
-								<VBox layoutX="35.0" layoutY="-27.0" prefHeight="54.0" prefWidth="439.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+								<VBox>
 									<children>
 										<RadioButton fx:id="workflowSpimRadioButton" mnemonicParsing="false" selected="true" text="SPIM Workflow">
 											<toggleGroup>
 												<ToggleGroup fx:id="jobTypeSelectorToggleGroup" />
 											</toggleGroup>
 										</RadioButton>
-										<RadioButton fx:id="macroRadioButton" mnemonicParsing="false" text="Macro" toggleGroup="$jobTypeSelectorToggleGroup">
-											<padding>
-												<Insets top="5.0" />
-											</padding>
-										</RadioButton>
-										<RadioButton fx:id="scriptRadioButton" mnemonicParsing="false" text="Script" toggleGroup="$jobTypeSelectorToggleGroup">
-											<padding>
-												<Insets top="5.0" />
-											</padding>
-										</RadioButton>
+										<RadioButton fx:id="macroRadioButton" mnemonicParsing="false" text="Macro" toggleGroup="$jobTypeSelectorToggleGroup" />
+										<RadioButton fx:id="scriptRadioButton" mnemonicParsing="false" text="Script" toggleGroup="$jobTypeSelectorToggleGroup" />
 									</children>
 								</VBox>
-							</children>
-						</AnchorPane>
 					</content>
 				</TitledPane>
 				<TitledPane animated="false" collapsible="false" text="Input Data Location">
 					<content>
-						<AnchorPane>
-							<children>
-								<VBox prefHeight="79.0" prefWidth="459.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+								<VBox>
 									<children>
 										<RadioButton fx:id="demoInputDataRadioButton" mnemonicParsing="false" selected="true">
 											<toggleGroup>
 												<ToggleGroup fx:id="inputDataLocationToggleGroup" />
 											</toggleGroup>
 											<graphic>
-												<Label maxHeight="1.7976931348623157E308" text="Demonstration data on the Salomon IT4I cluster" />
+												<Label text="Demonstration data on the Salomon IT4I cluster" />
 											</graphic>
 											<tooltip>
 												<Tooltip text="Demonstration data located on the Salomon IT4I cluster will be used and there will be created config.yaml in the job working directory." />
 											</tooltip>
 										</RadioButton>
-										<RadioButton fx:id="jobSubdirectoryRadioButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
+										<RadioButton fx:id="jobSubdirectoryRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
 											<graphic>
-												<Label maxHeight="1.7976931348623157E308" text="Job subdirectory" />
+												<Label text="Job subdirectory" />
 											</graphic>
 											<tooltip>
 												<Tooltip text="Local job subdirectory will be used as location for input data. Data and config.yaml will be needed to copy into it." />
@@ -85,87 +73,85 @@
 										</RadioButton>
 									</children>
 								</VBox>
-							</children>
-						</AnchorPane>
 					</content>
 				</TitledPane>
 				<TitledPane animated="false" collapsible="false" text="Node Configuration">
 					<content>
-						<VBox>
-							<children>
-								<HBox>
-									<children>
-										<Label prefWidth="220.0" text="Number of nodes">
-											<opaqueInsets>
-												<Insets />
-											</opaqueInsets>
-											<padding>
-												<Insets right="20.0" />
-											</padding>
-										</Label>
-										<Spinner fx:id="numberOfNodesSpinner" disable="true" editable="true" />
-									</children>
-								</HBox>
-								<HBox>
-									<children>
-										<Label prefWidth="220.0" text="Number of cores per node">
-											<opaqueInsets>
-												<Insets />
-											</opaqueInsets>
-											<padding>
-												<Insets right="20.0" />
-											</padding>
-										</Label>
-										<Spinner fx:id="numberOfCoresPerNodeSpinner" disable="true" editable="true" />
-									</children>
-								</HBox>
-								<HBox fx:id="queueOrPartitionHBox">
-									<children>
-										<Label fx:id="queueOrPartitionLabel" prefWidth="220.0" text="PBS queue or SLURM partition">
-											<opaqueInsets>
-												<Insets />
-											</opaqueInsets>
-											<padding>
-												<Insets right="20.0" />
-											</padding>
-										</Label>
-										<TextField fx:id="queueOrPartitionTextField" />
-									</children>
-								</HBox>
-                        <HBox fx:id="walltimeLabel" layoutX="20.0" layoutY="70.0">
-                           <children>
-                              <Label prefWidth="220.0" text="Max amount of time needed">
-                                 <opaqueInsets>
-                                    <Insets />
-                                 </opaqueInsets>
-                                 <padding>
-                                    <Insets right="20.0" />
-                                 </padding>
-                              </Label>
-                              <Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
-                              <Label text="Hours" />
-                              <Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
-                              <Label text="Minutes" />
-                           </children>
-                        </HBox>
-							</children>
-						</VBox>
+						<TabPane>
+							<tabs>
+								<Tab closable="false" text="Basic">
+									<content>
+										<VBox>
+											<children>
+												<HBox>
+													<children>
+														<Label prefWidth="200.0" text="Number of nodes">
+															<opaqueInsets>
+																<Insets />
+															</opaqueInsets>
+														</Label>
+														<Spinner fx:id="numberOfNodesSpinner" disable="true" editable="true" />
+													</children>
+												</HBox>
+												<HBox>
+													<children>
+														<Label prefWidth="200.0" text="Number of cores per node">
+															<opaqueInsets>
+																<Insets />
+															</opaqueInsets>
+														</Label>
+														<Spinner fx:id="numberOfCoresPerNodeSpinner" disable="true" editable="true" />
+													</children>
+												</HBox>
+											</children>
+										</VBox>
+									</content>
+								</Tab>
+								<Tab closable="false" text="Advanced">
+									<VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+										<children>
+											<HBox fx:id="queueOrPartitionHBox">
+												<children>
+													<Label fx:id="queueOrPartitionLabel" prefWidth="200.0" text="PBS queue or SLURM partition">
+														<opaqueInsets>
+															<Insets />
+														</opaqueInsets>
+													</Label>
+													<TextField fx:id="queueOrPartitionTextField" />
+												</children>
+											</HBox>
+											<HBox layoutX="20.0" layoutY="70.0">
+												<children>
+													<Label prefWidth="200.0" text="Max amount of time needed">
+														<opaqueInsets>
+															<Insets />
+														</opaqueInsets>
+													</Label>
+													<Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+													<Label text="Hours" />
+													<Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+													<Label text="Minutes" />
+												</children>
+											</HBox>
+										</children>
+									</VBox>
+								</Tab>
+							</tabs>
+						</TabPane>
 					</content>
 				</TitledPane>
 				<TitledPane animated="false" collapsible="false" text="Output Data Location">
 					<content>
-						<AnchorPane minHeight="0.0" minWidth="0.0">
-							<children>
-								<VBox prefHeight="62.0" prefWidth="479.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+								<VBox>
 									<children>
 										<HBox>
 											<children>
-												<RadioButton maxHeight="1.7976931348623157E308" mnemonicParsing="false" selected="true">
+												<RadioButton mnemonicParsing="false" selected="true">
 													<toggleGroup>
 														<ToggleGroup fx:id="outputDataLocationToggleGroup" />
 													</toggleGroup>
 													<graphic>
-														<Label maxHeight="1.7976931348623157E308" text="Job subdirectory" />
+														<Label text="Job subdirectory" />
 													</graphic>
 												</RadioButton>
 											</children>
@@ -186,17 +172,12 @@
 										</HBox>
 									</children>
 								</VBox>
-							</children>
-						</AnchorPane>
 					</content>
-               <padding>
-                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-               </padding>
 				</TitledPane>
 			</children>
-         <BorderPane.margin>
-            <Insets />
-         </BorderPane.margin>
+			<BorderPane.margin>
+				<Insets />
+			</BorderPane.margin>
 		</VBox>
 	</center>
 	<bottom>
@@ -204,13 +185,13 @@
 			<right>
 				<Button fx:id="createButton" mnemonicParsing="false" text="Create" BorderPane.alignment="CENTER">
 					<BorderPane.margin>
-						<Insets />
+						<Insets top="2.0" />
 					</BorderPane.margin>
 				</Button>
 			</right>
 		</BorderPane>
 	</bottom>
-   <padding>
-      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-   </padding>
+	<padding>
+		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+	</padding>
 </fx:root>

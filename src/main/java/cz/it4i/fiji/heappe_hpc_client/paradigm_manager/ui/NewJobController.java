@@ -174,6 +174,9 @@ public class NewJobController extends BorderPane {
 		} else if (hpcSchedulerType == HPCSchedulerType.PBS) {
 			defaultQueueOrPartition = "qexp";
 			label = "PBS Profesional queue";
+		} else if(hpcSchedulerType == HPCSchedulerType.LSF) {
+			defaultQueueOrPartition = "normal";
+			label = "IBM Spectrum LSF queue";
 		}
 		queueOrPartitionTextField.setText(defaultQueueOrPartition);
 		queueOrPartitionLabel.setText(label);
