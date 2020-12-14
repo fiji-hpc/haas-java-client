@@ -111,6 +111,9 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private Spinner<Integer> walltimeMinuteSpinner;
+	
+	@FXML
+	private Spinner<Integer> maxMemoryPerNodeSpinner; // Measured in GB.
 
 	private DataLocation inputDataLocation;
 
@@ -121,6 +124,9 @@ public class NewJobController extends BorderPane {
 	private Stage ownerWindow;
 
 	private Runnable createPressedNotifier;
+	
+	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 8; //GBs
+	private static final int MIN_MAX_MEMORY_PER_NODE = 1; // GB
 
 	public NewJobController(ConnectionType connectionType) {
 		JavaFXRoutines.initRootAndController("NewJobView.fxml", this);
@@ -162,6 +168,13 @@ public class NewJobController extends BorderPane {
 		SpinnerValueFactory<Integer> walltimeMinuteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
 				59, 0);
 		walltimeMinuteSpinner.setValueFactory(walltimeMinuteValueFactory);
+				
+		// Maximum memory limit in GBs:
+		SimpleControls.spinnerIgnoreNoneNumericInput(maxMemoryPerNodeSpinner, MIN_MAX_MEMORY_PER_NODE,
+				Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> maxMemoryPerNodeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(
+				MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE, DEFAULT_MAX_MEMORY_LIMIT_PER_NODE);
+		maxMemoryPerNodeSpinner.setValueFactory(maxMemoryPerNodeValueFactory);
 
 		// Set the default scheduler value:
 		// PBS Professional, the express queue - qexp,
@@ -227,6 +240,10 @@ public class NewJobController extends BorderPane {
 
 	public String getWalltime() {
 		return walltimeHourSpinner.getValue() + ":" + walltimeMinuteSpinner.getValue() + ":0";
+	}
+	
+	public int getMaxMemoryPerNode() {
+		return maxMemoryPerNodeSpinner.getValue();
 	}
 
 	public void setCreatePressedNotifier(Runnable createPressedNotifier) {
@@ -351,7 +368,7 @@ public class NewJobController extends BorderPane {
 	private void createPressed() {
 		JavaFXRoutines.runOnFxThreadAndWait(() -> {
 			obtainValues();
-			if (checkDirectoryLocationIfNeeded() && walltimeIsGreaterThanZero()) {
+			if (checkDirectoryLocationIfNeeded() && walltimeIsGreaterThanZero() && maxMemoryIsGreaterThanZero()) {
 				// Close stage
 				Stage stage = (Stage) createButton.getScene().getWindow();
 				stage.close();
@@ -371,6 +388,15 @@ public class NewJobController extends BorderPane {
 		if (!greaterThanZero) {
 			SimpleDialog.showWarning("Incorrect amount of time specified.",
 					"Enter an amount of time greater than zero for the amount of time needed.");
+		}
+		return greaterThanZero;
+	}
+	
+	private boolean maxMemoryIsGreaterThanZero() {
+		boolean greaterThanZero = (maxMemoryPerNodeSpinner.getValue() > 0);
+		if (!greaterThanZero) {
+			SimpleDialog.showWarning("Incorrect max memory limit specified.",
+					"Enter a max memory limit that is greater than zero.");
 		}
 		return greaterThanZero;
 	}

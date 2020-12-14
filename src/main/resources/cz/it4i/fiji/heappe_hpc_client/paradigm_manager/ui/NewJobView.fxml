@@ -90,19 +90,32 @@
 																<Insets />
 															</opaqueInsets>
 														</Label>
-														<Spinner fx:id="numberOfNodesSpinner" disable="true" editable="true" />
+														<Spinner fx:id="numberOfNodesSpinner" disable="true" editable="true" prefWidth="70.0" />
 													</children>
 												</HBox>
-												<HBox>
-													<children>
-														<Label prefWidth="200.0" text="Number of cores per node">
-															<opaqueInsets>
-																<Insets />
-															</opaqueInsets>
-														</Label>
-														<Spinner fx:id="numberOfCoresPerNodeSpinner" disable="true" editable="true" />
-													</children>
-												</HBox>
+   											<HBox>
+   												<children>
+   													<Label prefWidth="200.0" text="Max amount of time needed">
+   														<opaqueInsets>
+   															<Insets />
+   														</opaqueInsets>
+   													</Label>
+   													<Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+   													<Label text="Hours" />
+   													<Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+   													<Label text="Minutes" />
+   												</children>
+   											</HBox>
+   											<HBox fx:id="queueOrPartitionHBox">
+   												<children>
+   													<Label fx:id="queueOrPartitionLabel" prefWidth="200.0" text="PBS queue or SLURM partition">
+   														<opaqueInsets>
+   															<Insets />
+   														</opaqueInsets>
+   													</Label>
+   													<TextField fx:id="queueOrPartitionTextField" />
+   												</children>
+   											</HBox>
 											</children>
 										</VBox>
 									</content>
@@ -110,29 +123,27 @@
 								<Tab closable="false" text="Advanced">
 									<VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 										<children>
-											<HBox fx:id="queueOrPartitionHBox">
-												<children>
-													<Label fx:id="queueOrPartitionLabel" prefWidth="200.0" text="PBS queue or SLURM partition">
-														<opaqueInsets>
-															<Insets />
-														</opaqueInsets>
-													</Label>
-													<TextField fx:id="queueOrPartitionTextField" />
-												</children>
-											</HBox>
-											<HBox layoutX="20.0" layoutY="70.0">
-												<children>
-													<Label prefWidth="200.0" text="Max amount of time needed">
-														<opaqueInsets>
-															<Insets />
-														</opaqueInsets>
-													</Label>
-													<Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
-													<Label text="Hours" />
-													<Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
-													<Label text="Minutes" />
-												</children>
-											</HBox>
+												<HBox>
+													<children>
+														<Label prefWidth="200.0" text="Number of cores per node">
+															<opaqueInsets>
+																<Insets />
+															</opaqueInsets>
+														</Label>
+														<Spinner fx:id="numberOfCoresPerNodeSpinner" disable="true" editable="true" prefWidth="70.0" />
+													</children>
+												</HBox>
+                                 <HBox>
+                                    <children>
+                                       <Label prefWidth="200.0" text="Max memory per node">
+                                          <opaqueInsets>
+                                             <Insets />
+                                          </opaqueInsets>
+                                       </Label>
+                                       <Spinner fx:id="maxMemoryPerNodeSpinner" editable="true" prefHeight="25.0" prefWidth="70.0" />
+                                       <Label text="GB" />
+                                    </children>
+                                 </HBox>
 										</children>
 									</VBox>
 								</Tab>

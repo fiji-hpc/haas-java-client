@@ -10,10 +10,11 @@ public class SshJobSettingsBuilder {
 
 	private int numberOfNodes = DEFAULT_NUMBER_OF_NODES;
 	private int numberOfCoresPerNode = DEFAULT_NUMBER_OF_CORES_PER_NODE;
-
+	private int maxMemoryPerNode;
+	
 	private String queueOrPartition;
 	private String userScriptName;
-	private String walltime;
+	private String walltime; 
 
 	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
 		this.numberOfNodes = newNumberOfNodes;
@@ -39,6 +40,11 @@ public class SshJobSettingsBuilder {
 
 	public SshJobSettingsBuilder userScriptName(String newUserScriptName) {
 		this.userScriptName = newUserScriptName;
+		return this;
+	}
+	
+	public SshJobSettingsBuilder maxMemoryPerNode(int newMaxMemoryPerNode) {
+		this.maxMemoryPerNode = newMaxMemoryPerNode;
 		return this;
 	}
 
@@ -68,6 +74,11 @@ public class SshJobSettingsBuilder {
 			@Override
 			public String getUserScriptName() {
 				return userScriptName;
+			}
+			
+			@Override
+			public int getMaxMemoryPerNode() {
+				return maxMemoryPerNode;
 			}
 		};
 	}

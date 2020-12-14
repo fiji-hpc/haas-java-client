@@ -167,10 +167,11 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			return;
 		}
 
-		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory, this.command,
-				parameters + " " + jobRemotePathWithScript, jobRemoteInfo.getNumberOfNodes(),
-				jobRemoteInfo.getNumberOfCoresPerNode(), modules, jobRemotePath,
-				jobRemoteInfo.getSlurmPartitionOrPbsQueueType(), jobRemoteInfo.getWalltime());
+		Job job = this.cjlClient.submitOpenMpiJob(this.remoteFijiDirectory,
+			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo
+				.getNumberOfNodes(), jobRemoteInfo.getNumberOfCoresPerNode(), modules,
+			jobRemotePath, jobRemoteInfo.getSlurmPartitionOrPbsQueueType(),
+			jobRemoteInfo.getWalltime(), jobRemoteInfo.getMaxMemoryPerNode());
 
 		this.cjlClient.setJobIdInfo(jobRemotePath, job.getID());
 	}
@@ -241,7 +242,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 						// Remove job from lists:
 						jobIdToSchedulerJobId.remove(jobId);
 						timeLastPolledByJobId.remove(jobId);
-						
+
 						log.debug("Job {} redirected output has timed-out.", jobId);
 					}
 				}

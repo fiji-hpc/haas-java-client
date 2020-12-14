@@ -65,7 +65,9 @@ public class NewJobWindow implements
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
 				.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
 				.numberOfNodes(newJobController.getNumberOfNodes())
-				.queueOrPartition(newJobController.getQueueOrPartition()).walltime(newJobController.getWalltime())
+				.queueOrPartition(newJobController.getQueueOrPartition())
+				.walltime(newJobController.getWalltime())
+				.maxMemoryPerNode(newJobController.getMaxMemoryPerNode())
 				.userScriptName(newJobController.getUserScriptName()).build();
 
 		return new JobWithDirectorySettingsAdapter(sshJobSetttings) {
