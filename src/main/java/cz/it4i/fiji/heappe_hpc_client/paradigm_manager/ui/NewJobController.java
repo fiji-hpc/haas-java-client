@@ -238,8 +238,11 @@ public class NewJobController extends BorderPane {
 		return jobType;
 	}
 
-	public String getWalltime() {
-		return walltimeHourSpinner.getValue() + ":" + walltimeMinuteSpinner.getValue() + ":0";
+	public int[] getWalltime() {
+		int[] walltime = new int[2];
+		walltime[0] = walltimeHourSpinner.getValue();
+		walltime[1] = walltimeMinuteSpinner.getValue();
+		return walltime;
 	}
 	
 	public int getMaxMemoryPerNode() {

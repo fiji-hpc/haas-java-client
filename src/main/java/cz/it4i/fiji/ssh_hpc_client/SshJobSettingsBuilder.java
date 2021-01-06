@@ -14,7 +14,7 @@ public class SshJobSettingsBuilder {
 	
 	private String queueOrPartition;
 	private String userScriptName;
-	private String walltime; 
+	private int[] walltime = new int[2]; 
 
 	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
 		this.numberOfNodes = newNumberOfNodes;
@@ -33,7 +33,7 @@ public class SshJobSettingsBuilder {
 		return this;
 	}
 	
-	public SshJobSettingsBuilder walltime(String newWalltime) {
+	public SshJobSettingsBuilder walltime(int[] newWalltime) {
 		this.walltime = newWalltime;
 		return this;
 	}
@@ -67,7 +67,7 @@ public class SshJobSettingsBuilder {
 			}
 			
 			@Override
-			public String getWalltime() {
+			public int[] getWalltime() {
 				return walltime;
 			}
 

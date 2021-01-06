@@ -100,9 +100,9 @@
    															<Insets />
    														</opaqueInsets>
    													</Label>
-   													<Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+   													<Spinner fx:id="walltimeHourSpinner" editable="true" prefHeight="25.0" prefWidth="70.0" />
    													<Label text="Hours" />
-   													<Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="50.0" />
+   													<Spinner fx:id="walltimeMinuteSpinner" editable="true" prefHeight="25.0" prefWidth="70.0" />
    													<Label text="Minutes" />
    												</children>
    											</HBox>
