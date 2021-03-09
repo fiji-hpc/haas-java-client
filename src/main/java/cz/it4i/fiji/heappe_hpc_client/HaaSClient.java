@@ -645,4 +645,9 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		// Only one ScpClient should exit as the number of connections are limited.
 	}
 
+	@Override
+	public String getRemoteJobInfo(long jobId) {
+		return "This job is managed by the HEAppE middleware.";
+	}
+
 }

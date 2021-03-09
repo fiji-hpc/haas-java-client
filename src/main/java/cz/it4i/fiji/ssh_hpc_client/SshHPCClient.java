@@ -138,12 +138,19 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		return workflowJobId;
 	}
+	
+	@Override
+	public String getRemoteJobInfo(long jobId){
+		String jobRemotePath = this.remoteWorkingDirectory +
+				Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
+		return cjlClient.getRemoteJobInfo(jobRemotePath).toString();
+	}
 
 	@Override
 	public void submitJob(long jobId) {
 		String jobRemotePath = this.remoteWorkingDirectory +
-			Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
-
+				Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
+		
 		// Get the info of the workflow job from the remote cluster:
 		RemoteJobInfo jobRemoteInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
 
