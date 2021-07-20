@@ -27,7 +27,6 @@ import org.scijava.plugin.Parameter;
 
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
-import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.Job;
 import cz.it4i.cluster_job_launcher.JobManager;
 import cz.it4i.cluster_job_launcher.JobManagerJobState;
@@ -74,15 +73,14 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
 
-		// The HPC Scheduler type will be automatically detected (if set to null):
-		HPCSchedulerType schedulerType = null;
-
+		// The HPC Scheduler type will be automatically detected (if it is set to null)
+		// as well as the OpenMPI module name and the ImageJ executable.
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
 				this.cjlClient = ClusterJobLauncher.createWithKeyAuthentication(settings
 					.getHost(), settings.getPort(), settings.getUserName(), settings
 						.getKeyFile().getAbsolutePath(), settings.getKeyFilePassword(),
-					schedulerType, true);
+					settings.getJobScheduler(), true);
 
 				this.scpClient = new ScpClient(settings.getHost(), settings
 					.getUserName(), settings.getKeyFile().getAbsolutePath(), settings
@@ -91,7 +89,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			else {
 				this.cjlClient = ClusterJobLauncher.createWithPasswordAuthentication(
 					settings.getHost(), settings.getPort(), settings.getUserName(),
-					settings.getPassword(), schedulerType, true);
+					settings.getPassword(), settings.getJobScheduler(), true);
 
 				this.scpClient = new ScpClient(settings.getHost(), settings
 					.getUserName(), settings.getPassword());
@@ -154,9 +152,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		// Get the info of the workflow job from the remote cluster:
 		RemoteJobInfo jobRemoteInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
 
-		List<String> modules = new ArrayList<>();
-		modules.add("openmpi/4");
-
+		List<String> modules = Collections.emptyList();
+		
 		String parameters;
 		String jobRemotePathWithScript;
 		String userScriptName = jobRemoteInfo.getUserScriptName();

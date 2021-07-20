@@ -6,13 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
+import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.hpc_workflow.paradigm_manager.SettingsWithWorkingDirectory;
 import lombok.Data;
 
 @Data
 public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 
-	private static final long serialVersionUID = 8L;
+	private static final long serialVersionUID = 10L;
 
 	private String host;
 	private int port;
@@ -25,12 +26,14 @@ public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 	private String remoteDirectory;
 	private String command;
 	private String remoteWorkingDirectory;
+	private String openMpiModule;
+	private HPCSchedulerType jobScheduler;
 
 	public SshConnectionSettings(String host, int port,
 		AuthenticationChoice authenticationChoice, String userName, String password,
 		File keyFile, String keyFilePassword, String workingDirectory,
 		String remoteDirectoryTextField, String commandTextField,
-		String remoteWorkingDirectory)
+		String remoteWorkingDirectory, String openMpiModule, HPCSchedulerType jobScheduler)
 	{
 		this.host = host;
 		this.port = port;
@@ -43,6 +46,8 @@ public class SshConnectionSettings implements SettingsWithWorkingDirectory {
 		this.remoteDirectory = remoteDirectoryTextField;
 		this.command = commandTextField;
 		this.remoteWorkingDirectory = remoteWorkingDirectory;
+		this.openMpiModule = openMpiModule;
+		this.jobScheduler = jobScheduler;
 	}
 
 	@Override

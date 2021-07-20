@@ -4,6 +4,8 @@ package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 import java.io.File;
 
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
+import cz.it4i.cluster_job_launcher.HPCSchedulerType;
+import cz.it4i.fiji.ssh_hpc_client.AdvancedSettings;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
@@ -11,6 +13,8 @@ import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
@@ -68,14 +72,21 @@ public class SshSettingsScreenController extends AnchorPane {
 	private TextField remoteDirectoryTextField;
 
 	@FXML
-	private TextField commandTextField;
+	private TextField remoteWorkingDirectoryTextField;
 
 	@FXML
-	private TextField remoteWorkingDirectoryTextField;
+	private Hyperlink advancedOptionsHyperlink;
+
+	@FXML
+	private CheckBox automaticAdvancedSettingsCheckBox;
 
 	@Getter
 	@Setter
 	private SshConnectionSettings settings;
+
+	private SshConnectionSettings oldSettings;
+
+	private AdvancedSettings advancedSettings = null;
 
 	private static final Integer PORT_DEFAULT_VALUE = 22;
 
@@ -105,7 +116,7 @@ public class SshSettingsScreenController extends AnchorPane {
 			Boolean isNowSelected) -> disableIrrelevantFileds(isNowSelected));
 	}
 
-	public void disableIrrelevantFileds(Boolean isSelected) {
+	public void disableIrrelevantFileds(boolean isSelected) {
 		if (isSelected) {
 			passwordPasswordField.setDisable(true);
 			keyFileTextField.setDisable(false);
@@ -165,13 +176,32 @@ public class SshSettingsScreenController extends AnchorPane {
 		File keyFile = new File(keyFileTextField.getText());
 		String keyFilePassword = keyFilePasswordPasswordField.getText();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
-		String command = commandTextField.getText();
 		String workingDirectory = workingDirectoryTextField.getText();
 		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
 
+		// Get command from advanced settings if set, else keep the old value:
+		String command = null;
+		String openMpiModule = null;
+		HPCSchedulerType jobScheduler = null;
+
+		// Delete the advanced settings if the user has chosen not to use
+		// automatic configuration:
+		if (!automaticAdvancedSettingsCheckBox.isSelected()) {
+			if (advancedSettings != null) {
+				command = advancedSettings.getCommand();
+				openMpiModule = advancedSettings.getOpenMpiModule();
+				jobScheduler = advancedSettings.getJobScheduler();
+			}
+			else if (oldSettings != null) {
+				command = oldSettings.getCommand();
+				openMpiModule = oldSettings.getOpenMpiModule();
+				jobScheduler = oldSettings.getJobScheduler();
+			}
+		}
+
 		return new SshConnectionSettings(host, port, authenticationChoice, userName,
 			password, keyFile, keyFilePassword, workingDirectory, remoteFijiDirectory,
-			command, remoteWorkingDirectory);
+			command, remoteWorkingDirectory, openMpiModule, jobScheduler);
 	}
 
 	private <T> void commitSpinnerValue(Spinner<T> spinner) {
@@ -187,7 +217,19 @@ public class SshSettingsScreenController extends AnchorPane {
 		}
 	}
 
+	@FXML
+	private void advancedOptions() {
+		SshAdvancedSettingsScreenWindow sshAdvancedSettingsScreenWindow =
+			new SshAdvancedSettingsScreenWindow();
+		this.advancedSettings = sshAdvancedSettingsScreenWindow.showDialog(
+			this.oldSettings, advancedSettings, automaticAdvancedSettingsCheckBox
+				.isSelected());
+
+	}
+
 	public void setInitialFormValues(SshConnectionSettings oldSettings) {
+		this.oldSettings = oldSettings;
+
 		if (oldSettings == null) {
 			hostTextField.setText("localhost");
 			portSpinner.getValueFactory().setValue(PORT_DEFAULT_VALUE);
@@ -195,6 +237,7 @@ public class SshSettingsScreenController extends AnchorPane {
 			authenticationChoiceKeyRadioButton.setSelected(true);
 			authenticationChoicePasswordRadioButton.setSelected(false);
 			disableIrrelevantFileds(true);
+			automaticAdvancedSettingsCheckBox.setSelected(true);
 		}
 		else {
 			hostTextField.setText(oldSettings.getHost());
@@ -219,9 +262,14 @@ public class SshSettingsScreenController extends AnchorPane {
 			workingDirectoryTextField.setText(oldSettings.getWorkingDirectory()
 				.toAbsolutePath().toString());
 			remoteDirectoryTextField.setText(oldSettings.getRemoteDirectory());
-			commandTextField.setText(oldSettings.getCommand());
 			remoteWorkingDirectoryTextField.setText(oldSettings
 				.getRemoteWorkingDirectory());
+
+			if (oldSettings.getCommand() == null && oldSettings
+				.getOpenMpiModule() == null && oldSettings.getJobScheduler() == null)
+			{
+				automaticAdvancedSettingsCheckBox.setSelected(true);
+			}
 		}
 	}
 }
