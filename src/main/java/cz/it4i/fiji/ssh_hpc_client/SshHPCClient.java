@@ -66,6 +66,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 	private String command;
 
+	private String openMpiModule;
+
 	private String remoteFijiDirectory;
 
 	private static final String SCRIPT_FILE = "parallelMacroWrappedScript.ijm";
@@ -73,7 +75,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public SshHPCClient(SshConnectionSettings settings) {
 		log.info("Creating ssh client with given settings.");
 
-		// The HPC Scheduler type will be automatically detected (if it is set to null)
+		// The HPC Scheduler type will be automatically detected (if it is set to
+		// null)
 		// as well as the OpenMPI module name and the ImageJ executable.
 		try {
 			if (settings.getAuthenticationChoice() == AuthenticationChoice.KEY_FILE) {
@@ -101,6 +104,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			remoteFijiDirectory = settings.getRemoteDirectory();
 
 			command = settings.getCommand();
+			openMpiModule = settings.getOpenMpiModule();
 
 			// Create the remote working directory if it does not exist:
 			this.cjlClient.createRemoteDirectory(remoteWorkingDirectory);
@@ -136,24 +140,24 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		return workflowJobId;
 	}
-	
+
 	@Override
-	public String getRemoteJobInfo(long jobId){
+	public String getRemoteJobInfo(long jobId) {
 		String jobRemotePath = this.remoteWorkingDirectory +
-				Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
+			Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
 		return cjlClient.getRemoteJobInfo(jobRemotePath).toString();
 	}
 
 	@Override
 	public void submitJob(long jobId) {
 		String jobRemotePath = this.remoteWorkingDirectory +
-				Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
-		
+			Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
+
 		// Get the info of the workflow job from the remote cluster:
 		RemoteJobInfo jobRemoteInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
 
 		List<String> modules = Collections.emptyList();
-		
+
 		String parameters;
 		String jobRemotePathWithScript;
 		String userScriptName = jobRemoteInfo.getUserScriptName();
@@ -175,7 +179,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.command, parameters + " " + jobRemotePathWithScript, jobRemoteInfo
 				.getNumberOfNodes(), jobRemoteInfo.getNumberOfCoresPerNode(), modules,
 			jobRemotePath, jobRemoteInfo.getSlurmPartitionOrPbsQueueType(),
-			jobRemoteInfo.getWalltime(), jobRemoteInfo.getMaxMemoryPerNode());
+			jobRemoteInfo.getWalltime(), jobRemoteInfo.getMaxMemoryPerNode(),
+			this.openMpiModule);
 
 		this.cjlClient.setJobIdInfo(jobRemotePath, job.getID());
 	}
