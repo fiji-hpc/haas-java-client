@@ -200,6 +200,9 @@
 					</BorderPane.margin>
 				</Button>
 			</right>
+         <left>
+            <Button fx:id="previewRemoteCommandButton" mnemonicParsing="false" onAction="#previewRemoteCommandButton" text="Preview Remote Command" BorderPane.alignment="CENTER" />
+         </left>
 		</BorderPane>
 	</bottom>
 	<padding>

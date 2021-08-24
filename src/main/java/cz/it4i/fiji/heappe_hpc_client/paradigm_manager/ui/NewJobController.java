@@ -4,13 +4,15 @@ package cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
+import cz.it4i.fiji.ssh_hpc_client.SshHPCClient;
+import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.PreviewSubmitCommandScreenWindow;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
@@ -35,16 +37,18 @@ import javafx.stage.Window;
 
 public class NewJobController extends BorderPane {
 
-	private static final Runnable EMPTY_NOTIFIER = () -> {
-	};
+	private static final Runnable EMPTY_NOTIFIER = () -> {};
 
-	public static HPCSchedulerType hpcSchedulerType;
+	public static SshHPCClient sshHpcClient;
 
 	@SuppressWarnings("unused")
 	private static Logger log = LoggerFactory.getLogger(NewJobController.class);
 
 	@FXML
 	private Button createButton;
+
+	@FXML
+	private Button previewRemoteCommandButton;
 
 	@FXML
 	private ToggleGroup inputDataLocationToggleGroup;
@@ -111,7 +115,7 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private Spinner<Integer> walltimeMinuteSpinner;
-	
+
 	@FXML
 	private Spinner<Integer> maxMemoryPerNodeSpinner; // Measured in GB.
 
@@ -124,56 +128,68 @@ public class NewJobController extends BorderPane {
 	private Stage ownerWindow;
 
 	private Runnable createPressedNotifier;
-	
-	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 8; //GBs
+
+	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 8; // GBs
 	private static final int MIN_MAX_MEMORY_PER_NODE = 1; // GB
 
 	public NewJobController(ConnectionType connectionType) {
 		JavaFXRoutines.initRootAndController("NewJobView.fxml", this);
-		getStylesheets().add(getClass().getResource("NewJobView.css").toExternalForm());
+		getStylesheets().add(getClass().getResource("NewJobView.css")
+			.toExternalForm());
 		createButton.setOnMouseClicked(x -> createPressed());
-		inputDataLocationToggleGroup.selectedToggleProperty()
-				.addListener((v, old, n) -> selected(n, ownInputRadioButton));
-		outputDataLocationToggleGroup.selectedToggleProperty()
-				.addListener((v, o, n) -> selected(n, ownOutputRadioButton));
+		inputDataLocationToggleGroup.selectedToggleProperty().addListener((v, old,
+			n) -> selected(n, ownInputRadioButton));
+		outputDataLocationToggleGroup.selectedToggleProperty().addListener((v, o,
+			n) -> selected(n, ownOutputRadioButton));
 
 		// Check which job type is selected:
-		workflowSpimRadioButton.selectedProperty().addListener((v, o, n) -> selectedSpimWorkflow(n));
-		macroRadioButton.selectedProperty().addListener((v, o, n) -> selectedMacro(n));
-		scriptRadioButton.selectedProperty().addListener((v, o, n) -> selectedScript(n));
+		workflowSpimRadioButton.selectedProperty().addListener((v, o,
+			n) -> selectedSpimWorkflow(n));
+		macroRadioButton.selectedProperty().addListener((v, o, n) -> selectedMacro(
+			n));
+		scriptRadioButton.selectedProperty().addListener((v, o,
+			n) -> selectedScript(n));
 
 		initSelectButton(inputDirectoryTextField, selectInputButton);
 		initSelectDirectoryButton(outputDirectoryTextField, selectOutputButton);
 
 		// Number of nodes spinner value factory:
-		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfNodesSpinner, 1, Integer.MAX_VALUE);
-		SpinnerValueFactory<Integer> nodesValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
-				Integer.MAX_VALUE, 1);
+		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfNodesSpinner, 1,
+			Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> nodesValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
+				1);
 		numberOfNodesSpinner.setValueFactory(nodesValueFactory);
 
 		// Number of cores per node spinner value factory:
-		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfCoresPerNodeSpinner, 1, Integer.MAX_VALUE);
-		SpinnerValueFactory<Integer> coresValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1,
-				Integer.MAX_VALUE, 24);
+		SimpleControls.spinnerIgnoreNoneNumericInput(numberOfCoresPerNodeSpinner, 1,
+			Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> coresValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Integer.MAX_VALUE,
+				24);
 		numberOfCoresPerNodeSpinner.setValueFactory(coresValueFactory);
 
 		// Walltime hour spinner value factory:
-		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeHourSpinner, 0, Integer.MAX_VALUE);
-		SpinnerValueFactory<Integer> walltimeHourValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
-				Integer.MAX_VALUE, 1);
+		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeHourSpinner, 0,
+			Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> walltimeHourValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(0, Integer.MAX_VALUE,
+				1);
 		walltimeHourSpinner.setValueFactory(walltimeHourValueFactory);
 
 		// Walltime minutes spinner value factory:
 		SimpleControls.spinnerIgnoreNoneNumericInput(walltimeMinuteSpinner, 0, 59);
-		SpinnerValueFactory<Integer> walltimeMinuteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
-				59, 0);
+		SpinnerValueFactory<Integer> walltimeMinuteValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 59, 0);
 		walltimeMinuteSpinner.setValueFactory(walltimeMinuteValueFactory);
-				
+
 		// Maximum memory limit in GBs:
-		SimpleControls.spinnerIgnoreNoneNumericInput(maxMemoryPerNodeSpinner, MIN_MAX_MEMORY_PER_NODE,
-				Integer.MAX_VALUE);
-		SpinnerValueFactory<Integer> maxMemoryPerNodeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(
-				MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE, DEFAULT_MAX_MEMORY_LIMIT_PER_NODE);
+		SimpleControls.spinnerIgnoreNoneNumericInput(maxMemoryPerNodeSpinner,
+			MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE);
+		SpinnerValueFactory<Integer> maxMemoryPerNodeValueFactory =
+			new SpinnerValueFactory.IntegerSpinnerValueFactory(
+				MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE,
+				DEFAULT_MAX_MEMORY_LIMIT_PER_NODE);
 		maxMemoryPerNodeSpinner.setValueFactory(maxMemoryPerNodeValueFactory);
 
 		// Set the default scheduler value:
@@ -181,13 +197,16 @@ public class NewJobController extends BorderPane {
 		// SLURM Workload Manager: the batch partition - batch:
 		String defaultQueueOrPartition = "Not applicable";
 		String label = "Not applicable";
+		HPCSchedulerType hpcSchedulerType = sshHpcClient.getSchedulerType();
 		if (hpcSchedulerType == HPCSchedulerType.SLURM) {
 			defaultQueueOrPartition = "batch";
 			label = "SLURM Worklfow Manger partition";
-		} else if (hpcSchedulerType == HPCSchedulerType.PBS) {
+		}
+		else if (hpcSchedulerType == HPCSchedulerType.PBS) {
 			defaultQueueOrPartition = "qexp";
 			label = "PBS Profesional queue";
-		} else if(hpcSchedulerType == HPCSchedulerType.LSF) {
+		}
+		else if (hpcSchedulerType == HPCSchedulerType.LSF) {
 			defaultQueueOrPartition = "normal";
 			label = "IBM Spectrum LSF queue";
 		}
@@ -199,10 +218,13 @@ public class NewJobController extends BorderPane {
 			queueOrPartitionHBox.setVisible(false);
 			queueOrPartitionLabel.setVisible(false);
 			queueOrPartitionTextField.setVisible(false);
-		} else if (connectionType == ConnectionType.SSH) {
+			previewRemoteCommandButton.setVisible(false);
+		}
+		else if (connectionType == ConnectionType.SSH) {
 			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
 			inputSelectionHBox.setDisable(false);
+			previewRemoteCommandButton.setVisible(true);
 		}
 	}
 
@@ -215,11 +237,13 @@ public class NewJobController extends BorderPane {
 	}
 
 	public Path getInputDirectory(Path workingDirectory) {
-		return getDirectory(inputDataLocation, inputDirectoryTextField.getText(), workingDirectory);
+		return getDirectory(inputDataLocation, inputDirectoryTextField.getText(),
+			workingDirectory);
 	}
 
 	public Path getOutputDirectory(Path workingDirectory) {
-		return getDirectory(outputDataLocation, outputDirectoryTextField.getText(), workingDirectory);
+		return getDirectory(outputDataLocation, outputDirectoryTextField.getText(),
+			workingDirectory);
 	}
 
 	public int getNumberOfNodes() {
@@ -244,7 +268,7 @@ public class NewJobController extends BorderPane {
 		walltime[1] = walltimeMinuteSpinner.getValue();
 		return walltime;
 	}
-	
+
 	public int getMaxMemoryPerNode() {
 		return maxMemoryPerNodeSpinner.getValue();
 	}
@@ -252,7 +276,8 @@ public class NewJobController extends BorderPane {
 	public void setCreatePressedNotifier(Runnable createPressedNotifier) {
 		if (createPressedNotifier != null) {
 			this.createPressedNotifier = createPressedNotifier;
-		} else {
+		}
+		else {
 			this.createPressedNotifier = EMPTY_NOTIFIER;
 		}
 	}
@@ -263,9 +288,11 @@ public class NewJobController extends BorderPane {
 
 			if (workflowSpimRadioButton.isSelected()) {
 				setTextFieldForDirectory(textField, parent);
-			} else if (macroRadioButton.isSelected()) {
+			}
+			else if (macroRadioButton.isSelected()) {
 				setTextFieldForMacro(textField, parent);
-			} else if (scriptRadioButton.isSelected()) {
+			}
+			else if (scriptRadioButton.isSelected()) {
 				setTextFieldForScript(textField, parent);
 			}
 		});
@@ -278,7 +305,9 @@ public class NewJobController extends BorderPane {
 		});
 	}
 
-	private void setTextFieldForDirectory(TextField folderString, Window parentWindow) {
+	private void setTextFieldForDirectory(TextField folderString,
+		Window parentWindow)
+	{
 		// Get the path from the text field and set it as initial path for the
 		// file chooser if it exists:
 		DirectoryChooser dch = new DirectoryChooser();
@@ -305,8 +334,9 @@ public class NewJobController extends BorderPane {
 		setTextFieldForFile(folderString, parent, fileTypeDescription, fileType);
 	}
 
-	private void setTextFieldForFile(TextField folderString, Window parent, String fileTypeDescription,
-			String fileType) {
+	private void setTextFieldForFile(TextField folderString, Window parent,
+		String fileTypeDescription, String fileType)
+	{
 		// Get the path from the text field an set it as initial path for the
 		// file chooser if it exists:
 		FileChooser fch = new FileChooser();
@@ -315,7 +345,8 @@ public class NewJobController extends BorderPane {
 		fch.setInitialDirectory(getPathWithoutFile(folderString.getText()));
 
 		// Restrict file choice to required type only:
-		FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter(fileTypeDescription, fileType);
+		FileChooser.ExtensionFilter extensionFilter =
+			new FileChooser.ExtensionFilter(fileTypeDescription, fileType);
 		fch.getExtensionFilters().add(extensionFilter);
 
 		// Set the selected directory as the new content of the text field:
@@ -332,23 +363,26 @@ public class NewJobController extends BorderPane {
 			// Remove the file at the end from the current directory if there is one:
 			if (file.isFile()) {
 				currentLocation = file.getParentFile();
-			} else {
+			}
+			else {
 				currentLocation = file;
 			}
 		}
 		return currentLocation;
 	}
 
-	private Path getDirectory(DataLocation dataLocation, String selectedDirectory, Path workingDirectory) {
+	private Path getDirectory(DataLocation dataLocation, String selectedDirectory,
+		Path workingDirectory)
+	{
 		switch (dataLocation) {
-		case DEMONSTRATION_ON_SERVER:
-			return null;
-		case WORK_DIRECTORY:
-			return workingDirectory;
-		case CUSTOM_DIRECTORY:
-			return getPathAndSetUserScriptName(selectedDirectory);
-		default:
-			throw new UnsupportedOperationException("Not support " + dataLocation);
+			case DEMONSTRATION_ON_SERVER:
+				return null;
+			case WORK_DIRECTORY:
+				return workingDirectory;
+			case CUSTOM_DIRECTORY:
+				return getPathAndSetUserScriptName(selectedDirectory);
+			default:
+				throw new UnsupportedOperationException("Not support " + dataLocation);
 		}
 	}
 
@@ -371,7 +405,9 @@ public class NewJobController extends BorderPane {
 	private void createPressed() {
 		JavaFXRoutines.runOnFxThreadAndWait(() -> {
 			obtainValues();
-			if (checkDirectoryLocationIfNeeded() && walltimeIsGreaterThanZero() && maxMemoryIsGreaterThanZero()) {
+			if (checkDirectoryLocationIfNeeded() && walltimeIsGreaterThanZero() &&
+				maxMemoryIsGreaterThanZero())
+			{
 				// Close stage
 				Stage stage = (Stage) createButton.getScene().getWindow();
 				stage.close();
@@ -381,37 +417,43 @@ public class NewJobController extends BorderPane {
 	}
 
 	private boolean checkDirectoryLocationIfNeeded() {
-		return checkDataLocationValue(inputDataLocation, inputDirectoryTextField.getText(), "input")
-				&& pathPointsToFile(inputDirectoryTextField.getText())
-				&& checkDataLocationValue(outputDataLocation, outputDirectoryTextField.getText(), "output");
+		return checkDataLocationValue(inputDataLocation, inputDirectoryTextField
+			.getText(), "input") && pathPointsToFile(inputDirectoryTextField
+				.getText()) && checkDataLocationValue(outputDataLocation,
+					outputDirectoryTextField.getText(), "output");
 	}
 
 	private boolean walltimeIsGreaterThanZero() {
-		boolean greaterThanZero = (walltimeHourSpinner.getValue() > 0 || walltimeMinuteSpinner.getValue() > 0);
+		boolean greaterThanZero = (walltimeHourSpinner.getValue() > 0 ||
+			walltimeMinuteSpinner.getValue() > 0);
 		if (!greaterThanZero) {
 			SimpleDialog.showWarning("Incorrect amount of time specified.",
-					"Enter an amount of time greater than zero for the amount of time needed.");
+				"Enter an amount of time greater than zero for the amount of time needed.");
 		}
 		return greaterThanZero;
 	}
-	
+
 	private boolean maxMemoryIsGreaterThanZero() {
 		boolean greaterThanZero = (maxMemoryPerNodeSpinner.getValue() > 0);
 		if (!greaterThanZero) {
 			SimpleDialog.showWarning("Incorrect max memory limit specified.",
-					"Enter a max memory limit that is greater than zero.");
+				"Enter a max memory limit that is greater than zero.");
 		}
 		return greaterThanZero;
 	}
 
-	private boolean checkDataLocationValue(DataLocation dataLocation, String directory, String type) {
+	private boolean checkDataLocationValue(DataLocation dataLocation,
+		String directory, String type)
+	{
 		Path directoryPath = Paths.get(directory);
-		if (dataLocation == DataLocation.CUSTOM_DIRECTORY
-				&& (!directoryPath.toFile().exists() || directory.isEmpty())) {
-			String message = !directory.isEmpty() ? "Directory %s for %s does not exist."
-					: "Directory for %2$s is not selected.";
-			SimpleDialog.showWarning("Invalid input provided",
-					String.format(message, directoryPath.toAbsolutePath(), type));
+		if (dataLocation == DataLocation.CUSTOM_DIRECTORY && (!directoryPath
+			.toFile().exists() || directory.isEmpty()))
+		{
+			String message = !directory.isEmpty()
+				? "Directory %s for %s does not exist."
+				: "Directory for %2$s is not selected.";
+			SimpleDialog.showWarning("Invalid input provided", String.format(message,
+				directoryPath.toAbsolutePath(), type));
 			return false;
 		}
 
@@ -423,32 +465,35 @@ public class NewJobController extends BorderPane {
 		// to a file as it should be:
 		boolean scriptFileHasBeenSelected = new File(directory).isFile();
 		if (!workflowSpimRadioButton.isSelected() && !scriptFileHasBeenSelected) {
-			SimpleDialog.showWarning("Invalid input provided", "Please specify a script file and not a directory.");
+			SimpleDialog.showWarning("Invalid input provided",
+				"Please specify a script file and not a directory.");
 			return false;
 		}
 		return true;
 	}
 
 	private void obtainValues() {
-		inputDataLocation = obtainDataLocation(inputDataLocationToggleGroup);
-		outputDataLocation = obtainDataLocation(outputDataLocationToggleGroup);
-		jobType = obtainJobType(jobTypeSelectorToggleGroup);
+		this.inputDataLocation = obtainDataLocation(inputDataLocationToggleGroup);
+		this.outputDataLocation = obtainDataLocation(outputDataLocationToggleGroup);
+		this.jobType = obtainJobType(jobTypeSelectorToggleGroup);
 	}
 
 	private JobType obtainJobType(ToggleGroup group) {
-		int backawardOrderOfSelected = group.getToggles().size()
-				- group.getToggles().indexOf(group.getSelectedToggle());
+		int backawardOrderOfSelected = group.getToggles().size() - group
+			.getToggles().indexOf(group.getSelectedToggle());
 		return JobType.values()[JobType.values().length - backawardOrderOfSelected];
 	}
 
 	private DataLocation obtainDataLocation(ToggleGroup group) {
-		int backawardOrderOfSelected = group.getToggles().size()
-				- group.getToggles().indexOf(group.getSelectedToggle());
-		return DataLocation.values()[DataLocation.values().length - backawardOrderOfSelected];
+		int backawardOrderOfSelected = group.getToggles().size() - group
+			.getToggles().indexOf(group.getSelectedToggle());
+		return DataLocation.values()[DataLocation.values().length -
+			backawardOrderOfSelected];
 	}
 
 	private void selected(Toggle n, Parent disableIfNotSelected) {
-		ObservableList<Node> children = disableIfNotSelected.getChildrenUnmodifiable();
+		ObservableList<Node> children = disableIfNotSelected
+			.getChildrenUnmodifiable();
 		boolean disabled = (n != disableIfNotSelected);
 		for (Node child : children) {
 			child.setDisable(disabled);
@@ -471,7 +516,9 @@ public class NewJobController extends BorderPane {
 			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
-			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton.isSelected()) {
+			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton
+				.isSelected())
+			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
 		}
@@ -483,10 +530,37 @@ public class NewJobController extends BorderPane {
 			jobSubdirectoryRadioButton.setDisable(true);
 			numberOfCoresPerNodeSpinner.setDisable(false);
 			demoInputDataRadioButton.setDisable(true);
-			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton.isSelected()) {
+			if (demoInputDataRadioButton.isSelected() || jobSubdirectoryRadioButton
+				.isSelected())
+			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
 		}
+	}
+
+	@FXML
+	private void previewRemoteCommandButton() {
+		// Get temporary values from form fields:
+		this.jobType = this.obtainJobType(jobTypeSelectorToggleGroup);
+
+		long numberOfNodes = this.getNumberOfNodes();
+		long numberOfCoresPerNode = this.getNumberOfCoresPerNode();
+		String queueOrPartition = getQueueOrPartition();
+		int[] walltime = getWalltime();
+		int maxMemoryPerNode = getMaxMemoryPerNode();
+		String userScriptName = getUserScriptName();
+
+		Collections.<String> emptyList();
+
+		// Create the preview job submission script:
+		String script = sshHpcClient.previewSubmitCommand(numberOfNodes,
+			this.jobType, numberOfCoresPerNode, queueOrPartition, walltime,
+			maxMemoryPerNode, userScriptName);
+
+		// Display the preview job submission script:
+		PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =
+			new PreviewSubmitCommandScreenWindow();
+		previewSubmitCommandScreenWindow.showDialog(script);
 	}
 
 }

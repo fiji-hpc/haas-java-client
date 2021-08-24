@@ -27,6 +27,7 @@ import org.scijava.plugin.Parameter;
 
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
+import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.cluster_job_launcher.Job;
 import cz.it4i.cluster_job_launcher.JobManager;
 import cz.it4i.cluster_job_launcher.JobManagerJobState;
@@ -44,6 +45,7 @@ import cz.it4i.fiji.hpc_client.JobState;
 import cz.it4i.fiji.hpc_client.SynchronizableFile;
 import cz.it4i.fiji.hpc_client.SynchronizableFileType;
 import cz.it4i.fiji.hpc_workflow.core.Constants;
+import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
 import cz.it4i.parallel.runners.logging.ui.EventMessage;
@@ -111,7 +113,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 			// ToDo: find a way to provide the scheduler to NewJobController without a
 			// static variable:
-			NewJobController.hpcSchedulerType = this.cjlClient.getSchedulerType();
+			NewJobController.sshHpcClient = this;
 		}
 		catch (JSchException exc) {
 			JavaFXRoutines.runOnFxThread(() -> SimpleDialog.showException("Exception",
@@ -148,6 +150,56 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		return cjlClient.getRemoteJobInfo(jobRemotePath).toString();
 	}
 
+	public HPCSchedulerType getSchedulerType() {
+		return cjlClient.getSchedulerType();
+	}
+
+	// This method is used for preview of command only, the user can test the
+	// command manually if needed.
+	public String previewSubmitCommand(long numberOfNodes, JobType jobType,
+		long numberOfCoresPerNode, String slurmPartitionOrPbsQueueType,
+		int[] walltime, int maxMemoryPerNode, String userScriptName)
+	{
+
+		List<String> modules = Collections.emptyList();
+		String jobRemotePath = this.remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + "preview" + Constants.FORWARD_SLASH;
+		String parameters = this.getParameters(jobType);
+		String jobRemotePathWithScript = getJobRemotePathWithScript(jobType,
+			jobRemotePath, userScriptName);
+
+		return this.cjlClient.constructRunCommand(this.remoteFijiDirectory,
+			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
+			numberOfCoresPerNode, modules, jobRemotePath,
+			slurmPartitionOrPbsQueueType, walltime, maxMemoryPerNode,
+			this.openMpiModule, "previewSubmitScript.sh");
+	}
+
+	private String getParameters(JobType jobType) {
+		String parameters = "--unsupported"; // This is not an actual parameter.
+		if (jobType == JobType.MACRO) {
+			parameters = " --headless --console -macro ";
+		}
+		else if (jobType == JobType.SCRIPT) {
+			parameters = " --ij2 --headless --console --run ";
+		}
+		return parameters;
+	}
+
+	private String getJobRemotePathWithScript(JobType jobType,
+		String jobRemotePath, String userScriptName)
+	{
+		String jobRemotePathWithScript = "unsupported"; // This is not an actual
+																										// path.
+		if (jobType == JobType.MACRO) {
+			jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
+		}
+		else if (jobType == JobType.SCRIPT) {
+			jobRemotePathWithScript = jobRemotePath + userScriptName;
+		}
+		return jobRemotePathWithScript;
+	}
+
 	@Override
 	public void submitJob(long jobId) {
 		String jobRemotePath = this.remoteWorkingDirectory +
@@ -158,20 +210,20 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 
 		List<String> modules = Collections.emptyList();
 
-		String parameters;
 		String jobRemotePathWithScript;
 		String userScriptName = jobRemoteInfo.getUserScriptName();
+		String parameters;
 		if (userScriptName.contains(".ijm")) {
-			parameters = " --headless --console -macro ";
+			parameters = this.getParameters(JobType.MACRO);
 			jobRemotePathWithScript = jobRemotePath + SCRIPT_FILE;
 		}
 		else if (userScriptName.contains("py")) {
-			parameters = " --ij2 --headless --console --run ";
+			parameters = this.getParameters(JobType.SCRIPT);
 			jobRemotePathWithScript = jobRemotePath + userScriptName;
 		}
 		else {
 			SimpleDialog.showWarning("Unsupported",
-				"SSH is not compatible with this type of job. Please use the middoleware.");
+				"SSH is not compatible with this type of job. Please use the middleware.");
 			return;
 		}
 
