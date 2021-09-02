@@ -2,6 +2,7 @@
 package cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -399,7 +400,18 @@ public class NewJobController extends BorderPane {
 	public String getUserScriptName() {
 		String selectedDirectory = inputDirectoryTextField.getText();
 		Path path = Paths.get(selectedDirectory).toAbsolutePath();
-		return path.getFileName().toString();
+
+		// The user script must be a file:
+		String userScriptName;
+		if (Files.isRegularFile(path)) {
+			// Get file name from absolute path:
+			userScriptName = path.getFileName().toString();
+		}
+		else {
+			// If no file has been selected set the preview user script name:
+			userScriptName = "previewUserScript.py";
+		}
+		return userScriptName;
 	}
 
 	private void createPressed() {
