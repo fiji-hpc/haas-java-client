@@ -10,9 +10,6 @@ import cz.it4i.fiji.haas_java_client.proxy.PasswordCredentialsExt;
 import cz.it4i.fiji.haas_java_client.proxy.SubmittedJobInfoExt;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWs;
 import cz.it4i.fiji.haas_java_client.proxy.UserAndLimitationManagementWsSoap;
-import cz.it4i.fiji.heappe_hpc_client.HaaSClient;
-import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettings;
-import cz.it4i.fiji.heappe_hpc_client.JobSettings;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.JobInfo;
 

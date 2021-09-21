@@ -8,9 +8,6 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.it4i.fiji.heappe_hpc_client.HaaSClient;
-import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettings;
-import cz.it4i.fiji.heappe_hpc_client.UploadingFileData;
 import cz.it4i.fiji.hpc_client.HPCClient;
 import cz.it4i.fiji.hpc_client.HPCFileTransfer;
 import cz.it4i.fiji.hpc_client.JobInfo;

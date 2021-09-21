@@ -8,10 +8,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.prefs.PrefService;
 
-import cz.it4i.fiji.hpc_workflow.ui.IconHelperMethods;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
 import cz.it4i.parallel.internal.ui.LastFormLoader;
 import cz.it4i.parallel.paradigm_managers.ParadigmProfileSettingsEditor;
+import cz.it4i.swing_javafx_ui.IconHelperMethods;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;

@@ -3,9 +3,9 @@ package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import org.kordamp.ikonli.materialdesign.MaterialDesign;
 
-import cz.it4i.fiji.hpc_workflow.ui.IconHelperMethods;
 import cz.it4i.fiji.ssh_hpc_client.AdvancedSettings;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
+import cz.it4i.swing_javafx_ui.IconHelperMethods;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;

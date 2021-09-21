@@ -1,8 +1,5 @@
 package cz.it4i.fiji.heappe_hpc_client;
 
-import cz.it4i.fiji.heappe_hpc_client.Constants;
-import cz.it4i.fiji.heappe_hpc_client.HaaSClientSettings;
-
 final class SettingsProvider {
 	
 	private SettingsProvider() {}
