@@ -108,7 +108,7 @@
    											</HBox>
    											<HBox fx:id="queueOrPartitionHBox">
    												<children>
-   													<Label fx:id="queueOrPartitionLabel" prefWidth="200.0" text="PBS queue or SLURM partition">
+   													<Label fx:id="queueOrPartitionLabel" prefWidth="200.0" text="PBS queue or Slurm partition">
    														<opaqueInsets>
    															<Insets />
    														</opaqueInsets>

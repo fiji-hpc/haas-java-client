@@ -195,17 +195,17 @@ public class NewJobController extends BorderPane {
 
 		// Set the default scheduler value:
 		// PBS Professional, the express queue - qexp,
-		// SLURM Workload Manager: the batch partition - batch:
+		// Slurm Workload Manager: the batch partition - batch:
 		String defaultQueueOrPartition = "Not applicable";
 		String label = "Not applicable";
 		HPCSchedulerType hpcSchedulerType = sshHpcClient.getSchedulerType();
 		if (hpcSchedulerType == HPCSchedulerType.SLURM) {
 			defaultQueueOrPartition = "batch";
-			label = "SLURM Worklfow Manger partition";
+			label = "Slurm Workload Manager partition";
 		}
 		else if (hpcSchedulerType == HPCSchedulerType.PBS) {
 			defaultQueueOrPartition = "qexp";
-			label = "PBS Profesional queue";
+			label = "PBS Professional queue";
 		}
 		else if (hpcSchedulerType == HPCSchedulerType.LSF) {
 			defaultQueueOrPartition = "normal";
