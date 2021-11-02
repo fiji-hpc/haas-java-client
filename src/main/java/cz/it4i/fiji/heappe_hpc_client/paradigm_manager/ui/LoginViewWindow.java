@@ -47,10 +47,10 @@ public class LoginViewWindow {
 
 	public void openWindow(HaaSClientSettingsImpl params) {
 		// Get the previously entered login settings if any:
-		LastFormLoader<HaaSClientSettingsImpl> storeLastForm = new LastFormLoader<>(
+		LastFormLoader<HaaSClientSettingsImpl> lastFormLoader = new LastFormLoader<>(
 			prefService, "loginSettingsForm", this.getClass());
 		HaaSClientSettingsImpl oldLoginSettings = params != null ? params
-			: storeLastForm.loadLastForm();
+			: lastFormLoader.loadLastForm();
 
 		// Open the login window:
 		this.controller = new LoginViewController();
@@ -68,7 +68,7 @@ public class LoginViewWindow {
 		HaaSClientSettingsImpl newSettings = this.controller.getParameters();
 
 		// Save the new settings:
-		storeLastForm.storeLastForm(newSettings);
+		lastFormLoader.storeLastForm(newSettings);
 	}
 
 	public HaaSClientSettingsImpl getParameters() {

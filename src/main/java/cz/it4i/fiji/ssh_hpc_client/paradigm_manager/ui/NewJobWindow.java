@@ -6,7 +6,9 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.kordamp.ikonli.materialdesign.MaterialDesign;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.prefs.PrefService;
 
 import cz.it4i.cluster_job_launcher.SshJobSettings;
 import cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui.ConnectionType;
@@ -25,11 +27,15 @@ import javafx.stage.WindowEvent;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Delegate;
 
+
+
 @Plugin(type = JavaFXJobSettingsProvider.class)
 public class NewJobWindow implements
 	JavaFXJobSettingsProvider<SshClientJobSettings>
 {
-
+	@Parameter
+	private PrefService prefService;
+	
 	@Override
 	public Class<SshClientJobSettings> getTypeOfJobSettings() {
 		return SshClientJobSettings.class;
@@ -40,7 +46,7 @@ public class NewJobWindow implements
 		Consumer<SshClientJobSettings> consumer)
 	{
 		final NewJobController controller = new NewJobController(
-			ConnectionType.SSH);
+			ConnectionType.SSH, prefService);
 		controller.setCreatePressedNotifier(() -> consumer.accept(constructSettings(
 			controller)));
 		final Scene formScene = new Scene(controller);

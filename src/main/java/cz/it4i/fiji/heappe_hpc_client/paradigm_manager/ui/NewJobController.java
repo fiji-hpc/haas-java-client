@@ -6,14 +6,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.scijava.prefs.PrefService;
 
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.hpc_workflow.core.DataLocation;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
+import cz.it4i.fiji.ssh_hpc_client.NewJobSettings;
 import cz.it4i.fiji.ssh_hpc_client.SshHPCClient;
 import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.PreviewSubmitCommandScreenWindow;
+import cz.it4i.parallel.internal.ui.LastFormLoader;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
@@ -35,15 +37,14 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class NewJobController extends BorderPane {
 
 	private static final Runnable EMPTY_NOTIFIER = () -> {};
 
 	public static SshHPCClient sshHpcClient;
-
-	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(NewJobController.class);
 
 	@FXML
 	private Button createButton;
@@ -71,6 +72,9 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private RadioButton jobSubdirectoryRadioButton;
+
+	@FXML
+	private RadioButton jobSubdirectoryOutputRadioButton;
 
 	@FXML
 	private RadioButton workflowSpimRadioButton;
@@ -112,6 +116,9 @@ public class NewJobController extends BorderPane {
 	private HBox inputSelectionHBox;
 
 	@FXML
+	private HBox outputSelectionHBox;
+
+	@FXML
 	private Spinner<Integer> walltimeHourSpinner;
 
 	@FXML
@@ -130,10 +137,20 @@ public class NewJobController extends BorderPane {
 
 	private Runnable createPressedNotifier;
 
+	private ConnectionType connectionType;
+
+	private PrefService prefService;
+
 	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 8; // GBs
 	private static final int MIN_MAX_MEMORY_PER_NODE = 1; // GB
 
-	public NewJobController(ConnectionType connectionType) {
+	private static final String NEW_JOB_FORM_NAME = "newJobForm";
+
+	public NewJobController(ConnectionType theConnectionType,
+		PrefService thePrefService)
+	{
+		this.prefService = thePrefService;
+
 		JavaFXRoutines.initRootAndController("NewJobView.fxml", this);
 		getStylesheets().add(getClass().getResource("NewJobView.css")
 			.toExternalForm());
@@ -214,18 +231,88 @@ public class NewJobController extends BorderPane {
 		queueOrPartitionTextField.setText(defaultQueueOrPartition);
 		queueOrPartitionLabel.setText(label);
 
-		if (connectionType == ConnectionType.MIDDLEWARE) {
+		this.connectionType = theConnectionType;
+		if (theConnectionType == ConnectionType.MIDDLEWARE) {
 			scriptRadioButton.disableProperty().set(true);
 			queueOrPartitionHBox.setVisible(false);
 			queueOrPartitionLabel.setVisible(false);
 			queueOrPartitionTextField.setVisible(false);
 			previewRemoteCommandButton.setVisible(false);
 		}
-		else if (connectionType == ConnectionType.SSH) {
+		else if (theConnectionType == ConnectionType.SSH) {
 			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
 			inputSelectionHBox.setDisable(false);
 			previewRemoteCommandButton.setVisible(true);
+		}
+
+		// Load previously saved user selections:
+		loadLastSavedForm(theConnectionType, prefService);
+	}
+
+	private void loadLastSavedForm(ConnectionType theConnectionType,
+		PrefService thePrefService)
+	{
+		try {
+			if (theConnectionType == ConnectionType.SSH) {
+				LastFormLoader<NewJobSettings> tempLastFormLoader =
+					new LastFormLoader<>(thePrefService, NEW_JOB_FORM_NAME, this
+						.getClass());
+				NewJobSettings oldSettings = tempLastFormLoader.loadLastForm();
+
+				// If there are old settings:
+				if (oldSettings != null) {
+					// Load the old settings:
+					JavaFXRoutines.runOnFxThread(() -> {
+						maxMemoryPerNodeSpinner.getValueFactory().setValue(oldSettings
+							.getMaxMemoryPerNode());
+						numberOfCoresPerNodeSpinner.getValueFactory().setValue(oldSettings
+							.getNumberOfCoresPerNode());
+						numberOfNodesSpinner.getValueFactory().setValue(oldSettings
+							.getNumberOfNodes());
+						queueOrPartitionTextField.setText(oldSettings
+							.getQueueOrPartition());
+
+						int[] walltime = oldSettings.getWalltime();
+						walltimeHourSpinner.getValueFactory().setValue(walltime[0]);
+						walltimeMinuteSpinner.getValueFactory().setValue(walltime[1]);
+
+						setjobTypeSelectorByJobType(oldSettings.getJobType());
+						setInputOption(oldSettings.getInputDataLocationOption());
+						setOutputOption(oldSettings.getOutputDataLocationOption());
+
+						if (oldSettings.getInputPath() != null) {
+							inputDirectoryTextField.setText(oldSettings.getInputPath());
+						}
+						if (oldSettings.getOutputPath() != null) {
+							outputDirectoryTextField.setText(oldSettings.getOutputPath());
+						}
+					});
+
+				} // else do nothing.
+			}
+			// TODO load old settings for the middleware too.
+
+			log.debug("Loaded old job settings.");
+		}
+		catch (Exception exc) {
+			SimpleDialog.showInformation("The stored settings are incompatible.",
+				"There is a new version of the settings and the old one is incompatible. " +
+					"Create a new job to overwrite the old settings.");
+		}
+	}
+
+	private void setjobTypeSelectorByJobType(JobType newJobType) {
+		switch (newJobType) {
+			case SPIM_WORKFLOW:
+				jobTypeSelectorToggleGroup.selectToggle(workflowSpimRadioButton);
+				break;
+			case MACRO:
+				jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
+				break;
+			case SCRIPT:
+				jobTypeSelectorToggleGroup.selectToggle(scriptRadioButton);
+				break;
 		}
 	}
 
@@ -418,14 +505,117 @@ public class NewJobController extends BorderPane {
 		JavaFXRoutines.runOnFxThreadAndWait(() -> {
 			obtainValues();
 			if (checkDirectoryLocationIfNeeded() && walltimeIsGreaterThanZero() &&
-				maxMemoryIsGreaterThanZero())
+				maxMemoryIsGreaterThanZero() && typeOfInputIsCorrect())
 			{
+				// Save the new settings:
+				saveCurrentSettings(this.connectionType, this.prefService);
 				// Close stage
 				Stage stage = (Stage) createButton.getScene().getWindow();
 				stage.close();
 				this.createPressedNotifier.run();
 			}
 		});
+
+	}
+
+	private boolean typeOfInputIsCorrect() {
+		boolean result = true;
+		if (this.jobType == JobType.MACRO && !getUserScriptName().contains(
+			".ijm"))
+		{
+			SimpleDialog.showWarning("Macro *.ijm file expected!",
+				"Please select a macro input file.");
+			result = false;
+		}
+		else if (this.jobType == JobType.SCRIPT && !getUserScriptName().contains(
+			".py"))
+		{
+			SimpleDialog.showWarning("Jython script *.py file expected!",
+				"Please select a Jython script input file.");
+			result = false;
+		}
+
+		return result;
+	}
+
+	private void saveCurrentSettings(ConnectionType theConnectionType,
+		PrefService thePrefService)
+	{
+
+		if (theConnectionType == ConnectionType.SSH) {
+			LastFormLoader<NewJobSettings> tempLastFormLoader = new LastFormLoader<>(
+				thePrefService, NEW_JOB_FORM_NAME, this.getClass());
+
+			NewJobSettings newJobSettings = new NewJobSettings();
+			newJobSettings.setNumberOfCoresPerNode(this.getNumberOfCoresPerNode());
+			newJobSettings.setNumberOfNodes(this.getNumberOfNodes());
+			newJobSettings.setQueueOrPartition(this.getQueueOrPartition());
+			newJobSettings.setWalltime(this.getWalltime());
+			newJobSettings.setMaxMemoryPerNode(this.getMaxMemoryPerNode());
+			newJobSettings.setJobType(this.obtainJobType(jobTypeSelectorToggleGroup));
+			newJobSettings.setInputDataLocationOption(this.getInputOption());
+			newJobSettings.setOutputDataLocationOption(this.getOutputOption());
+
+			newJobSettings.setInputPath(this.inputDirectoryTextField.getText());
+			newJobSettings.setOutputPath(this.outputDirectoryTextField.getText());
+
+			tempLastFormLoader.storeLastForm(newJobSettings);
+			log.debug("Stored new job settings!");
+		}
+
+		// TODO Do the same for the middleware (HEAppEClientJobSettings).
+	}
+
+	private NewJobSettings.OUTPUT_OPTION getOutputOption() {
+		NewJobSettings.OUTPUT_OPTION outputOption;
+		if (jobSubdirectoryOutputRadioButton.isSelected()) {
+			outputOption = NewJobSettings.OUTPUT_OPTION.JOB_DIRECTORY;
+		}
+		else { // (selectedToggle == ownInputRadioButton)
+			outputOption = NewJobSettings.OUTPUT_OPTION.OWN_DIRECTORY;
+		}
+		return outputOption;
+	}
+
+	private NewJobSettings.INPUT_OPTION getInputOption() {
+		NewJobSettings.INPUT_OPTION inputOption;
+		if (demoInputDataRadioButton.isSelected()) {
+			inputOption = NewJobSettings.INPUT_OPTION.DEMO_DATA;
+		}
+		else if (jobSubdirectoryRadioButton.isSelected()) {
+			inputOption = NewJobSettings.INPUT_OPTION.JOB_DIRECTORY;
+		}
+		else { // (selectedToggle == ownInputRadioButton)
+			inputOption = NewJobSettings.INPUT_OPTION.OWN_DIRECTORY;
+		}
+		return inputOption;
+	}
+
+	private void setOutputOption(NewJobSettings.OUTPUT_OPTION outputOption) {
+		switch (outputOption) {
+			case JOB_DIRECTORY:
+				outputDataLocationToggleGroup.selectToggle(
+					jobSubdirectoryOutputRadioButton);
+				break;
+			case OWN_DIRECTORY:
+				outputDataLocationToggleGroup.selectToggle(ownOutputRadioButton);
+				outputSelectionHBox.setDisable(false);
+				break;
+		}
+	}
+
+	private void setInputOption(NewJobSettings.INPUT_OPTION inputOption) {
+		switch (inputOption) {
+			case DEMO_DATA:
+				inputDataLocationToggleGroup.selectToggle(demoInputDataRadioButton);
+				break;
+			case JOB_DIRECTORY:
+				inputDataLocationToggleGroup.selectToggle(jobSubdirectoryRadioButton);
+				break;
+			case OWN_DIRECTORY:
+				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
+				break;
+		}
 	}
 
 	private boolean checkDirectoryLocationIfNeeded() {

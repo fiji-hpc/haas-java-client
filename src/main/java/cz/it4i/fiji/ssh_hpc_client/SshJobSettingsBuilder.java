@@ -1,9 +1,11 @@
 
 package cz.it4i.fiji.ssh_hpc_client;
 
+import java.io.Serializable;
+
 import cz.it4i.cluster_job_launcher.SshJobSettings;
 
-public class SshJobSettingsBuilder {
+public class SshJobSettingsBuilder implements Serializable {
 
 	private static final int DEFAULT_NUMBER_OF_NODES = 1;
 	private static final int DEFAULT_NUMBER_OF_CORES_PER_NODE = 24;
@@ -11,15 +13,10 @@ public class SshJobSettingsBuilder {
 	private int numberOfNodes = DEFAULT_NUMBER_OF_NODES;
 	private int numberOfCoresPerNode = DEFAULT_NUMBER_OF_CORES_PER_NODE;
 	private int maxMemoryPerNode;
-	
+
 	private String queueOrPartition;
 	private String userScriptName;
-	private int[] walltime = new int[2]; 
-
-	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
-		this.numberOfNodes = newNumberOfNodes;
-		return this;
-	}
+	private int[] walltime = new int[2];
 
 	public SshJobSettingsBuilder numberOfCoresPerNode(
 		int newNumberOfCoresPerNode)
@@ -32,7 +29,7 @@ public class SshJobSettingsBuilder {
 		this.queueOrPartition = newQueueOrPartition;
 		return this;
 	}
-	
+
 	public SshJobSettingsBuilder walltime(int[] newWalltime) {
 		this.walltime = newWalltime;
 		return this;
@@ -42,9 +39,14 @@ public class SshJobSettingsBuilder {
 		this.userScriptName = newUserScriptName;
 		return this;
 	}
-	
+
 	public SshJobSettingsBuilder maxMemoryPerNode(int newMaxMemoryPerNode) {
 		this.maxMemoryPerNode = newMaxMemoryPerNode;
+		return this;
+	}
+
+	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
+		this.numberOfNodes = newNumberOfNodes;
 		return this;
 	}
 
@@ -65,7 +67,7 @@ public class SshJobSettingsBuilder {
 			public String getQueueOrPartition() {
 				return queueOrPartition;
 			}
-			
+
 			@Override
 			public int[] getWalltime() {
 				return walltime;
@@ -75,7 +77,7 @@ public class SshJobSettingsBuilder {
 			public String getUserScriptName() {
 				return userScriptName;
 			}
-			
+
 			@Override
 			public int getMaxMemoryPerNode() {
 				return maxMemoryPerNode;

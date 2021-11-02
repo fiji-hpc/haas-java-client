@@ -5,7 +5,9 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.prefs.PrefService;
 
 import cz.it4i.fiji.heappe_hpc_client.JobSettings;
 import cz.it4i.fiji.heappe_hpc_client.JobSettingsBuilder;
@@ -26,6 +28,9 @@ import lombok.experimental.Delegate;
 public class NewJobWindow implements
 	JavaFXJobSettingsProvider<HEAppEClientJobSettings>
 {
+	
+	@Parameter
+	private PrefService prefService;
 
 	@Override
 	public Class<HEAppEClientJobSettings> getTypeOfJobSettings() {
@@ -37,7 +42,7 @@ public class NewJobWindow implements
 		Consumer<HEAppEClientJobSettings> consumer)
 	{
 		final NewJobController controller = new NewJobController(
-			ConnectionType.MIDDLEWARE);
+			ConnectionType.MIDDLEWARE, prefService);
 		controller.setCreatePressedNotifier(() -> consumer.accept(constructSettings(
 			controller)));
 		final Scene formScene = new Scene(controller);
