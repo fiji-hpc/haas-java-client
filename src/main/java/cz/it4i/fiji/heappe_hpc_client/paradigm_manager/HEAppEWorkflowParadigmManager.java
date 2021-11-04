@@ -29,6 +29,6 @@ public class HEAppEWorkflowParadigmManager extends
 
 	@Override
 	public String toString() {
-		return "WorkflowParadigm over HEAppE";
+		return "HEAppE Middleware";
 	}
 }

@@ -27,6 +27,6 @@ public class SshWorkflowParadigmManager extends
 
 	@Override
 	public String toString() {
-		return "WorkflowParadigm over SSH";
+		return "SSH";
 	}
 }
