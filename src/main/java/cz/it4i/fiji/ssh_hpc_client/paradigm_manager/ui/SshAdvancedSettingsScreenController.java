@@ -46,7 +46,7 @@ public class SshAdvancedSettingsScreenController extends AnchorPane {
 	@FXML
 	public void initialize() {
 		jobSchedulerComboBox.getItems().addAll(PBS_ITEM, SLURM_ITEM, IBM_ITEM);
-		jobSchedulerComboBox.getSelectionModel().select(0);
+		jobSchedulerComboBox.getSelectionModel().selectFirst();
 	}
 
 	// Disable fields if automatic advanced settings detection is selected:

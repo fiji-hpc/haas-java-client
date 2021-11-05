@@ -102,7 +102,7 @@ class SshSettingsScreenWindow {
 		final Stage parentStage = new Stage();
 		parentStage.initModality(Modality.APPLICATION_MODAL);
 		parentStage.setResizable(false);
-		parentStage.setTitle("Ssh Settings");
+		parentStage.setTitle("SSH Settings");
 		parentStage.setScene(formScene);
 		parentStage.initOwner(owner);
 		Image myImage = IconHelperMethods.convertIkonToImage(

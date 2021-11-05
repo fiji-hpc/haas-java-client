@@ -114,6 +114,20 @@ public class SshSettingsScreenController extends AnchorPane {
 		authenticationChoiceKeyRadioButton.selectedProperty().addListener((
 			ObservableValue<? extends Boolean> obs, Boolean wasPreviouslySelected,
 			Boolean isNowSelected) -> disableIrrelevantFileds(isNowSelected));
+
+		// If the user selects to manually select the advanced options open the
+		// window.
+		automaticAdvancedSettingsCheckBox.selectedProperty().addListener((
+			ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
+			Boolean newValue) -> {
+			if (newValue.booleanValue()) {
+				advancedOptionsHyperlink.setDisable(false);
+			}
+			else {
+				advancedOptionsHyperlink.setDisable(true);
+				showAdvancedSettings();
+			}
+		});
 	}
 
 	public void disableIrrelevantFileds(boolean isSelected) {
@@ -218,7 +232,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	}
 
 	@FXML
-	private void advancedOptions() {
+	private void showAdvancedSettings() {
 		SshAdvancedSettingsScreenWindow sshAdvancedSettingsScreenWindow =
 			new SshAdvancedSettingsScreenWindow();
 		this.advancedSettings = sshAdvancedSettingsScreenWindow.showDialog(
