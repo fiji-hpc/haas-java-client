@@ -22,7 +22,8 @@ public class AdvancedSettings {
 
 	public boolean isEmpty() {
 		boolean isEmpty = false;
-		if (this.command == null && this.openMpiModule == null &&
+		if (this.command == null || this.command.isEmpty() ||
+			this.openMpiModule == null || this.openMpiModule.isEmpty() ||
 			this.jobScheduler == null)
 		{
 			isEmpty = true;
