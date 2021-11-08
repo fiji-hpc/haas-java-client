@@ -121,10 +121,10 @@ public class SshSettingsScreenController extends AnchorPane {
 			ObservableValue<? extends Boolean> observableValue, Boolean oldValue,
 			Boolean newValue) -> {
 			if (newValue.booleanValue()) {
-				advancedOptionsHyperlink.setDisable(false);
+				advancedOptionsHyperlink.setDisable(true);
 			}
 			else {
-				advancedOptionsHyperlink.setDisable(true);
+				advancedOptionsHyperlink.setDisable(false);
 				showAdvancedSettings();
 			}
 		});
@@ -238,7 +238,10 @@ public class SshSettingsScreenController extends AnchorPane {
 		this.advancedSettings = sshAdvancedSettingsScreenWindow.showDialog(
 			this.oldSettings, advancedSettings, automaticAdvancedSettingsCheckBox
 				.isSelected());
-
+		if(this.advancedSettings.isEmpty()) {
+			advancedOptionsHyperlink.setDisable(true);
+			automaticAdvancedSettingsCheckBox.setSelected(true);
+		}
 	}
 
 	public void setInitialFormValues(SshConnectionSettings oldSettings) {

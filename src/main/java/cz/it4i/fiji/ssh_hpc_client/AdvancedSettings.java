@@ -20,4 +20,14 @@ public class AdvancedSettings {
 		this.jobScheduler = jobScheduler;
 	}
 
+	public boolean isEmpty() {
+		boolean isEmpty = false;
+		if (this.command == null && this.openMpiModule == null &&
+			this.jobScheduler == null)
+		{
+			isEmpty = true;
+		}
+		return isEmpty;
+	}
+
 }
