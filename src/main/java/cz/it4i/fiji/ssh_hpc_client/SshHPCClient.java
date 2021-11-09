@@ -24,6 +24,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.scijava.plugin.Parameter;
+import org.yaml.snakeyaml.emitter.EmitterException;
 
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
@@ -48,6 +49,7 @@ import cz.it4i.fiji.hpc_workflow.core.Constants;
 import cz.it4i.fiji.hpc_workflow.core.JobType;
 import cz.it4i.fiji.scpclient.ScpClient;
 import cz.it4i.fiji.scpclient.TransferFileProgress;
+import cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui.PreviewSubmitCommandScreenWindow;
 import cz.it4i.parallel.runners.logging.ui.EventMessage;
 import cz.it4i.parallel.runners.logging.ui.FeedbackMessage;
 import cz.it4i.parallel.runners.logging.ui.RedirectedOutputService;
@@ -150,20 +152,68 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 		return cjlClient.getRemoteJobInfo(jobRemotePath).toString();
 	}
 
+	@Override
+	public void getRemotePreviewCommand(long jobId) {
+		// Display the preview job submission script:
+
+		String jobRemotePath = this.remoteWorkingDirectory +
+			Constants.FORWARD_SLASH + jobId + Constants.FORWARD_SLASH;
+		RemoteJobInfo remoteJobInfo = cjlClient.getRemoteJobInfo(jobRemotePath);
+
+		String script = this.previewSubmitCommand(remoteJobInfo.getNumberOfNodes(),
+			remoteJobInfo.getNumberOfCoresPerNode(), remoteJobInfo
+				.getSlurmPartitionOrPbsQueueType(), remoteJobInfo.getWalltime(),
+			remoteJobInfo.getMaxMemoryPerNode(), remoteJobInfo.getUserScriptName(),
+			jobId);
+		JavaFXRoutines.runOnFxThread(() -> {
+			PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =
+				new PreviewSubmitCommandScreenWindow();
+			previewSubmitCommandScreenWindow.showDialog(script);
+		});
+	}
+
 	public HPCSchedulerType getSchedulerType() {
 		return cjlClient.getSchedulerType();
 	}
 
 	// This method is used for preview of command only, the user can test the
 	// command manually if needed.
-	public String previewSubmitCommand(long numberOfNodes, JobType jobType,
+	public String previewSubmitCommand(long numberOfNodes,
 		long numberOfCoresPerNode, String slurmPartitionOrPbsQueueType,
 		int[] walltime, int maxMemoryPerNode, String userScriptName)
 	{
+		return this.previewSubmitCommand(numberOfNodes, numberOfCoresPerNode,
+			slurmPartitionOrPbsQueueType, walltime, maxMemoryPerNode, userScriptName,
+			0);
+	}
 
+	private String previewSubmitCommand(long numberOfNodes,
+		long numberOfCoresPerNode, String slurmPartitionOrPbsQueueType,
+		int[] walltime, int maxMemoryPerNode, String userScriptName, long jobId)
+	{
 		List<String> modules = Collections.emptyList();
+
+		// Use provided job id:
+		String jobIdString = "" + jobId;
+		if (jobId <= 0) {
+			jobIdString = "preview";
+		}
+
 		String jobRemotePath = this.remoteWorkingDirectory +
-			Constants.FORWARD_SLASH + "preview" + Constants.FORWARD_SLASH;
+			Constants.FORWARD_SLASH + jobIdString + Constants.FORWARD_SLASH;
+
+		JobType jobType;
+		// Infer job type by file extension:
+		if (userScriptName.contains(".py")) {
+			jobType = JobType.SCRIPT;
+		}
+		else if (userScriptName.contains(".ijm")) {
+			jobType = JobType.MACRO;
+		}
+		else {
+			throw new EmitterException("Incorrect script name provided!");
+		}
+
 		String parameters = this.getParameters(jobType);
 		String jobRemotePathWithScript = getJobRemotePathWithScript(jobType,
 			jobRemotePath, userScriptName);

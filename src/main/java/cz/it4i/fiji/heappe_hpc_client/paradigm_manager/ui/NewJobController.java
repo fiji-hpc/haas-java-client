@@ -756,8 +756,8 @@ public class NewJobController extends BorderPane {
 
 		// Create the preview job submission script:
 		String script = sshHpcClient.previewSubmitCommand(numberOfNodes,
-			this.jobType, numberOfCoresPerNode, queueOrPartition, walltime,
-			maxMemoryPerNode, userScriptName);
+			numberOfCoresPerNode, queueOrPartition, walltime, maxMemoryPerNode,
+			userScriptName);
 
 		// Display the preview job submission script:
 		PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =

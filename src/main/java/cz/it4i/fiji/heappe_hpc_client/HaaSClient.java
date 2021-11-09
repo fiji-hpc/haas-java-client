@@ -650,4 +650,9 @@ public class HaaSClient implements HPCClient<JobSettings> {
 		return "This job is managed by the HEAppE middleware.";
 	}
 
+	@Override
+	public void getRemotePreviewCommand(long id) {
+		// This job is managed by the HEAppE middleware.;
+	}
+
 }
