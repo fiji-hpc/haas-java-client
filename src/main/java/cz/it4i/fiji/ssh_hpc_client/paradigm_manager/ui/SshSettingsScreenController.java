@@ -149,7 +149,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	private void browseFileAction() {
 		Stage stage = (Stage) browseButton.getScene().getWindow();
 		File selectedFile = SimpleDialog.fileChooser(stage,
-			"Open SSH Public Key file");
+			"Open SSH Private Key file");
 		if (selectedFile != null) {
 			this.keyFileTextField.setText(selectedFile.getAbsolutePath());
 		}

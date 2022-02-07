@@ -77,7 +77,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private static final String SCRIPT_FILE = "parallelMacroWrappedScript.ijm";
 
 	public SshHPCClient(SshConnectionSettings settings) {
-		log.info("Creating ssh client with given settings.");
+		log.info("Creating SSH client with given settings.");
 
 		// The HPC Scheduler type will be automatically detected (if it is set to
 		// null)
