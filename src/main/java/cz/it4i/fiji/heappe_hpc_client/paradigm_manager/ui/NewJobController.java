@@ -619,10 +619,13 @@ public class NewJobController extends BorderPane {
 	}
 
 	private boolean checkDirectoryLocationIfNeeded() {
-		return checkDataLocationValue(inputDataLocation, inputDirectoryTextField
-			.getText(), "input") && pathPointsToFile(inputDirectoryTextField
-				.getText()) && checkDataLocationValue(outputDataLocation,
-					outputDirectoryTextField.getText(), "output");
+		// @formatter:off
+		return checkDataLocationValue(inputDataLocation, inputDirectoryTextField.getText(), "input")
+				&& pathPointsToFile(inputDirectoryTextField.getText()) 
+				&& checkDataLocationValue(outputDataLocation,	outputDirectoryTextField.getText(), "output")
+				&& (isInputDirectoryOutsideLocalWorkingDirectory(inputDirectoryTextField.getText())
+					|| (jobType == JobType.SPIM_WORKFLOW)); // SPIM Workflow can use job sub-directories!
+		// @formatter:on
 	}
 
 	private boolean walltimeIsGreaterThanZero() {
@@ -642,6 +645,22 @@ public class NewJobController extends BorderPane {
 				"Enter a max memory limit that is greater than zero.");
 		}
 		return greaterThanZero;
+	}
+
+	private boolean isInputDirectoryOutsideLocalWorkingDirectory(
+		String directory)
+	{
+		Path workingDirectory = sshHpcClient.getWorkingDirectory();
+		Path inputDirectory = Paths.get(directory);
+		boolean outside = true;
+		if (inputDirectory.startsWith(workingDirectory)) {
+			outside = false;
+			SimpleDialog.showWarning("Invalid input provided",
+				"The input data location should be located inside" +
+					" any separate directory that must be" +
+					" outside the local working directory.");
+		}
+		return outside;
 	}
 
 	private boolean checkDataLocationValue(DataLocation dataLocation,

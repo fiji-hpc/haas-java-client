@@ -27,15 +27,14 @@ import javafx.stage.WindowEvent;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Delegate;
 
-
-
 @Plugin(type = JavaFXJobSettingsProvider.class)
 public class NewJobWindow implements
 	JavaFXJobSettingsProvider<SshClientJobSettings>
 {
+
 	@Parameter
 	private PrefService prefService;
-	
+
 	@Override
 	public Class<SshClientJobSettings> getTypeOfJobSettings() {
 		return SshClientJobSettings.class;
@@ -45,8 +44,8 @@ public class NewJobWindow implements
 	public void provideJobSettings(Window parent,
 		Consumer<SshClientJobSettings> consumer)
 	{
-		final NewJobController controller = new NewJobController(
-			ConnectionType.SSH, prefService);
+		final NewJobController controller = new NewJobController(ConnectionType.SSH,
+			prefService);
 		controller.setCreatePressedNotifier(() -> consumer.accept(constructSettings(
 			controller)));
 		final Scene formScene = new Scene(controller);
@@ -67,18 +66,18 @@ public class NewJobWindow implements
 	private static SshClientJobSettings constructSettings(
 		NewJobController newJobController)
 	{
-		// ToDo: complete this:
+	  // @formatter:off
 		SshJobSettings sshJobSetttings = new SshJobSettingsBuilder()
-				.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
-				.numberOfNodes(newJobController.getNumberOfNodes())
-				.queueOrPartition(newJobController.getQueueOrPartition())
-				.walltime(newJobController.getWalltime())
-				.maxMemoryPerNode(newJobController.getMaxMemoryPerNode())
-				.userScriptName(newJobController.getUserScriptName()).build();
+			.numberOfCoresPerNode(newJobController.getNumberOfCoresPerNode())
+			.numberOfNodes(newJobController.getNumberOfNodes())
+			.queueOrPartition(newJobController.getQueueOrPartition())
+			.walltime(newJobController.getWalltime())
+			.maxMemoryPerNode(newJobController.getMaxMemoryPerNode())
+			.userScriptName(newJobController.getUserScriptName())
+			.build();
+	  // @formatter:on
 
 		return new JobWithDirectorySettingsAdapter(sshJobSetttings) {
-
-			private static final long serialVersionUID = 5998838289289128870L;
 
 			@Override
 			public String getUserScriptName() {
@@ -118,8 +117,6 @@ public class NewJobWindow implements
 	private abstract static class JobWithDirectorySettingsAdapter implements
 		SshClientJobSettings
 	{
-
-		private static final long serialVersionUID = 7219177839749763140L;
 
 		@Delegate(types = SshJobSettings.class)
 		protected final SshJobSettings jobSettings;

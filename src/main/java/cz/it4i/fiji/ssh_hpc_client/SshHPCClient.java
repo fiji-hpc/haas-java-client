@@ -11,6 +11,7 @@ package cz.it4i.fiji.ssh_hpc_client;
 import com.google.common.eventbus.Subscribe;
 import com.jcraft.jsch.JSchException;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,6 +66,8 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private ClusterJobLauncher cjlClient;
 
 	private String remoteWorkingDirectory;
+	
+	private Path workingDirectory;
 
 	private ScpClient scpClient;
 
@@ -104,9 +107,9 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.scpClient.setPort(settings.getPort());
 
 			remoteWorkingDirectory = settings.getRemoteWorkingDirectory();
-
-			remoteFijiDirectory = settings.getRemoteDirectory();
-
+			remoteFijiDirectory = settings.getRemoteDirectory();			
+			workingDirectory = settings.getWorkingDirectory();
+			
 			command = settings.getCommand();
 			openMpiModule = settings.getOpenMpiModule();
 
@@ -576,5 +579,9 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	public void close() {
 		this.scpClient.close();
 		this.cjlClient.close();
+	}
+
+	public Path getWorkingDirectory() {
+		return this.workingDirectory;
 	}
 }
