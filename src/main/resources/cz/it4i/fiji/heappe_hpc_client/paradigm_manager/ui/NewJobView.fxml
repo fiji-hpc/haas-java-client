@@ -144,6 +144,15 @@
                                        <Label text="GB" />
                                     </children>
                                  </HBox>
+                                 <HBox>
+                                    <children>
+                                       <Label fx:id="warningMessageLabel" textFill="RED">
+                                          <opaqueInsets>
+                                             <Insets />
+                                          </opaqueInsets>
+                                       </Label>
+                                    </children>
+                                 </HBox>
 										</children>
 									</VBox>
 								</Tab>

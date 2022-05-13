@@ -19,6 +19,7 @@ import cz.it4i.parallel.internal.ui.LastFormLoader;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -107,6 +108,9 @@ public class NewJobController extends BorderPane {
 	private Label queueOrPartitionLabel;
 
 	@FXML
+	private Label warningMessageLabel;
+
+	@FXML
 	private TextField queueOrPartitionTextField;
 
 	@FXML
@@ -141,8 +145,9 @@ public class NewJobController extends BorderPane {
 
 	private PrefService prefService;
 
-	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 8; // GBs
+	private static final int DEFAULT_MAX_MEMORY_LIMIT_PER_NODE = 16; // GBs
 	private static final int MIN_MAX_MEMORY_PER_NODE = 1; // GB
+	private static final int MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE = 4; // GB
 
 	private static final String NEW_JOB_FORM_NAME = "newJobForm";
 
@@ -204,6 +209,7 @@ public class NewJobController extends BorderPane {
 		// Maximum memory limit in GBs:
 		SimpleControls.spinnerIgnoreNoneNumericInput(maxMemoryPerNodeSpinner,
 			MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE);
+		addWarningListener(maxMemoryPerNodeSpinner);
 		SpinnerValueFactory<Integer> maxMemoryPerNodeValueFactory =
 			new SpinnerValueFactory.IntegerSpinnerValueFactory(
 				MIN_MAX_MEMORY_PER_NODE, Integer.MAX_VALUE,
@@ -248,6 +254,25 @@ public class NewJobController extends BorderPane {
 
 		// Load previously saved user selections:
 		loadLastSavedForm(theConnectionType, prefService);
+	}
+
+	private void addWarningListener(Spinner<Integer> spinner) {
+		spinner.getEditor().textProperty().addListener((
+			ObservableValue<? extends String> observable, String oldValue,
+			String newValue) -> {
+			String message = "";
+			if (Integer.parseInt(
+				newValue) < MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE)
+			{
+				message = "Warning the memory limit might be too low (less than " +
+					MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE + " GB)!";
+			}
+			else {
+				message = "";
+			}
+			warningMessageLabel.setText(message);
+		});
+
 	}
 
 	private void loadLastSavedForm(ConnectionType theConnectionType,
