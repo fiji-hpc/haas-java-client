@@ -68,7 +68,7 @@
 												</HBox>
 											</graphic>
 											<tooltip>
-												<Tooltip text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." />
+												<Tooltip fx:id="inputTooltip" text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." />
 											</tooltip>
 										</RadioButton>
 									</children>

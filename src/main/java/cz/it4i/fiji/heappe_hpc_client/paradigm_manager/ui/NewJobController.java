@@ -32,6 +32,7 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
@@ -130,6 +131,9 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private Spinner<Integer> maxMemoryPerNodeSpinner; // Measured in GB.
+
+	@FXML
+	private Tooltip inputTooltip;
 
 	private DataLocation inputDataLocation;
 
@@ -753,6 +757,10 @@ public class NewJobController extends BorderPane {
 			numberOfCoresPerNodeSpinner.setDisable(true);
 			demoInputDataRadioButton.setDisable(false);
 			jobSubdirectoryRadioButton.setDisable(false);
+			inputTooltip.setText(
+				"External directory will be used as location for the input data." +
+					" The file config.yaml could be automaticaly copied from the directory" +
+					" into the job working directory.");
 		}
 	}
 
@@ -767,6 +775,9 @@ public class NewJobController extends BorderPane {
 			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
+			inputTooltip.setText("Select a macro file. " +
+				"The directory it it located in will be used as the local job directory." +
+				"Anything also present in the directory will be uploaded as data.");
 		}
 	}
 
@@ -781,6 +792,9 @@ public class NewJobController extends BorderPane {
 			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
+			inputTooltip.setText("Select a Jython script file. " +
+				"The directory it is located in will be used as the local job directory." +
+				"Anything also present in the directory will be uploaded as data.");
 		}
 	}
 
