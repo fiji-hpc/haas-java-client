@@ -92,14 +92,6 @@
 															</opaqueInsets>
 														</Label>
 														<Spinner fx:id="numberOfNodesSpinner" disable="true" editable="true" prefWidth="70.0" />
-                                          <CheckBox fx:id="scatterCheckBox" mnemonicParsing="false" text="Scatter">
-                                             <padding>
-                                                <Insets left="10.0" />
-                                             </padding>
-                                             <tooltip>
-                                                <Tooltip text="Select to prevent job from using the same node multiple times." />
-                                             </tooltip>
-                                          </CheckBox>
 													</children>
 												</HBox>
    											<HBox>
@@ -151,15 +143,19 @@
                                        </Label>
                                        <Spinner fx:id="maxMemoryPerNodeSpinner" editable="true" prefHeight="25.0" prefWidth="70.0" />
                                        <Label text="GB" />
-                                    </children>
-                                 </HBox>
-                                 <HBox>
-                                    <children>
                                        <Label fx:id="warningMessageLabel" textFill="RED">
                                           <opaqueInsets>
                                              <Insets />
                                           </opaqueInsets>
+                                          <padding>
+                                             <Insets left="5.0" />
+                                          </padding>
                                        </Label>
+                                    </children>
+                                 </HBox>
+                                 <HBox>
+                                    <children>
+                                       <CheckBox fx:id="scatterCheckBox" mnemonicParsing="false" text="Prevent job from using the same node multiple times." />
                                     </children>
                                  </HBox>
 										</children>
