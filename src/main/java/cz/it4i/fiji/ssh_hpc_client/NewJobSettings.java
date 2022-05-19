@@ -12,9 +12,9 @@ public class NewJobSettings implements Serializable {
 	public enum INPUT_OPTION {
 			DEMO_DATA, JOB_DIRECTORY, OWN_DIRECTORY
 	}
-	
-	public enum OUTPUT_OPTION{
-		JOB_DIRECTORY, OWN_DIRECTORY
+
+	public enum OUTPUT_OPTION {
+			JOB_DIRECTORY, OWN_DIRECTORY
 	}
 
 	private int numberOfNodes;
@@ -36,5 +36,7 @@ public class NewJobSettings implements Serializable {
 	private OUTPUT_OPTION outputDataLocationOption;
 
 	private String outputPath;
+
+	private boolean scatter;
 
 }

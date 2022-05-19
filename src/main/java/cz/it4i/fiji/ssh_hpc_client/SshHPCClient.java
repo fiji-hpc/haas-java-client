@@ -66,7 +66,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	private ClusterJobLauncher cjlClient;
 
 	private String remoteWorkingDirectory;
-	
+
 	private Path workingDirectory;
 
 	private ScpClient scpClient;
@@ -107,9 +107,9 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.scpClient.setPort(settings.getPort());
 
 			remoteWorkingDirectory = settings.getRemoteWorkingDirectory();
-			remoteFijiDirectory = settings.getRemoteDirectory();			
+			remoteFijiDirectory = settings.getRemoteDirectory();
 			workingDirectory = settings.getWorkingDirectory();
-			
+
 			command = settings.getCommand();
 			openMpiModule = settings.getOpenMpiModule();
 
@@ -167,7 +167,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			remoteJobInfo.getNumberOfCoresPerNode(), remoteJobInfo
 				.getSlurmPartitionOrPbsQueueType(), remoteJobInfo.getWalltime(),
 			remoteJobInfo.getMaxMemoryPerNode(), remoteJobInfo.getUserScriptName(),
-			jobId);
+			jobId, remoteJobInfo.isScatter());
 		JavaFXRoutines.runOnFxThread(() -> {
 			PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =
 				new PreviewSubmitCommandScreenWindow();
@@ -183,16 +183,18 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 	// command manually if needed.
 	public String previewSubmitCommand(long numberOfNodes,
 		long numberOfCoresPerNode, String slurmPartitionOrPbsQueueType,
-		int[] walltime, int maxMemoryPerNode, String userScriptName)
+		int[] walltime, int maxMemoryPerNode, String userScriptName,
+		boolean scatter)
 	{
 		return this.previewSubmitCommand(numberOfNodes, numberOfCoresPerNode,
 			slurmPartitionOrPbsQueueType, walltime, maxMemoryPerNode, userScriptName,
-			0);
+			0, scatter);
 	}
 
 	private String previewSubmitCommand(long numberOfNodes,
 		long numberOfCoresPerNode, String slurmPartitionOrPbsQueueType,
-		int[] walltime, int maxMemoryPerNode, String userScriptName, long jobId)
+		int[] walltime, int maxMemoryPerNode, String userScriptName, long jobId,
+		boolean scatter)
 	{
 		List<String> modules = Collections.emptyList();
 
@@ -225,7 +227,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 			this.command, parameters + " " + jobRemotePathWithScript, numberOfNodes,
 			numberOfCoresPerNode, modules, jobRemotePath,
 			slurmPartitionOrPbsQueueType, walltime, maxMemoryPerNode,
-			this.openMpiModule, "previewSubmitScript.sh");
+			this.openMpiModule, scatter, "previewSubmitScript.sh");
 	}
 
 	private String getParameters(JobType jobType) {
@@ -285,7 +287,7 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				.getNumberOfNodes(), jobRemoteInfo.getNumberOfCoresPerNode(), modules,
 			jobRemotePath, jobRemoteInfo.getSlurmPartitionOrPbsQueueType(),
 			jobRemoteInfo.getWalltime(), jobRemoteInfo.getMaxMemoryPerNode(),
-			this.openMpiModule);
+			this.openMpiModule, jobRemoteInfo.isScatter());
 
 		this.cjlClient.setJobIdInfo(jobRemotePath, job.getID());
 	}

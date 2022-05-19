@@ -25,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
@@ -135,6 +136,9 @@ public class NewJobController extends BorderPane {
 	@FXML
 	private Tooltip inputTooltip;
 
+	@FXML
+	private CheckBox scatterCheckBox;
+
 	private DataLocation inputDataLocation;
 
 	private DataLocation outputDataLocation;
@@ -229,14 +233,17 @@ public class NewJobController extends BorderPane {
 		if (hpcSchedulerType == HPCSchedulerType.SLURM) {
 			defaultQueueOrPartition = "batch";
 			label = "Slurm Workload Manager partition";
+			scatterCheckBox.setVisible(false);
 		}
 		else if (hpcSchedulerType == HPCSchedulerType.PBS) {
 			defaultQueueOrPartition = "qexp";
 			label = "PBS Professional queue";
+			scatterCheckBox.setVisible(true);
 		}
 		else if (hpcSchedulerType == HPCSchedulerType.LSF) {
 			defaultQueueOrPartition = "normal";
 			label = "IBM Spectrum LSF queue";
+			scatterCheckBox.setVisible(false);
 		}
 		queueOrPartitionTextField.setText(defaultQueueOrPartition);
 		queueOrPartitionLabel.setText(label);
@@ -248,12 +255,14 @@ public class NewJobController extends BorderPane {
 			queueOrPartitionLabel.setVisible(false);
 			queueOrPartitionTextField.setVisible(false);
 			previewRemoteCommandButton.setVisible(false);
+			scatterCheckBox.setVisible(false);
 		}
 		else if (theConnectionType == ConnectionType.SSH) {
 			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
 			inputSelectionHBox.setDisable(false);
 			previewRemoteCommandButton.setVisible(true);
+			scatterCheckBox.setVisible(true);
 		}
 
 		// Load previously saved user selections:
@@ -268,7 +277,7 @@ public class NewJobController extends BorderPane {
 			if (Integer.parseInt(
 				newValue) < MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE)
 			{
-				message = "Warning the memory limit might be too low (less than " +
+				message = "May be too low (< " +
 					MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE + " GB)!";
 			}
 			else {
@@ -316,6 +325,7 @@ public class NewJobController extends BorderPane {
 						if (oldSettings.getOutputPath() != null) {
 							outputDirectoryTextField.setText(oldSettings.getOutputPath());
 						}
+						scatterCheckBox.setSelected(oldSettings.isScatter());
 					});
 
 				} // else do nothing.
@@ -584,9 +594,9 @@ public class NewJobController extends BorderPane {
 			newJobSettings.setJobType(this.obtainJobType(jobTypeSelectorToggleGroup));
 			newJobSettings.setInputDataLocationOption(this.getInputOption());
 			newJobSettings.setOutputDataLocationOption(this.getOutputOption());
-
 			newJobSettings.setInputPath(this.inputDirectoryTextField.getText());
 			newJobSettings.setOutputPath(this.outputDirectoryTextField.getText());
+			newJobSettings.setScatter(this.scatterCheckBox.isSelected());
 
 			tempLastFormLoader.storeLastForm(newJobSettings);
 			log.debug("Stored new job settings!");
@@ -809,13 +819,14 @@ public class NewJobController extends BorderPane {
 		int[] walltime = getWalltime();
 		int maxMemoryPerNode = getMaxMemoryPerNode();
 		String userScriptName = getUserScriptName();
+		boolean scatter = scatterCheckBox.isSelected();
 
 		Collections.<String> emptyList();
 
 		// Create the preview job submission script:
 		String script = sshHpcClient.previewSubmitCommand(numberOfNodes,
 			numberOfCoresPerNode, queueOrPartition, walltime, maxMemoryPerNode,
-			userScriptName);
+			userScriptName, scatter);
 
 		// Display the preview job submission script:
 		PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =
