@@ -59,19 +59,28 @@
 												<Tooltip text="Local job subdirectory will be used as location for input data. Data and config.yaml will be needed to copy into it." />
 											</tooltip>
 										</RadioButton>
-										<RadioButton fx:id="ownInputRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
-											<graphic>
-												<HBox fx:id="inputSelectionHBox" disable="true">
-													<children>
+                        <VBox>
+                           <children>
+      										<RadioButton fx:id="ownInputRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
+      											<graphic>
+      												<HBox fx:id="inputSelectionHBox" disable="true">
+      													<children>
+                                          <Label fx:id="customInputLabel" maxHeight="40.0" maxWidth="400.0" text="Select custom input data location:" wrapText="true" />
+      													</children>
+      												</HBox>
+      											</graphic>
+      											<tooltip>
+      												<Tooltip fx:id="inputTooltip" prefHeight="80.0" prefWidth="300.0" text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." wrapText="true" />
+      											</tooltip>
+      										</RadioButton>
+                              <HBox>
+                                 <children>
 														<TextField fx:id="inputDirectoryTextField" prefWidth="350.0" />
 														<Button fx:id="selectInputButton" mnemonicParsing="false" text="Select" />
-													</children>
-												</HBox>
-											</graphic>
-											<tooltip>
-												<Tooltip fx:id="inputTooltip" text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." />
-											</tooltip>
-										</RadioButton>
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
 									</children>
 								</VBox>
 					</content>

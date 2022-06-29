@@ -113,6 +113,9 @@ public class NewJobController extends BorderPane {
 	private Label warningMessageLabel;
 
 	@FXML
+	private Label customInputLabel;
+
+	@FXML
 	private TextField queueOrPartitionTextField;
 
 	@FXML
@@ -771,6 +774,7 @@ public class NewJobController extends BorderPane {
 				"External directory will be used as location for the input data." +
 					" The file config.yaml could be automaticaly copied from the directory" +
 					" into the job working directory.");
+			customInputLabel.setText("Select custom directory where input data is located in:");
 		}
 	}
 
@@ -785,9 +789,12 @@ public class NewJobController extends BorderPane {
 			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
-			inputTooltip.setText("Select a macro file. " +
-				"The directory it it located in will be used as the local job directory." +
-				"Anything also present in the directory will be uploaded as data.");
+			inputTooltip.setText(
+				"Select a macro file you that have parallelised or will parallelise. " +
+					"The directory it it located in will be used as the local job directory. " +
+					"Anything also present in the directory will be uploaded as data.");
+			customInputLabel.setText("Select macro file " +
+				"(any file in the directory the macro is located in will be uploaded as input data):");
 		}
 	}
 
@@ -802,9 +809,13 @@ public class NewJobController extends BorderPane {
 			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
-			inputTooltip.setText("Select a Jython script file. " +
-				"The directory it is located in will be used as the local job directory." +
-				"Anything also present in the directory will be uploaded as data.");
+
+			inputTooltip.setText(
+				"Select a Jython script file that that you have parallelised or will parallelise. " +
+					"The directory it is located in will be used as the local job directory. " +
+					"Any file also present in the local job directory will be uploaded along the script.");
+			customInputLabel.setText("Select Jython script file " +
+				"(any file in the directory the script is located in will be uploaded as input data):");
 		}
 	}
 
