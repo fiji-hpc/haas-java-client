@@ -59,7 +59,7 @@
 												<Tooltip text="Local job subdirectory will be used as location for input data. Data and config.yaml will be needed to copy into it." />
 											</tooltip>
 										</RadioButton>
-                        <VBox fx:id="inputSelectionVBox" disable="true">
+                        <VBox>
                            <children>
       										<RadioButton fx:id="ownInputRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
       											<graphic>
@@ -69,7 +69,7 @@
       												<Tooltip fx:id="inputTooltip" prefHeight="80.0" prefWidth="300.0" text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." wrapText="true" />
                                  </tooltip>
       										</RadioButton>
-                              <HBox>
+                              <HBox fx:id="inputDataLocationSelectorHbox" disable="true">
                                  <children>
 														<TextField fx:id="inputDirectoryTextField" prefWidth="350.0" />
 														<Button fx:id="selectInputButton" mnemonicParsing="false" text="Select" />
@@ -186,20 +186,24 @@
 												</RadioButton>
 											</children>
 										</HBox>
-										<HBox>
-											<children>
+                        <VBox>
+                           <children>
 												<RadioButton fx:id="ownOutputRadioButton" mnemonicParsing="false" toggleGroup="$outputDataLocationToggleGroup">
 													<graphic>
-														<HBox fx:id="outputSelectionHBox" disable="true">
-															<children>
+                                    <Label text="Select custom output data directory:" />
+													</graphic>
+                                 <tooltip>
+                                    <Tooltip text="Output will be downloaded to the location specified." />
+                                 </tooltip>
+												</RadioButton>
+      										<HBox fx:id="outputDataLocationSelectorHbox" disable="true">
+      											<children>
 																<TextField fx:id="outputDirectoryTextField" prefWidth="350.0" />
 																<Button fx:id="selectOutputButton" mnemonicParsing="false" text="Select" />
-															</children>
-														</HBox>
-													</graphic>
-												</RadioButton>
-											</children>
-										</HBox>
+      											</children>
+      										</HBox>
+                           </children>
+                        </VBox>
 									</children>
 								</VBox>
 					</content>

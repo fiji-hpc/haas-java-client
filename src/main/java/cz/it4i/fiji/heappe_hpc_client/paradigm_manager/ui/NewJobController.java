@@ -20,10 +20,7 @@ import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -36,7 +33,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -123,9 +119,6 @@ public class NewJobController extends BorderPane {
 	private HBox queueOrPartitionHBox;
 
 	@FXML
-	private VBox inputSelectionVBox;
-
-	@FXML
 	private HBox outputSelectionHBox;
 
 	@FXML
@@ -142,6 +135,12 @@ public class NewJobController extends BorderPane {
 
 	@FXML
 	private CheckBox scatterCheckBox;
+
+	@FXML
+	private HBox inputDataLocationSelectorHbox;
+
+	@FXML
+	private HBox outputDataLocationSelectorHbox;
 
 	private DataLocation inputDataLocation;
 
@@ -173,9 +172,9 @@ public class NewJobController extends BorderPane {
 			.toExternalForm());
 		createButton.setOnMouseClicked(x -> createPressed());
 		inputDataLocationToggleGroup.selectedToggleProperty().addListener((v, old,
-			n) -> selected(n, ownInputRadioButton));
+			n) -> selected(n, ownInputRadioButton, inputDataLocationSelectorHbox));
 		outputDataLocationToggleGroup.selectedToggleProperty().addListener((v, o,
-			n) -> selected(n, ownOutputRadioButton));
+			n) -> selected(n, ownOutputRadioButton, outputDataLocationSelectorHbox));
 
 		// Check which job type is selected:
 		workflowSpimRadioButton.selectedProperty().addListener((v, o,
@@ -264,9 +263,9 @@ public class NewJobController extends BorderPane {
 		else if (theConnectionType == ConnectionType.SSH) {
 			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
-			inputSelectionVBox.setDisable(false);
 			previewRemoteCommandButton.setVisible(true);
 			scatterCheckBox.setVisible(true);
+			inputDataLocationSelectorHbox.setDisable(false);
 		}
 
 		// Load previously saved user selections:
@@ -755,13 +754,11 @@ public class NewJobController extends BorderPane {
 			backawardOrderOfSelected];
 	}
 
-	private void selected(Toggle n, Parent disableIfNotSelected) {
-		ObservableList<Node> children = disableIfNotSelected
-			.getChildrenUnmodifiable();
-		boolean disabled = (n != disableIfNotSelected);
-		for (Node child : children) {
-			child.setDisable(disabled);
-		}
+	private void selected(Toggle selectedChoice, RadioButton choice,
+		HBox selector)
+	{
+		boolean disabled = (selectedChoice != choice);
+		selector.setDisable(disabled);
 	}
 
 	private void selectedSpimWorkflow(boolean spimWorkflowIsSelected) {
@@ -775,7 +772,8 @@ public class NewJobController extends BorderPane {
 				"External directory will be used as location for the input data." +
 					" The file config.yaml could be automaticaly copied from the directory" +
 					" into the job working directory.");
-			customInputLabel.setText("Select custom directory where input data is located in:");
+			customInputLabel.setText(
+				"Select custom directory where input data is located in:");
 		}
 	}
 
