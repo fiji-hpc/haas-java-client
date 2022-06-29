@@ -59,19 +59,15 @@
 												<Tooltip text="Local job subdirectory will be used as location for input data. Data and config.yaml will be needed to copy into it." />
 											</tooltip>
 										</RadioButton>
-                        <VBox>
+                        <VBox fx:id="inputSelectionVBox" disable="true">
                            <children>
       										<RadioButton fx:id="ownInputRadioButton" mnemonicParsing="false" toggleGroup="$inputDataLocationToggleGroup">
       											<graphic>
-      												<HBox fx:id="inputSelectionHBox" disable="true">
-      													<children>
-                                          <Label fx:id="customInputLabel" maxHeight="40.0" maxWidth="400.0" text="Select custom input data location:" wrapText="true" />
-      													</children>
-      												</HBox>
+                                    <Label fx:id="customInputLabel" maxHeight="40.0" maxWidth="400.0" prefHeight="40.0" prefWidth="390.0" text="Select custom input data location:" wrapText="true" />
       											</graphic>
-      											<tooltip>
+                                 <tooltip>
       												<Tooltip fx:id="inputTooltip" prefHeight="80.0" prefWidth="300.0" text="External directory will be used as location for the input data. The file config.yaml could be automaticaly copied from the directory into the job working directory." wrapText="true" />
-      											</tooltip>
+                                 </tooltip>
       										</RadioButton>
                               <HBox>
                                  <children>

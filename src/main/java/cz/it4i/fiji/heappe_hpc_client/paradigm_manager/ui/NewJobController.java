@@ -36,6 +36,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -122,7 +123,7 @@ public class NewJobController extends BorderPane {
 	private HBox queueOrPartitionHBox;
 
 	@FXML
-	private HBox inputSelectionHBox;
+	private VBox inputSelectionVBox;
 
 	@FXML
 	private HBox outputSelectionHBox;
@@ -263,7 +264,7 @@ public class NewJobController extends BorderPane {
 		else if (theConnectionType == ConnectionType.SSH) {
 			jobTypeSelectorToggleGroup.selectToggle(macroRadioButton);
 			workflowSpimRadioButton.disableProperty().set(true);
-			inputSelectionHBox.setDisable(false);
+			inputSelectionVBox.setDisable(false);
 			previewRemoteCommandButton.setVisible(true);
 			scatterCheckBox.setVisible(true);
 		}
