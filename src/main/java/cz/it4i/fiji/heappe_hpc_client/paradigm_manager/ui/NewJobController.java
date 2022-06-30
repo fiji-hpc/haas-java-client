@@ -2,7 +2,6 @@
 package cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
