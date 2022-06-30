@@ -2,7 +2,9 @@
 package cz.it4i.fiji.heappe_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -19,7 +21,6 @@ import cz.it4i.parallel.internal.ui.LastFormLoader;
 import cz.it4i.swing_javafx_ui.JavaFXRoutines;
 import cz.it4i.swing_javafx_ui.SimpleControls;
 import cz.it4i.swing_javafx_ui.SimpleDialog;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -142,6 +143,12 @@ public class NewJobController extends BorderPane {
 	@FXML
 	private HBox outputDataLocationSelectorHbox;
 
+	@FXML
+	private Label inputLocationLabel;
+
+	@FXML
+	private Tooltip inputLocationTooltip;
+
 	private DataLocation inputDataLocation;
 
 	private DataLocation outputDataLocation;
@@ -175,6 +182,10 @@ public class NewJobController extends BorderPane {
 			n) -> selected(n, ownInputRadioButton, inputDataLocationSelectorHbox));
 		outputDataLocationToggleGroup.selectedToggleProperty().addListener((v, o,
 			n) -> selected(n, ownOutputRadioButton, outputDataLocationSelectorHbox));
+
+		// Show the input data location derived from the location of the macro or
+		// script:
+		addInputLocationListener();
 
 		// Check which job type is selected:
 		workflowSpimRadioButton.selectedProperty().addListener((v, o,
@@ -272,10 +283,41 @@ public class NewJobController extends BorderPane {
 		loadLastSavedForm(theConnectionType, prefService);
 	}
 
+	private void addInputLocationListener() {
+		inputDirectoryTextField.textProperty().addListener((observable, oldValue,
+			newValue) -> {
+			String message = "None selected";
+			String pathString = "";
+
+			if (!newValue.isEmpty()) {
+				try {
+					pathString = getInputLocationPath(newValue).toString();
+					message = pathString;
+
+					File inputDirectory = new File(pathString);
+					if (!inputDirectory.exists()) {
+						message = "Parent directory does not exist.";
+					}
+					else if (!inputDirectory.isDirectory()) {
+						message = "Parent directory is actually a file.";
+					}
+				}
+				catch (InvalidPathException exc) {
+					message = "Path is not valid.";
+				}
+				catch (NullPointerException exc) {
+					message = "Seletion does not have a parent directory.";
+				}
+			}
+
+			inputLocationLabel.setText(message);
+			inputLocationTooltip.setText(message);
+		});
+	}
+
 	private void addWarningListener(Spinner<Integer> spinner) {
-		spinner.getEditor().textProperty().addListener((
-			ObservableValue<? extends String> observable, String oldValue,
-			String newValue) -> {
+		spinner.getEditor().textProperty().addListener((observable, oldValue,
+			newValue) -> {
 			String message = "";
 			if (Integer.parseInt(
 				newValue) < MINIMUM_SUGGESTED_MEMORY_LIMIT_PER_NODE)
@@ -510,19 +552,14 @@ public class NewJobController extends BorderPane {
 			case WORK_DIRECTORY:
 				return workingDirectory;
 			case CUSTOM_DIRECTORY:
-				return getPathAndSetUserScriptName(selectedDirectory);
+				return getInputLocationPath(selectedDirectory);
 			default:
 				throw new UnsupportedOperationException("Not support " + dataLocation);
 		}
 	}
 
-	private Path getPathAndSetUserScriptName(String selectedDirectory) {
-		Path path = Paths.get(selectedDirectory).toAbsolutePath();
-		File file = path.toFile();
-		if (file.isDirectory()) {
-			return path;
-		}
-
+	private Path getInputLocationPath(String selectedDirectory) {
+		Path path = Paths.get(selectedDirectory);
 		return path.getParent();
 	}
 
@@ -788,12 +825,14 @@ public class NewJobController extends BorderPane {
 			{
 				inputDataLocationToggleGroup.selectToggle(ownInputRadioButton);
 			}
+
 			inputTooltip.setText(
-				"Select a macro file you that have parallelised or will parallelise. " +
-					"The directory it it located in will be used as the local job directory. " +
-					"Anything also present in the directory will be uploaded as data.");
-			customInputLabel.setText("Select macro file " +
-				"(any file in the directory the macro is located in will be uploaded as input data):");
+				"Select a macro file that will be executed in parallel on the cluster.  " +
+					"All files from the directory, in which the macro is located, " +
+					"will be uploaded too and will thus remain accessible also on the cluster " +
+					"and may be used as input data. ");
+			customInputLabel.setText(
+				"Select parallel macro file, its folder is then the input data location:");
 		}
 	}
 
@@ -810,11 +849,12 @@ public class NewJobController extends BorderPane {
 			}
 
 			inputTooltip.setText(
-				"Select a Jython script file that that you have parallelised or will parallelise. " +
-					"The directory it is located in will be used as the local job directory. " +
-					"Any file also present in the local job directory will be uploaded along the script.");
-			customInputLabel.setText("Select Jython script file " +
-				"(any file in the directory the script is located in will be uploaded as input data):");
+				"Select a Jython script file that will be executed in parallel on the cluster.  " +
+					"All files from the directory, in which the Jython script is located, " +
+					"will be uploaded too and will thus remain accessible also on the cluster " +
+					"and may be used as input data. ");
+			customInputLabel.setText(
+				"Select parallel Jython script file, its folder is then the input data location:");
 		}
 	}
 
