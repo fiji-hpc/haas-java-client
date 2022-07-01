@@ -177,10 +177,10 @@ public class SshSettingsScreenController extends AnchorPane {
 
 	private boolean settingsAreValid() {
 		String hostname = hostTextField.getText();
-		String localWorkingDirectory = workingDirectoryTextField.getText();
-		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
+		String localWorkingDirectory = workingDirectoryTextField.getText().trim();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText().trim();
+		String keyFilePath = keyFileTextField.getText().trim();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
-		String keyFilePath = keyFileTextField.getText();
 
 		String title = "";
 		String message = "";
@@ -209,7 +209,7 @@ public class SshSettingsScreenController extends AnchorPane {
 			message = "The key file you selected does not exist.";
 			valid = false;
 		}
-		else if (remoteWorkingDirectory.trim().isEmpty()) {
+		else if (remoteWorkingDirectory.isEmpty()) {
 			title = "The remote direcotry path should not be empty.";
 			message = "You must provide a valid remote working directory path.";
 			valid = false;
@@ -219,7 +219,7 @@ public class SshSettingsScreenController extends AnchorPane {
 			message = "Select a valid path on your computer.";
 			valid = false;
 		}
-		else if (remoteWorkingDirectory.trim().equals(remoteFijiDirectory.trim())) {
+		else if (remoteWorkingDirectory.equals(remoteFijiDirectory)) {
 			title =
 				"The remote working directory and remote Fiji directory must be different.";
 			message =
@@ -282,7 +282,7 @@ public class SshSettingsScreenController extends AnchorPane {
 	}
 
 	private SshConnectionSettings createSettings() {
-		String host = hostTextField.getText();
+		String host = hostTextField.getText().trim();
 		commitSpinnerValue(portSpinner);
 		int port = portSpinner.getValue();
 
@@ -294,13 +294,13 @@ public class SshSettingsScreenController extends AnchorPane {
 			authenticationChoice = AuthenticationChoice.PASSWORD;
 		}
 
-		String userName = userNameTextField.getText();
+		String userName = userNameTextField.getText().trim();
 		String password = passwordPasswordField.getText();
-		File keyFile = new File(keyFileTextField.getText());
+		File keyFile = new File(keyFileTextField.getText().trim());
 		String keyFilePassword = keyFilePasswordPasswordField.getText();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
-		String workingDirectory = workingDirectoryTextField.getText();
-		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
+		String workingDirectory = workingDirectoryTextField.getText().trim();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText().trim();
 
 		// Get command from advanced settings if set, else keep the old value:
 		String command = null;
