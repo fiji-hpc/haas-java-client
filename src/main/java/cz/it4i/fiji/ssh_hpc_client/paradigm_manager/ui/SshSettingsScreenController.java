@@ -2,7 +2,8 @@
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
-
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.ssh_hpc_client.AdvancedSettings;
@@ -168,8 +169,116 @@ public class SshSettingsScreenController extends AnchorPane {
 
 	@FXML
 	private void okAction() {
-		this.settings = createSettings();
-		((Stage) getScene().getWindow()).close();
+		if (settingsAreValid()) {
+			this.settings = createSettings();
+			((Stage) getScene().getWindow()).close();
+		}
+	}
+
+	private boolean settingsAreValid() {
+		String hostname = hostTextField.getText();
+		String localWorkingDirectory = workingDirectoryTextField.getText();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText();
+		String remoteFijiDirectory = remoteDirectoryTextField.getText();
+		String keyFilePath = keyFileTextField.getText();
+
+		String title = "";
+		String message = "";
+		boolean valid = true;
+		if (hostname.trim().isEmpty()) {
+			title = "Host name should not be empty.";
+			message = "You must provide a valid host name.";
+			valid = false;
+		}
+		else if (userNameTextField.getText().trim().isEmpty()) {
+			title = "Username should not be empty.";
+			message = "You must provide a user name.";
+			valid = false;
+		}
+		else if (authenticationChoiceKeyRadioButton.isSelected() && keyFilePath
+			.isEmpty())
+		{
+			title = "Key file should be provided.";
+			message = "You must provide the path to a valid RSA private key file.";
+			valid = false;
+		}
+		else if (authenticationChoiceKeyRadioButton.isSelected() &&
+			!fileExistsLocaly(keyFilePath))
+		{
+			title = "Key file must exist.";
+			message = "The key file you selected does not exist.";
+			valid = false;
+		}
+		else if (remoteWorkingDirectory.trim().isEmpty()) {
+			title = "The remote direcotry path should not be empty.";
+			message = "You must provide a valid remote working directory path.";
+			valid = false;
+		}
+		else if (localWorkingDirectory.isEmpty()) {
+			title = "The local working directory path should not be empty.";
+			message = "Select a valid path on your computer.";
+			valid = false;
+		}
+		else if (remoteWorkingDirectory.trim().equals(remoteFijiDirectory.trim())) {
+			title =
+				"The remote working directory and remote Fiji directory must be different.";
+			message =
+				"Use a different remote working directory or remote Fiji directory.";
+			valid = false;
+		}
+		else if (!pathIsValid(remoteWorkingDirectory)) {
+			title = "The path of the remote working directory is invalid.";
+			message = "Specify a valid remote working direcory.";
+			valid = false;
+		}
+		else if (!pathExistsLocaly(localWorkingDirectory)) {
+			title = "The local working directory you selected does not exist.";
+			message = "Select an existing local directory.";
+			valid = false;
+		}
+
+		if (!valid) {
+			SimpleDialog.showWarning(title, message);
+		}
+
+		return valid;
+	}
+
+	private boolean pathIsValid(String pathString) {
+		boolean valid = true;
+		try {
+			Paths.get(pathString);
+		}
+		catch (InvalidPathException | NullPointerException ex) {
+			valid = false;
+		}
+		return valid;
+	}
+
+	private boolean pathExistsLocaly(String pathString) {
+		boolean valid = true;
+		if (pathIsValid(pathString)) {
+			File file = new File(pathString);
+			valid = file.exists() && file.isDirectory();
+		}
+		else {
+			valid = false;
+		}
+
+		return valid;
+	}
+
+	private boolean fileExistsLocaly(String pathString) {
+		boolean valid = true;
+		if (pathIsValid(pathString)) {
+			File file = new File(pathString);
+			valid = file.exists() && file.isFile();
+		}
+		else {
+			valid = false;
+		}
+
+		return valid;
 	}
 
 	private SshConnectionSettings createSettings() {
@@ -238,7 +347,7 @@ public class SshSettingsScreenController extends AnchorPane {
 		this.advancedSettings = sshAdvancedSettingsScreenWindow.showDialog(
 			this.oldSettings, advancedSettings, automaticAdvancedSettingsCheckBox
 				.isSelected());
-		if(this.advancedSettings.isEmpty()) {
+		if (this.advancedSettings.isEmpty()) {
 			advancedOptionsHyperlink.setDisable(true);
 			automaticAdvancedSettingsCheckBox.setSelected(true);
 		}
