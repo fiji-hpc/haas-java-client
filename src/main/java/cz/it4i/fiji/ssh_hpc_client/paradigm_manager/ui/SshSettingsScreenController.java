@@ -228,7 +228,7 @@ public class SshSettingsScreenController extends AnchorPane {
 		}
 		else if (!pathIsValid(remoteWorkingDirectory)) {
 			title = "The path of the remote working directory is invalid.";
-			message = "Specify a valid remote working direcory.";
+			message = "Specify a valid remote working directory.";
 			valid = false;
 		}
 		else if (!pathExistsLocaly(localWorkingDirectory)) {
