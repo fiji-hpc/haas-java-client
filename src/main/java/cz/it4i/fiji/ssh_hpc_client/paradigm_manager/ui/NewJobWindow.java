@@ -74,6 +74,7 @@ public class NewJobWindow implements
 			.walltime(newJobController.getWalltime())
 			.maxMemoryPerNode(newJobController.getMaxMemoryPerNode())
 			.userScriptName(newJobController.getUserScriptName())
+			.scatter(newJobController.getScatter())
 			.build();
 	  // @formatter:on
 

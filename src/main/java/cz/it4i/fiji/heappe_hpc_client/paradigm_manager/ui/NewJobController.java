@@ -453,6 +453,27 @@ public class NewJobController extends BorderPane {
 		}
 	}
 
+	public String getUserScriptName() {
+		String selectedDirectory = inputDirectoryTextField.getText();
+		Path path = Paths.get(selectedDirectory).toAbsolutePath();
+	
+		// The user script must be a file:
+		String userScriptName;
+		if (Files.isRegularFile(path)) {
+			// Get file name from absolute path:
+			userScriptName = path.getFileName().toString();
+		}
+		else {
+			// If no file has been selected set the preview user script name:
+			userScriptName = "previewUserScript.py";
+		}
+		return userScriptName;
+	}
+
+	public boolean getScatter() {
+		return scatterCheckBox.isSelected();
+	}
+
 	private void initSelectButton(TextField textField, Button button) {
 		button.setOnAction(x -> {
 			Window parent = ownerWindow.getScene().getWindow();
@@ -560,23 +581,6 @@ public class NewJobController extends BorderPane {
 	private Path getInputLocationPath(String selectedDirectory) {
 		Path path = Paths.get(selectedDirectory);
 		return path.getParent();
-	}
-
-	public String getUserScriptName() {
-		String selectedDirectory = inputDirectoryTextField.getText();
-		Path path = Paths.get(selectedDirectory).toAbsolutePath();
-
-		// The user script must be a file:
-		String userScriptName;
-		if (Files.isRegularFile(path)) {
-			// Get file name from absolute path:
-			userScriptName = path.getFileName().toString();
-		}
-		else {
-			// If no file has been selected set the preview user script name:
-			userScriptName = "previewUserScript.py";
-		}
-		return userScriptName;
 	}
 
 	private void createPressed() {

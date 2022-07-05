@@ -17,6 +17,8 @@ public class SshJobSettingsBuilder implements Serializable {
 	private String queueOrPartition;
 	private String userScriptName;
 	private int[] walltime = new int[2];
+	
+	private boolean scatter;
 
 	public SshJobSettingsBuilder numberOfCoresPerNode(
 		int newNumberOfCoresPerNode)
@@ -47,6 +49,11 @@ public class SshJobSettingsBuilder implements Serializable {
 
 	public SshJobSettingsBuilder numberOfNodes(int newNumberOfNodes) {
 		this.numberOfNodes = newNumberOfNodes;
+		return this;
+	}
+	
+	public SshJobSettingsBuilder scatter(boolean newScatter) {
+		this.scatter = newScatter;
 		return this;
 	}
 
@@ -81,6 +88,11 @@ public class SshJobSettingsBuilder implements Serializable {
 			@Override
 			public int getMaxMemoryPerNode() {
 				return maxMemoryPerNode;
+			}
+			
+			@Override
+			public boolean getScatter() {
+				return scatter;
 			}
 		};
 	}

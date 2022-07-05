@@ -168,11 +168,13 @@ public class SshHPCClient implements HPCClient<SshJobSettings> {
 				.getSlurmPartitionOrPbsQueueType(), remoteJobInfo.getWalltime(),
 			remoteJobInfo.getMaxMemoryPerNode(), remoteJobInfo.getUserScriptName(),
 			jobId, remoteJobInfo.isScatter());
+		
 		JavaFXRoutines.runOnFxThread(() -> {
 			PreviewSubmitCommandScreenWindow previewSubmitCommandScreenWindow =
 				new PreviewSubmitCommandScreenWindow();
 			previewSubmitCommandScreenWindow.showDialog(script);
 		});
+		
 	}
 
 	public HPCSchedulerType getSchedulerType() {
