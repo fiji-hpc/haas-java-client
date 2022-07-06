@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
+import cz.it4i.cluster_job_launcher.ClusterJobLauncher;
 import cz.it4i.cluster_job_launcher.HPCSchedulerType;
 import cz.it4i.fiji.ssh_hpc_client.AdvancedSettings;
 import cz.it4i.fiji.ssh_hpc_client.SshConnectionSettings;
@@ -234,6 +235,13 @@ public class SshSettingsScreenController extends AnchorPane {
 		else if (!pathExistsLocaly(localWorkingDirectory)) {
 			title = "The local working directory you selected does not exist.";
 			message = "Select an existing local directory.";
+			valid = false;
+		}
+		else if (authenticationChoiceKeyRadioButton.isSelected() &&
+			!ClusterJobLauncher.privateKeyIsValid(keyFilePath))
+		{
+			title = "The private key is not a valid RSA certificate.";
+			message = "Select a valid RSA formatted private key.";
 			valid = false;
 		}
 
