@@ -2,6 +2,11 @@
 package cz.it4i.fiji.ssh_hpc_client.paradigm_manager.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import cz.it4i.cluster_job_launcher.AuthenticationChoice;
@@ -179,7 +184,8 @@ public class SshSettingsScreenController extends AnchorPane {
 	private boolean settingsAreValid() {
 		String hostname = hostTextField.getText();
 		String localWorkingDirectory = workingDirectoryTextField.getText().trim();
-		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText().trim();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText()
+			.trim();
 		String keyFilePath = keyFileTextField.getText().trim();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
 
@@ -244,12 +250,61 @@ public class SshSettingsScreenController extends AnchorPane {
 			message = "Select a valid RSA formatted private key.";
 			valid = false;
 		}
+		else if (!hostIsReachable(hostname)) {
+			title = "Host for hostname specified is unreachable.";
+			message = "Use this hostname?";
+			valid = SimpleDialog.showConfirmation(title, message);
+			title = "Specify a new hostname.";
+			message = "The new hostname should be reachable.";
+		}
+		else if (addressIsLocalhost(hostname) && (localWorkingDirectory.equals(
+			remoteWorkingDirectory) || localWorkingDirectory.equals(
+				remoteFijiDirectory)))
+		{
+			title =
+				"The local working directory is the same as one of the remote directories.";
+			message = "Since the hostname you provided is the localhost," +
+				" you must select a different local working directory than any of the \"remote\" directories.";
+			valid = false;
+		}
 
 		if (!valid) {
 			SimpleDialog.showWarning(title, message);
 		}
 
 		return valid;
+	}
+
+	private boolean hostIsReachable(String hostname) {
+		boolean rechable = true;
+		try {
+			InetAddress address = InetAddress.getByName(hostname);
+			rechable = address.isReachable(100);
+		}
+		catch (IOException exc) {
+			rechable = false;
+		}
+
+		return rechable;
+	}
+
+	private boolean addressIsLocalhost(String hostname) {
+		boolean isLocalhost = true;
+
+		try {
+			InetAddress address = InetAddress.getByName(hostname);
+			if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
+				isLocalhost = true;
+			}
+			else {
+				return NetworkInterface.getByInetAddress(address) != null;
+			}
+		}
+		catch (SocketException | UnknownHostException exc1) {
+			isLocalhost = false;
+		}
+
+		return isLocalhost;
 	}
 
 	private boolean pathIsValid(String pathString) {
@@ -308,7 +363,8 @@ public class SshSettingsScreenController extends AnchorPane {
 		String keyFilePassword = keyFilePasswordPasswordField.getText();
 		String remoteFijiDirectory = remoteDirectoryTextField.getText();
 		String workingDirectory = workingDirectoryTextField.getText().trim();
-		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText().trim();
+		String remoteWorkingDirectory = remoteWorkingDirectoryTextField.getText()
+			.trim();
 
 		// Get command from advanced settings if set, else keep the old value:
 		String command = null;
