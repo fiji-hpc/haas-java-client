@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.InvalidPathException;
@@ -35,6 +36,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class SshSettingsScreenController extends AnchorPane {
+
+	private final static int REACH_ATTEMPT_TIMEOUT = 5000;
 
 	@FXML
 	private TextField hostTextField;
@@ -278,8 +281,16 @@ public class SshSettingsScreenController extends AnchorPane {
 	private boolean hostIsReachable(String hostname) {
 		boolean rechable = true;
 		try {
-			InetAddress address = InetAddress.getByName(hostname);
-			rechable = address.isReachable(100);
+			Integer port = portSpinner.getValue();
+			if (port != null) {
+				try (Socket soc = new Socket(hostname, port)) {
+
+				}
+			}
+			else {
+				InetAddress address = InetAddress.getByName(hostname);
+				rechable = address.isReachable(REACH_ATTEMPT_TIMEOUT);
+			}
 		}
 		catch (IOException exc) {
 			rechable = false;
