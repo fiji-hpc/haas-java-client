@@ -132,10 +132,6 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.xml/jaxrpc-api -->
 		<dependency>
 			<groupId>javax.xml</groupId>
@@ -159,7 +155,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.10</version>
+			<version>1.18.24</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
