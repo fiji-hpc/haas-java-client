@@ -3,7 +3,6 @@ package cz.it4i.fiji.heappe_hpc_client;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
-import javax.xml.ws.WebServiceException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public class TestDeleteJobs {
 				log.info("Delete job: " + i + " with state: " + ji.getState());
 				client.deleteJob(i);
 			}
-			catch (WebServiceException e) {
+			catch (Exception e) {
 				log.info("job = " + i + " was already deleted");
 			}
 		}
