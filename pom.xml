@@ -114,7 +114,7 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-parallel</artifactId>
-			<version>1.4.0</version>
+			<version>1.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>cz.it4i.fiji</groupId>
@@ -138,6 +138,11 @@
 			<artifactId>jaxrpc-api</artifactId>
 			<version>1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.0</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -155,7 +160,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.24</version>
+			<version>1.18.30</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
